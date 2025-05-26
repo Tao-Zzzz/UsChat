@@ -24,8 +24,6 @@ int main()
 		auto pool = AsioIOServicePool::GetInstance();
 		//将登录数设置为0
 		RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name,"0");
-
-		std::cout << "hihihi \n";
 		//定义一个GrpcServer
 
 		std::string server_address(cfg["SelfServer"]["Host"] + ":" + cfg["SelfServer"]["RPCPort"]);
