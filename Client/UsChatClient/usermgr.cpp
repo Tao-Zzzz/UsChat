@@ -156,6 +156,7 @@ bool UserMgr::IsLoadChatFin() {
     return false;
 }
 
+// 一次只加载13个?
 void UserMgr::UpdateChatLoadedCount() {
     int begin = _chat_loaded;
     int end = begin + CHAT_COUNT_PER_PAGE;
