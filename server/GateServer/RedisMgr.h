@@ -26,10 +26,8 @@ public:
     bool ExistsKey(const std::string& key);
     void Close();
 
-    std::string acquireLock(const std::string& lockName,
-        int lockTimeout, int acquireTimeout);
-    bool releaseLock(const std::string& lockName,
-        const std::string& identifier);
+    std::string acquireLock(const std::string& lockName,int lockTimeout, int acquireTimeout);
+    bool releaseLock(const std::string& lockName,const std::string& identifier);
 
 private:
     RedisMgr();
