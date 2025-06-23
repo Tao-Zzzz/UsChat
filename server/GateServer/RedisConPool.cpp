@@ -75,3 +75,4 @@ void RedisConPool::Close() {
     b_stop_ = true;
     cond_.notify_all();
 }
+
