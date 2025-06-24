@@ -104,6 +104,7 @@ void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short &msg_id
 		<< token << endl;
 
 	Json::Value  rtvalue;
+	// 利用defer返回
 	Defer defer([this, &rtvalue, session]() {
 		std::string return_str = rtvalue.toStyledString();
 		session->Send(return_str, MSG_CHAT_LOGIN_RSP);
@@ -160,10 +161,14 @@ void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short &msg_id
 		}
 		else {
 			//如果不是本服务器，则通知grpc通知其他服务器踢掉
+			//发送通知
+			KickUserReq kick_req;
+			kick_req.set_uid(uid);
+			ChatGrpcClient::GetInstance()->NotifyKickUser(uid_ip_value, kick_req);
 		}
 	}
 
-
+	// 基本信息获取
 	std::string base_key = USER_BASE_INFO + uid_str;
 	auto user_info = std::make_shared<UserInfo>();
 	bool b_base = GetBaseInfo(base_key, uid, user_info);

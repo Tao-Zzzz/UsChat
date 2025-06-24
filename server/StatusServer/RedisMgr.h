@@ -5,6 +5,7 @@
 #include <atomic>
 #include <mutex>
 #include "Singleton.h"
+#include <memory>
 class RedisConPool {
 public:
 	RedisConPool(size_t poolSize, const char* host, int port, const char* pwd)

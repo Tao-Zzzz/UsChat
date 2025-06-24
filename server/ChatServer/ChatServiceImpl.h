@@ -4,6 +4,7 @@
 #include "message.pb.h"
 #include <mutex>
 #include "data.h"
+#include "CServer.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
