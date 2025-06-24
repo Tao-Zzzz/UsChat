@@ -12,6 +12,8 @@
 #include <json/reader.h>
 #include <unordered_map>
 #include "data.h"
+#include "CServer.h"
+#include <memory>
 
 typedef  function<void(shared_ptr<CSession>, const short &msg_id, const string &msg_data)> FunCallBack;
 class LogicSystem:public Singleton<LogicSystem>
@@ -20,6 +22,7 @@ class LogicSystem:public Singleton<LogicSystem>
 public:
 	~LogicSystem();
 	void PostMsgToQue(shared_ptr < LogicNode> msg);
+	void SetServer(std::shared_ptr<CServer> pserver);
 private:
 	LogicSystem();
 	void DealMsg();

@@ -48,15 +48,15 @@
     <ClCompile Include="StatusServiceImpl.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DistLock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsioIOContextPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ConfigMgr.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="const.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Defer.h">
@@ -87,6 +87,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="StatusServiceImpl.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="const.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DistLock.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include "resetdialog.h"
 #include "tcpmgr.h"
 #include <QLayout>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_login_dlg, &LoginDialog::switchReset, this, &MainWindow::SlotSwitchReset);
     //连接创建聊天界面信号
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_swich_chatdlg, this, &MainWindow::SlotSwitchChat);
-
-
+    // 踢人
+    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_notify_offline, this, &MainWindow::SlotOffline);
     //测试用
     //emit TcpMgr::GetInstance()->sig_swich_chatdlg();
 }
@@ -101,4 +102,41 @@ void MainWindow::SlotSwitchChat()
     this->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
 }
 
+
+void MainWindow::SlotOffline(){
+    // 使用静态方法直接弹出一个信息框
+    QMessageBox::information(this, "下线提示", "同账号异地登录，该终端下线！");
+    TcpMgr::GetInstance()->CloseConnection();
+    offlineLogin();
+}
+
+void MainWindow::SlotExcepConOffline()
+{
+    // 使用静态方法直接弹出一个信息框
+    QMessageBox::information(this, "下线提示", "心跳超时或临界异常，该终端下线！");
+    TcpMgr::GetInstance()->CloseConnection();
+    offlineLogin();
+}
+
+
+void MainWindow::offlineLogin(){
+    if(_ui_status == LOGIN_UI){
+        return;
+    }
+    //创建一个CentralWidget, 并将其设置为MainWindow的中心部件
+    _login_dlg = new LoginDialog(this);
+    _login_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
+    setCentralWidget(_login_dlg);
+
+    _chat_dlg->hide();
+    this->setMaximumSize(300,500);
+    this->setMinimumSize(300,500);
+    this->resize(300,500);
+    _login_dlg->show();
+    //连接登录界面注册信号
+    connect(_login_dlg, &LoginDialog::switchRegister, this, &MainWindow::SlotSwitchReg);
+    //连接登录界面忘记密码信号
+    connect(_login_dlg, &LoginDialog::switchReset, this, &MainWindow::SlotSwitchReset);
+    _ui_status = LOGIN_UI;
+}
 

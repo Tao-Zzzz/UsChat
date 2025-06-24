@@ -72,7 +72,18 @@ int main()
 	try {
 		auto pool = AsioIOServicePool::GetInstance();
 		//将登录数设置为0
-		RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name,"0");
+		RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name, "0");
+		Defer derfer([server_name]() {
+			RedisMgr::GetInstance()->HDel(LOGIN_COUNT, server_name);
+			RedisMgr::GetInstance()->Close();
+			});
+
+		boost::asio::io_context  io_context;
+		auto port_str = cfg["SelfServer"]["Port"];
+		//创建Cserver智能指针
+		auto pointer_server = std::make_shared<CServer>(io_context, atoi(port_str.c_str()));
+		//启动定时器
+		//pointer_server->StartTimer();
 
 		//定义一个GrpcServer
 
@@ -82,43 +93,35 @@ int main()
 		// 监听端口和添加服务
 		builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
 		builder.RegisterService(&service);
+		//service.RegisterServer(pointer_server);
 		// 构建并启动gRPC服务器
 		std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
 		std::cout << "RPC Server listening on " << server_address << std::endl;
 
 		//单独启动一个线程处理grpc服务
 		std::thread  grpc_server_thread([&server]() {
-				server->Wait();
+			server->Wait();
 			});
 
-		boost::asio::io_context  io_context;
+
 		boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
-
-
 		signals.async_wait([&io_context, pool, &server](auto, auto) {
 			io_context.stop();
 			pool->Stop();
 			server->Shutdown();
 			});
-		
-
-		std::string gate_prot_str = cfg["SelfServer"]["Port"];
-		short gate_port = atoi(gate_prot_str.c_str());
-		std::cout << " gate_port: " << gate_port << std::endl;
-
-		CServer s(io_context, gate_port);
 
 
+		//将Cserver注册给逻辑类方便以后清除连接
+		LogicSystem::GetInstance()->SetServer(pointer_server);
 		io_context.run();
 
-		RedisMgr::GetInstance()->HDel(LOGIN_COUNT, server_name);
-		RedisMgr::GetInstance()->Close();
 		grpc_server_thread.join();
+		//pointer_server->StopTimer();
+		return 0;
 	}
 	catch (std::exception& e) {
 		std::cerr << "Exception: " << e.what() << endl;
-		RedisMgr::GetInstance()->HDel(LOGIN_COUNT, server_name);
-		RedisMgr::GetInstance()->Close();
 	}
 
 }

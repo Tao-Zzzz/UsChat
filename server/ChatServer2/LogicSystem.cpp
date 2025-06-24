@@ -6,17 +6,24 @@
 #include "UserMgr.h"
 #include "ChatGrpcClient.h"
 
+
 using namespace std;
 
-LogicSystem::LogicSystem():_b_stop(false){
+
+LogicSystem::LogicSystem() :_b_stop(false), _p_server(nullptr) {
 	RegisterCallBacks();
-	_worker_thread = std::thread (&LogicSystem::DealMsg, this);
+	_worker_thread = std::thread(&LogicSystem::DealMsg, this);
 }
 
 LogicSystem::~LogicSystem(){
 	_b_stop = true;
 	_consume.notify_one();
 	_worker_thread.join();
+}
+
+
+void LogicSystem::SetServer(std::shared_ptr<CServer> pserver) {
+	_p_server = pserver;
 }
 
 void LogicSystem::PostMsgToQue(shared_ptr < LogicNode> msg) {

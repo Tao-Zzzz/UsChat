@@ -1,5 +1,11 @@
 #pragma once
 #include "const.h"
+#include <fstream>  
+#include <boost/property_tree/ptree.hpp>  
+#include <boost/property_tree/ini_parser.hpp>  
+#include <boost/filesystem.hpp>    
+#include <map>
+#include <iostream>
 
 // 把config所有参数扔到一个map里,用一个大map存储小section
 struct SectionInfo {

@@ -6,18 +6,16 @@
 #include "registerdialog.h"
 #include "resetdialog.h"
 #include "chatdialog.h"
-/******************************************************************************
- *
- * @file       mainwindow.h
- * @brief      主界面功能 Function
- *
- * @author     恋恋风辰
- * @date       2024/02/27
- * @history
- *****************************************************************************/
+
 namespace Ui {
 class MainWindow;
 }
+enum UIStatus{
+    LOGIN_UI,
+    REGISTER_UI,
+    RESET_UI,
+    CHAT_UI
+};
 
 class MainWindow : public QMainWindow
 {
@@ -32,12 +30,17 @@ public slots:
     void SlotSwitchReset();
     void SlotSwitchLogin2();
     void SlotSwitchChat();
+    void SlotOffline();
+    void SlotExcepConOffline();
+
 private:
+    void offlineLogin();
     Ui::MainWindow *ui;
     LoginDialog* _login_dlg;
     RegisterDialog* _reg_dlg;
     ResetDialog* _reset_dlg;
     ChatDialog* _chat_dlg;
+    UIStatus _ui_status;
 };
 
 #endif // MAINWINDOW_H
