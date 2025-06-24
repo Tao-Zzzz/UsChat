@@ -10,11 +10,60 @@
 #include "ConfigMgr.h"
 #include "RedisMgr.h"
 #include "ChatServiceImpl.h"
+#include "DistLock.h"
 
 using namespace std;
 bool bstop = false;
 std::condition_variable cond_quit;
 std::mutex mutex_quit;
+
+int TestDisLock() {
+	// 连接到 Redis 服务器（根据实际情况修改主机和端口）
+	redisContext* context = redisConnect("81.68.86.146", 6380);
+	if (context == nullptr || context->err) {
+		if (context) {
+			std::cerr << "连接错误: " << context->errstr << std::endl;
+			redisFree(context);
+		}
+		else {
+			std::cerr << "无法分配 redis context" << std::endl;
+		}
+		return 1;
+	}
+
+	std::string redis_password = "123456";
+	redisReply* r = (redisReply*)redisCommand(context, "AUTH %s", redis_password.c_str());
+	if (r->type == REDIS_REPLY_ERROR) {
+		printf("Redis认证失败！\n");
+	}
+	else {
+		printf("Redis认证成功！\n");
+	}
+
+	// 尝试获取锁（锁有效期 10 秒，获取超时时间 5 秒）
+	std::string lockId = DistLock::Inst().acquireLock(context, "my_resource", 10, 5);
+
+	if (!lockId.empty()) {
+		std::cout << "子进程 " << GetCurrentProcessId() << " 成功获取锁，锁 ID: " << lockId << std::endl;
+		// 执行需要保护的临界区代码
+		std::this_thread::sleep_for(std::chrono::seconds(2));
+
+		// 释放锁
+		if (DistLock::Inst().releaseLock(context, "my_resource", lockId)) {
+			std::cout << "子进程 " << GetCurrentProcessId() << " 成功释放锁" << std::endl;
+		}
+		else {
+			std::cout << "子进程 " << GetCurrentProcessId() << " 释放锁失败" << std::endl;
+		}
+	}
+	else {
+		std::cout << "子进程 " << GetCurrentProcessId() << " 获取锁失败" << std::endl;
+	}
+
+	// 释放 Redis 连接
+	redisFree(context);
+}
+
 
 int main()
 {
