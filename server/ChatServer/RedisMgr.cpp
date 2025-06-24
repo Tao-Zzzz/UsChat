@@ -392,3 +392,14 @@ bool RedisMgr::releaseLock(const std::string& lockName,
 
 	return DistLock::Inst().releaseLock(connect, lockName, identifier);
 }
+
+void RedisMgr::InitCount(const std::string& server_name) {
+	auto lock_key = LOCK_COUNT;
+	auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
+	//ÀûÓÃdefer½âËø
+	Defer defer2([this, identifier, lock_key]() {
+		RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
+		});
+
+	RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name, "0");
+}

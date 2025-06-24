@@ -177,6 +177,8 @@ public:
 
 	bool releaseLock(const std::string& lockName,
 		const std::string& identifier);
+
+	void InitCount(const std::string& server_name);
 private:
 	RedisMgr();
 	unique_ptr<RedisConPool>  _con_pool;

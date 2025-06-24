@@ -21,6 +21,9 @@ using message::TextChatMsgRsp;
 using message::TextChatData;
 
 
+using message::KickUserReq;
+using message::KickUserRsp;
+
 class ChatServiceImpl final: public ChatService::Service
 {
 public:
@@ -36,6 +39,11 @@ public:
 
 	bool GetBaseInfo(std::string base_key, int uid, std::shared_ptr<UserInfo>& userinfo);
 
+	Status NotifyKickUser(::grpc::ServerContext* context,
+		const KickUserReq* request, KickUserRsp* reply);
+
+	void RegisterServer(std::shared_ptr<CServer> pServer);
 private:
+	std::shared_ptr<CServer> _p_server;
 };
 
