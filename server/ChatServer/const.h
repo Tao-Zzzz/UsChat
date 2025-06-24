@@ -68,6 +68,9 @@ enum MSG_IDS {
 #define IPCOUNTPREFIX  "ipcount_"
 #define USER_BASE_INFO "ubaseinfo_"
 #define LOGIN_COUNT  "logincount"
+#define NAME_INFO  "nameinfo_"
+#define LOCK_PREFIX "lock_"
+#define USER_SESSION_PREFIX "usession_"
 #define LOCK_COUNT "lockcount"
 
 //分布式锁的持有时间
