@@ -73,6 +73,7 @@ SOURCES += \
         tcpmgr.cpp \
         timerbtn.cpp \
         userdata.cpp \
+        userinfopage.cpp \
         usermgr.cpp
 
 HEADERS += \
@@ -121,6 +122,7 @@ HEADERS += \
         tcpmgr.h \
         timerbtn.h \
         userdata.h \
+        userinfopage.h \
         usermgr.h
 
 FORMS += \
@@ -143,7 +145,8 @@ FORMS += \
         logindialog.ui \
         mainwindow.ui \
         registerdialog.ui \
-        resetdialog.ui
+        resetdialog.ui \
+        userinfopage.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

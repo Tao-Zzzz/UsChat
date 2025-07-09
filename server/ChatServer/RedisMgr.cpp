@@ -385,7 +385,7 @@ bool RedisMgr::releaseLock(const std::string& lockName,
 		return false;
 	}
 
-
+	  
 	Defer defer([&connect, this]() {
 		_con_pool->returnConnection(connect);
 		});

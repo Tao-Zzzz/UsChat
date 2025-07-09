@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-
+#include <chrono>
 
 enum ErrorCodes {
 	Success = 0,
@@ -77,3 +77,5 @@ enum MSG_IDS {
 #define LOCK_TIME_OUT 10
 //分布式锁的重试时间
 #define ACQUIRE_TIME_OUT 5
+// 心跳阈值
+#define HEART_THRESHOLD 20

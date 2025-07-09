@@ -500,16 +500,16 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	ChatGrpcClient::GetInstance()->NotifyTextChatMsg(to_ip_value, text_msg_req, rtvalue);
 }
 
-void LogicSystem::HeartBeatHandler(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data)
-{
+void LogicSystem::HeartBeatHandler(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data) {
 	Json::Reader reader;
 	Json::Value root;
 	reader.parse(msg_data, root);
 	auto uid = root["fromuid"].asInt();
-	std::cout << "user HeartBeatHandler fromuid is  " << uid << endl;
-
+	std::cout << "receive heart beat msg, uid is " << uid << std::endl;
+	Json::Value  rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	session->Send(rtvalue.toStyledString(), ID_HEARTBEAT_RSP);
 }
-
 
 
 bool LogicSystem::isPureDigit(const std::string& str)

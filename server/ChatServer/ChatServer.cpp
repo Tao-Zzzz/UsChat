@@ -72,7 +72,8 @@ int main()
     try {
         auto pool = AsioIOServicePool::GetInstance();
         //将登录数设置为0
-        RedisMgr::GetInstance()->InitCount(server_name);
+        //RedisMgr::GetInstance()->InitCount(server_name);
+		RedisMgr::GetInstance()->HSet(LOGIN_COUNT, server_name, "0");
         Defer derfer([server_name]() {
             RedisMgr::GetInstance()->HDel(LOGIN_COUNT, server_name);
             RedisMgr::GetInstance()->Close();
@@ -82,6 +83,8 @@ int main()
         auto port_str = cfg["SelfServer"]["Port"];
         //创建Cserver智能指针
         auto pointer_server = std::make_shared<CServer>(io_context, atoi(port_str.c_str()));
+        pointer_server->StartTimer();
+
         //定义一个GrpcServer
         std::string server_address(cfg["SelfServer"]["Host"] + ":" + cfg["SelfServer"]["RPCPort"]);
         ChatServiceImpl service;
@@ -111,6 +114,7 @@ int main()
         io_context.run();
 
         grpc_server_thread.join();
+		pointer_server->StopTimer();
     }
     catch (std::exception& e) {
         std::cerr << "Exception: " << e.what() << endl;
