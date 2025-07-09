@@ -10,7 +10,7 @@
 #include <memory>
 #include "userdata.h"
 #include <QListWidgetItem>
-
+#include <QTimer>
 namespace Ui {
 class ChatDialog;
 }
@@ -37,6 +37,8 @@ private:
     void loadMoreConUser();
     void SetSelectChatItem(int uid = 0);
     void SetSelectChatPage(int uid = 0);
+
+    QTimer* _timer;
     Ui::ChatDialog *ui;
     bool _b_loading;
     QList<StateWidget*> _lb_list;

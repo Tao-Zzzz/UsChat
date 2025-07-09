@@ -107,6 +107,11 @@ void CSession::AsyncReadBody(int total_len)
 				return;
 			}
 
+			if (!_server->CheckValid(_session_id)) {
+				Close();
+				return;
+			}
+
 			memcpy(_recv_msg_node->_data , _data , bytes_transfered);
 			_recv_msg_node->_cur_len += bytes_transfered;
 			_recv_msg_node->_data[_recv_msg_node->_total_len] = '\0';
@@ -115,6 +120,8 @@ void CSession::AsyncReadBody(int total_len)
 			LogicSystem::GetInstance()->PostMsgToQue(make_shared<LogicNode>(shared_from_this(), _recv_msg_node));
 			//继续监听头部接受事件
 			AsyncReadHead(HEAD_TOTAL_LEN);
+			//更新心跳
+			UpdateHeartbeat();
 		}
 		catch (std::exception& e) {
 			std::cout << "Exception code is " << e.what() << endl;
@@ -140,6 +147,11 @@ void CSession::AsyncReadHead(int total_len)
 					<< HEAD_TOTAL_LEN << "]" << endl;
 				Close();
 				_server->ClearSession(_session_id);
+				return;
+			}
+
+			if (!_server->CheckValid(_session_id)) {
+				Close();
 				return;
 			}
 
@@ -173,6 +185,7 @@ void CSession::AsyncReadHead(int total_len)
 
 			_recv_msg_node = make_shared<RecvNode>(msg_len, msg_id);
 			AsyncReadBody(msg_len);
+			UpdateHeartbeat();
 		}
 		catch (std::exception& e) {
 			std::cout << "Exception code is " << e.what() << endl;

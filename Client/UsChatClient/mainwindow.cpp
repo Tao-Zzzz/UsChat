@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _login_dlg = new LoginDialog(this);
     _login_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     setCentralWidget(_login_dlg);
-
+    _ui_status = LOGIN_UI;
     //连接登录界面注册信号
     connect(_login_dlg, &LoginDialog::switchRegister, this, &MainWindow::SlotSwitchReg);
     //连接登录界面忘记密码信号
@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_swich_chatdlg, this, &MainWindow::SlotSwitchChat);
     // 踢人
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_notify_offline, this, &MainWindow::SlotOffline);
+    // 服务器断开
+    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_connection_close, this, &MainWindow::SlotExcepConOffline);
     //测试用
     //emit TcpMgr::GetInstance()->sig_swich_chatdlg();
 }
@@ -34,6 +36,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::SlotSwitchReg()
 {
+    _ui_status = REGISTER_UI;
+
     _reg_dlg = new RegisterDialog(this);
     _reg_dlg->hide();
 
@@ -49,6 +53,7 @@ void MainWindow::SlotSwitchReg()
 //从注册界面返回登录界面
 void MainWindow::SlotSwitchLogin()
 {
+    _ui_status = LOGIN_UI;
     //创建一个CentralWidget, 并将其设置为MainWindow的中心部件
     _login_dlg = new LoginDialog(this);
     _login_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
@@ -64,6 +69,7 @@ void MainWindow::SlotSwitchLogin()
 
 void MainWindow::SlotSwitchReset()
 {
+    _ui_status = RESET_UI;
     //创建一个CentralWidget, 并将其设置为MainWindow的中心部件
     _reset_dlg = new ResetDialog(this);
     _reset_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
@@ -78,6 +84,7 @@ void MainWindow::SlotSwitchReset()
 //从重置界面返回登录界面
 void MainWindow::SlotSwitchLogin2()
 {
+    _ui_status = LOGIN_UI;
     //创建一个CentralWidget, 并将其设置为MainWindow的中心部件
     _login_dlg = new LoginDialog(this);
     _login_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
@@ -93,6 +100,7 @@ void MainWindow::SlotSwitchLogin2()
 
 void MainWindow::SlotSwitchChat()
 {
+    _ui_status = CHAT_UI;
     _chat_dlg = new ChatDialog();
     _chat_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     setCentralWidget(_chat_dlg);

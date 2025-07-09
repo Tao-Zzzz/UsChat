@@ -62,9 +62,7 @@ void CServer::on_timer(const boost::system::error_code& e)
 	{
 		lock_guard<mutex> lock(_mutex);
 		time_t now = time(nullptr);
-
 		session_count = _sessions.size();
-		time_t now = time(nullptr);
 		for (auto iter = _sessions.begin(); iter != _sessions.end(); ++iter) {
 			auto b_expired = iter->second->isHeartbeatExpired(now);
 			if (b_expired) {
@@ -90,5 +88,15 @@ void CServer::on_timer(const boost::system::error_code& e)
 	_timer.async_wait([this](boost::system::error_code e) {
 		on_timer(e);
 		});
+}
+
+bool CServer::CheckValid(std::string session_id)
+{
+	lock_guard<mutex> lock(_mutex);
+	auto it = _sessions.find(session_id);
+	if(it != _sessions.end()) {
+		return true;
+	}
+	return false;
 }
 

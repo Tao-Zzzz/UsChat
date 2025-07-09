@@ -32,7 +32,6 @@ public slots:
     void SlotSwitchChat();
     void SlotOffline();
     void SlotExcepConOffline();
-
 private:
     void offlineLogin();
     Ui::MainWindow *ui;
