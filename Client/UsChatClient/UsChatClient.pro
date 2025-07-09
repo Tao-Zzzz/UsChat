@@ -58,6 +58,7 @@ SOURCES += \
         global.cpp \
         grouptipitem.cpp \
         httpmgr.cpp \
+        imagecropperdialog.cpp \
         invaliditem.cpp \
         lineitem.cpp \
         listitembase.cpp \
@@ -107,6 +108,7 @@ HEADERS += \
         global.h \
         grouptipitem.h \
         httpmgr.h \
+        imagecropperdialog.h \
         invaliditem.h \
         lineitem.h \
         listitembase.h \
@@ -140,6 +142,7 @@ FORMS += \
         friendinfopage.ui \
         friendlabel.ui \
         grouptipitem.ui \
+        imagecropperdialog.ui \
         lineitem.ui \
         loadingdlg.ui \
         logindialog.ui \

@@ -63,12 +63,14 @@ StatusServiceImpl::StatusServiceImpl()
 ChatServer StatusServiceImpl::getChatServer() {
 	std::lock_guard<std::mutex> guard(_server_mtx);
 	auto minServer = _servers.begin()->second;
-	auto lock_key = LOCK_COUNT;
-	auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
-	//利用defer解锁
-	Defer defer2([this, identifier, lock_key]() {
-		RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
-		});
+	
+	// 不需要加锁了, 加减都让服务端的session自己处理, 有心跳即可
+	//auto lock_key = LOCK_COUNT;
+	//auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
+	////利用defer解锁
+	//Defer defer2([this, identifier, lock_key]() {
+	//	RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
+	//	});
 
 	auto count_str = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, minServer.name);
 	if (count_str.empty()) {
