@@ -4,6 +4,7 @@
 #include "const.h"
 #include "RedisMgr.h"
 #include <climits>
+#include "Defer.h"
 
 std::string generate_unique_string() {
 	//std::cout << "generate uuid" << std::endl;

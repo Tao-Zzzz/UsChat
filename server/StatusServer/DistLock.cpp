@@ -1,4 +1,5 @@
 #include "DistLock.h"
+#include <thread>
 #include <iostream>
 #include <string>
 #include <chrono>
@@ -9,17 +10,15 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <hiredis.h>
 
+
+//定义单例模式
 DistLock& DistLock::Inst() {
     static DistLock lock;
     return lock;
 }
 
-
-DistLock::~DistLock() {
-
-}
-
-std::string generateUUID() {
+// 使用 Boost UUID 生成全局唯一标识符（UUID）
+static std::string generateUUID() {
     boost::uuids::uuid uuid = boost::uuids::random_generator()();
     return to_string(uuid);
 }
@@ -43,7 +42,7 @@ std::string DistLock::acquireLock(redisContext* context, const std::string& lock
             }
             freeReplyObject(reply);
         }
-        // 暂停 1 毫秒后重试，防止忙等待, 提高CPU效率
+        // 暂停 1 毫秒后重试，防止忙等待
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     return "";

@@ -76,6 +76,8 @@ void CSession::Send(char* msg, short max_length, short msgid) {
 }
 
 void CSession::Close() {
+	std::lock_guard<std::mutex> lock(_session_mtx);
+
 	_socket.close();
 	_b_close = true;
 }
@@ -93,32 +95,7 @@ void CSession::AsyncReadBody(int total_len)
 				std::cout << "handle read failed, error is " << ec.what() << endl;
 				Close();
 
-				//加锁清除session
-				auto uid_str = std::to_string(_user_uid);
-				auto lock_key = LOCK_PREFIX + uid_str;
-				auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
-				Defer defer([identifier, lock_key, self, this]() {
-					_server->ClearSession(_session_id);
-					RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
-					});
-
-				if (identifier.empty()) {
-					return;
-				}
-				std::string redis_session_id = "";
-				auto bsuccess = RedisMgr::GetInstance()->Get(USER_SESSION_PREFIX + uid_str, redis_session_id);
-				if (!bsuccess) {
-					return;
-				}
-
-				if (redis_session_id != _session_id) {
-					//说明有客户在其他服务器异地登录了
-					return;
-				}
-
-				RedisMgr::GetInstance()->Del(USER_SESSION_PREFIX + uid_str);
-				//清除用户登录信息
-				RedisMgr::GetInstance()->Del(USERIPPREFIX + uid_str);
+				DeadExceptionSession();
 				return;
 			}
 
@@ -154,32 +131,7 @@ void CSession::AsyncReadHead(int total_len)
 				std::cout << "handle read failed, error is " << ec.what() << endl;
 				Close();
 
-				//加锁清除session
-				auto uid_str = std::to_string(_user_uid);
-				auto lock_key = LOCK_PREFIX + uid_str;
-				auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
-				Defer defer([identifier, lock_key, self, this]() {
-					_server->ClearSession(_session_id);
-					RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
-					});
-
-				if (identifier.empty()) {
-					return;
-				}
-				std::string redis_session_id = "";
-				auto bsuccess = RedisMgr::GetInstance()->Get(USER_SESSION_PREFIX + uid_str, redis_session_id);
-				if (!bsuccess) {
-					return;
-				}
-
-				if (redis_session_id != _session_id) {
-					//说明有客户在其他服务器异地登录了
-					return;
-				}
-
-				RedisMgr::GetInstance()->Del(USER_SESSION_PREFIX + uid_str);
-				//清除用户登录信息
-				RedisMgr::GetInstance()->Del(USERIPPREFIX + uid_str);
+				DeadExceptionSession();
 				return;
 			}
 
@@ -241,6 +193,54 @@ void CSession::NotifyOffline(int uid) {
 	return;
 }
 
+bool CSession::isHeartbeatExpired(std::time_t& now)
+{
+	double diff_sec = std::difftime(now, _last_heartbeat);
+	if (diff_sec > HEART_THRESHOLD) {
+		std::cout << "Heartbeat expired, session id is " << _session_id << std::endl;
+		return true;
+	}
+	return false;
+}
+
+void CSession::UpdateHeartbeat()
+{
+	time_t now = time(nullptr);
+	_last_heartbeat = now;
+}
+
+void CSession::DeadExceptionSession()
+{
+	auto self = shared_from_this();
+	//加锁清除session
+	auto uid_str = std::to_string(_user_uid);
+	auto lock_key = LOCK_PREFIX + uid_str;
+	auto identifier = RedisMgr::GetInstance()->acquireLock(lock_key, LOCK_TIME_OUT, ACQUIRE_TIME_OUT);
+	Defer defer([identifier, lock_key, self, this]() {
+		_server->ClearSession(_session_id);
+		RedisMgr::GetInstance()->releaseLock(lock_key, identifier);
+		});
+
+	if (identifier.empty()) {
+		return;
+	}
+	std::string redis_session_id = "";
+	auto bsuccess = RedisMgr::GetInstance()->Get(USER_SESSION_PREFIX + uid_str, redis_session_id);
+	if (!bsuccess) {
+		return;
+	}
+
+	if (redis_session_id != _session_id) {
+		//说明有客户在其他服务器异地登录了
+		return;
+	}
+
+	RedisMgr::GetInstance()->Del(USER_SESSION_PREFIX + uid_str);
+	//清除用户登录信息
+	RedisMgr::GetInstance()->Del(USERIPPREFIX + uid_str);
+
+}
+
 void CSession::HandleWrite(const boost::system::error_code& error, std::shared_ptr<CSession> shared_self) {
 	//增加异常处理
 	try {
@@ -257,7 +257,7 @@ void CSession::HandleWrite(const boost::system::error_code& error, std::shared_p
 		else {
 			std::cout << "handle write failed, error is " << error.what() << endl;
 			Close();
-			_server->ClearSession(_session_id);
+			DeadExceptionSession();
 		}
 	}
 	catch (std::exception& e) {
