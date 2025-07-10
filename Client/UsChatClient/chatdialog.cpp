@@ -84,6 +84,7 @@ ChatDialog::ChatDialog(QWidget *parent) :
 
     connect(ui->side_chat_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_chat);
     connect(ui->side_contact_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_contact);
+    connect(ui->side_setting_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_setting);
 
     //链接搜索框输入变化
     connect(ui->search_edit, &QLineEdit::textChanged, this, &ChatDialog::slot_text_changed);
@@ -565,6 +566,14 @@ void ChatDialog::ShowSearch(bool bsearch)
         ui->search_list->CloseFindDlg();
 		ui->search_edit->clear();
 		ui->search_edit->clearFocus();
+    }else if(_state == ChatUIMode::SettingMode){
+        ui->chat_user_list->hide();
+        ui->search_list->hide();
+        ui->con_user_list->show();
+        _mode = ChatUIMode::SettingMode;
+        ui->search_list->CloseFindDlg();
+        ui->search_edit->clear();
+        ui->search_edit->clearFocus();
     }
 }
 
@@ -607,6 +616,21 @@ void ChatDialog::slot_side_contact(){
     }
 
     _state = ChatUIMode::ContactMode;
+    ShowSearch(false);
+}
+
+void ChatDialog::slot_side_setting(){
+    qDebug()<< "receive side setting clicked";
+    ClearLabelState(ui->side_setting_lb);
+    //设置
+    if(_last_widget == nullptr){
+        ui->stackedWidget->setCurrentWidget(ui->user_info_page);
+        _last_widget = ui->user_info_page;
+    }else{
+        ui->stackedWidget->setCurrentWidget(_last_widget);
+    }
+
+    _state = ChatUIMode::SettingMode;
     ShowSearch(false);
 }
 

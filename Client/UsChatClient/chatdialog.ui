@@ -140,6 +140,22 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="StateWidget" name="side_setting_lb" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>30</height>
+            </size>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>

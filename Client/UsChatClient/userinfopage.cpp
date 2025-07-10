@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include "ImageCropperDialog.h"
+
 UserInfoPage::UserInfoPage(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::UserInfoPage)

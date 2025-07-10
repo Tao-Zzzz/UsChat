@@ -35,10 +35,14 @@ public:
         // 实际上图片的label
         imageLabel = new ImageCropperLabel(windowWidth, windowHeight, this);
         imageLabel->setCropper(shape, cropperSize);
+        // 输出形状矩形
         imageLabel->setOutputShape(OutputShape::RECT);
+        // 设置图片
         imageLabel->setOriginalImage(imageIn);
+        // 允许透明
         imageLabel->enableOpacity(true);
 
+        // 水平布局
         QHBoxLayout* btnLayout = new QHBoxLayout();
         btnOk = new QPushButton("OK", this);
         btnCancel = new QPushButton("Cancel", this);
@@ -46,6 +50,7 @@ public:
         btnLayout->addWidget(btnOk);
         btnLayout->addWidget(btnCancel);
 
+        // 主布局
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
         mainLayout->addWidget(imageLabel);
         mainLayout->addLayout(btnLayout);

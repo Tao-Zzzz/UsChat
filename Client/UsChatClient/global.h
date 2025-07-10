@@ -98,6 +98,7 @@ enum ChatUIMode{
     SearchMode, //搜索模式
     ChatMode, //聊天模式
     ContactMode, //联系模式
+    SettingMode,
 };
 
 //自定义QListWidgetItem的几种类型
