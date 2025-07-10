@@ -116,8 +116,10 @@ private:
 		size_t pool_size;
 		{
 			std::lock_guard<std::mutex> lock(mutex_);
-			pool_size = connections_.size();
+			pool_size = connections_.size();		
 		}
+
+		std::cout << "---开始检查redis的线程池---" << std::endl;
 
 		for (int i = 0; i < pool_size && !b_stop_; i++) {
 			// 非阻塞获取
@@ -184,6 +186,7 @@ private:
 	bool reconnect() {
 		auto* context = redisConnect(host_, port_);
 		if (context == nullptr || context->err != 0) {
+			printf("Connection error: %s\n", context ? context->errstr : "Can't allocate redis context");
 			if (context != nullptr) {
 				redisFree(context);
 			}
