@@ -32,11 +32,12 @@ public:
 			connections_.push(context);
 		}
 
+		// 没有detach, 汇合的
 		check_thread_ = std::thread([this]() {
 			while (!b_stop_) {
 				counter_++;
 				if (counter_ >= 60) {
-					checkThread();
+					checkThreadPro();
 					counter_ = 0;
 				}
 
@@ -59,6 +60,7 @@ public:
 		}
 	}
 
+	// 等待,肯定会得到一个连接
 	redisContext* getConnection() {
 		std::unique_lock<std::mutex> lock(mutex_);
 		cond_.wait(lock, [this] { 
@@ -71,6 +73,22 @@ public:
 		if (b_stop_) {
 			return  nullptr;
 		}
+		auto* context = connections_.front();
+		connections_.pop();
+		return context;
+	}
+
+	// 非阻塞取出
+	redisContext* getConNonBlock() {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (b_stop_) {
+			return nullptr;
+		}
+
+		if (connections_.empty()) {
+			return nullptr;
+		}
+
 		auto* context = connections_.front();
 		connections_.pop();
 		return context;
@@ -92,6 +110,24 @@ public:
 	}
 
 private:
+
+	void checkThreadPro() {
+		size_t pool_size;
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			pool_size = connections_.size();
+		}
+
+		for (int i = 0; i < pool_size && !b_stop_; i++) {
+			auto* context = getConnection();
+			if (context == nullptr) {
+				break;
+			}
+		}
+
+	}
+
+	// 一个大锁, 不够精细
 	void checkThread() {
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (b_stop_) {
@@ -124,7 +160,7 @@ private:
 
 				auto reply = (redisReply*)redisCommand(context, "AUTH %s", pwd_);
 				if (reply->type == REDIS_REPLY_ERROR) {
-					std::cout << "认证失败" << std::endl;
+					std::cout << "Redis认证失败" << std::endl;
 					//执行成功 释放redisCommand执行后返回的redisReply所占用的内存
 					freeReplyObject(reply);
 					continue;
@@ -132,7 +168,7 @@ private:
 
 				//执行成功 释放redisCommand执行后返回的redisReply所占用的内存
 				freeReplyObject(reply);
-				std::cout << "认证成功" << std::endl;
+				std::cout << "Redis认证成功" << std::endl;
 				connections_.push(context);
 			}
 		}
@@ -147,6 +183,7 @@ private:
 	std::condition_variable cond_;
 	std::thread  check_thread_;
 	int counter_;
+	std::atomic<int> fail_count_;
 };
 
 class RedisMgr: public Singleton<RedisMgr>, 

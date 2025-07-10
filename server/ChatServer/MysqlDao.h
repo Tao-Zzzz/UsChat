@@ -21,7 +21,8 @@ public:
 class MySqlPool {
 public:
 	MySqlPool(const std::string& url, const std::string& user, const std::string& pass, const std::string& schema, int poolSize)
-		: url_(url), user_(user), pass_(pass), schema_(schema), poolSize_(poolSize), b_stop_(false){
+		: url_(url), user_(user), pass_(pass), schema_(schema), poolSize_(poolSize), b_stop_(false),
+			_fail_count(0){
 		try {
 			for (int i = 0; i < poolSize_; ++i) {
 				sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
@@ -35,13 +36,20 @@ public:
 			}
 
 			_check_thread = 	std::thread([this]() {
+				int count = 0;
 				while (!b_stop_) {
-					checkConnection();
-					std::this_thread::sleep_for(std::chrono::seconds(60));
+					if (count >= 60) {
+						checkConnectionPro();
+						count = 0;
+					}
+					// 设置成1秒, 这样退出更快
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+					count++; 
 				}
 			});
 
 			_check_thread.detach();
+			std::cout << "mysql pool init success!" << std::endl;
 		}
 		catch (sql::SQLException& e) {
 			// 处理异常
@@ -82,6 +90,90 @@ public:
 				con->_con.reset(newcon);
 				con->_last_oper_time = timestamp;
 			}
+		}
+	}
+
+	void checkConnectionPro() {
+		size_t targetCount;
+		{
+			std::lock_guard<std::mutex> guard(mutex_);
+			targetCount = poolSize_;
+		}
+
+		// 当前已经处理的数量
+		size_t processedCount = 0;
+
+		// 时间戳
+		auto now = std::chrono::system_clock::now().time_since_epoch();
+		long long timestamp = std::chrono::duration_cast<std::chrono::seconds>(now).count();
+
+		while (processedCount < targetCount) {
+			std::unique_ptr<SqlConnection> con;
+			{
+				std::lock_guard<std::mutex> guard(mutex_);
+				// 可能池已经被释放掉了
+				if (pool_.empty()) {
+					break;
+				}
+				con = std::move(pool_.front());
+				pool_.pop();
+			}
+
+			bool healthy = true;
+			// 解锁后做检查, 重连逻辑
+			if (timestamp - con->_last_oper_time >= 5) {
+				try {
+					std::unique_ptr<sql::Statement> stmt(con->_con->createStatement());
+					stmt->executeQuery("SELECT 1");
+					con->_last_oper_time = timestamp;
+				}
+				catch (sql::SQLException& e) {
+					std::cout << "Error keeping connection alive: " << e.what() << std::endl;
+					healthy = false;
+					_fail_count++;
+				}
+				
+			}
+
+			if(healthy)
+			{
+				std::lock_guard<std::mutex> guard(mutex_);
+				pool_.push(std::move(con));
+				cond_.notify_one();
+			}
+
+			processedCount++;
+		}
+
+		while (_fail_count > 0) {
+			auto b_res = reconnect(timestamp);
+			if (b_res) {
+				_fail_count--;
+			}
+			else {
+				// 已经出现故障了,没必要继续允许了
+				break;
+			}
+		}
+	}
+
+	bool reconnect(long long timestamp) {
+		try {
+			// 重新创建连接并替换旧的连接
+			sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
+			auto* newcon = driver->connect(url_, user_, pass_);
+			newcon->setSchema(schema_);
+			
+			auto newCon = std::make_unique<SqlConnection>(newcon, timestamp);
+			{
+				std::lock_guard<std::mutex> guard(mutex_);
+				pool_.push(std::move(newCon));
+			}
+			return true;
+		}
+		catch (sql::SQLException& e) {
+			std::cout << "Reconnect failed, erorr is " << e.what() << std::endl;
+			return false;
 		}
 	}
 
@@ -132,6 +224,7 @@ private:
 	std::condition_variable cond_;
 	std::atomic<bool> b_stop_;
 	std::thread _check_thread;
+	std::atomic<int> _fail_count;
 };
 
 

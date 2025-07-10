@@ -60,23 +60,28 @@ void CServer::on_timer(const boost::system::error_code& e)
 		return;
 	}
 
-
 	std::vector<std::shared_ptr<CSession>> _expired_sessions;
 	int session_count = 0;
+	
+	// 对副本进行操作，避免在遍历时修改原始容器导致迭代器失效
+	std::map<std::string, std::shared_ptr<CSession>> sessions_copy;
 	{
 		lock_guard<mutex> lock(_mutex);
-		time_t now = time(nullptr);
-		session_count = _sessions.size();
-		for (auto iter = _sessions.begin(); iter != _sessions.end(); ++iter) {
-			auto b_expired = iter->second->isHeartbeatExpired(now);
-			if (b_expired) {
-				iter->second->Close();
-				// 收集过期的session
-				_expired_sessions.push_back(iter->second);
-			}
-			else {
-				session_count++;
-			}
+		sessions_copy = _sessions; // 复制当前的_sessions到局部变量
+	}
+	// 允许失效检测有一点时效误差
+
+	time_t now = std::time(nullptr);
+	for(auto iter = sessions_copy.begin(); iter != sessions_copy.end(); ++iter) {
+		auto b_expired = iter->second->isHeartbeatExpired(now);
+		if (b_expired) {
+			// 关闭socket, 这里也会触发async_accept的错误处理
+			iter->second->Close();
+			// 收集过期的session
+			_expired_sessions.push_back(iter->second);
+		}
+		else {
+			session_count++;
 		}
 	}
 
