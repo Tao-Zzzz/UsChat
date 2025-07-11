@@ -27,10 +27,10 @@ ChatDataBase::ChatDataBase(QString unique_id, int thread_id, ChatFormType form_t
 
 }
 
-void ChatDataBase::SetUniqueId(int unique_id)
-{
-    _unique_id = unique_id;
-}
+// void ChatDataBase::SetUniqueId(int unique_id)
+// {
+//     _unique_id = unique_id;
+// }
 
 QString ChatDataBase::GetUniqueId()
 {

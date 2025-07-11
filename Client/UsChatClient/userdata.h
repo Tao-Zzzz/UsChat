@@ -137,7 +137,7 @@ public:
     QString GetContent() { return _content; }
     int GetSendUid() { return _send_uid; }
     QString GetMsgContent(){return _content;}
-    void SetUniqueId(int unique_id);
+    // void SetUniqueId(int unique_id);
     QString GetUniqueId();
 private:
     //客户端本地唯一标识

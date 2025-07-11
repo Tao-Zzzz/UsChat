@@ -747,6 +747,37 @@ bool LogicSystem::GetBaseInfo(std::string base_key, int uid, std::shared_ptr<Use
 	return true;
 }
 
+void LogicSystem::CreatePrivateChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+	auto uid = root["uid"].asInt();
+	auto other_id = root["other_id"].asInt();
+
+	Json::Value  rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["uid"] = uid;
+	rtvalue["other_id"] = other_id;
+
+	Defer defer([this, &rtvalue, session]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_LOAD_CHAT_THREAD_RSP);
+		});
+
+	int thread_id = 0;
+	bool res = MysqlMgr::GetInstance()->CreatePrivateChat(uid, other_id, thread_id);
+	if (!res) {
+		rtvalue["error"] = ErrorCodes::CREATE_CHAT_FAILED;
+		return;
+	}
+
+	rtvalue["thread_id"] = thread_id;
+}
+
+_fun_callbacks[ID_CREATE_PRIVATE_CHAT_REQ] = std::bind(&LogicSystem::CreatePrivateChat, this,
+	placeholders::_1, placeholders::_2, placeholders::_3);
+
 bool LogicSystem::GetFriendApplyInfo(int to_uid, std::vector<std::shared_ptr<ApplyInfo>> &list) {
 	//从mysql获取好友申请列表
 	return MysqlMgr::GetInstance()->GetApplyList(to_uid, list, 0, 10);

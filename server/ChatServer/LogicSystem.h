@@ -42,7 +42,7 @@ private:
 	bool GetFriendList(int self_id, std::vector<std::shared_ptr<UserInfo>> & user_list);
 	
 	bool GetUserThreads(int userId,std::vector<std::shared_ptr<ChatThreadInfo>>& threads);
-	
+	void CreatePrivateChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 	std::thread _worker_thread;
 	std::queue<shared_ptr<LogicNode>> _msg_que;
 	std::mutex _mutex;
