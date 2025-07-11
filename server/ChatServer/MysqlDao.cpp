@@ -565,3 +565,75 @@ bool MysqlDao::GetUserThreads(
 
 	return true;
 }
+
+bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
+{
+	auto con = pool_->getConnection();
+	if (!con) {
+		return false;
+	}
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+	auto& conn = con->_con;
+	try {
+		// 开启事务
+		conn->setAutoCommit(false);
+		// 1. 查询是否已存在私聊并加行级锁
+		int uid1 = std::min(user1_id, user2_id);
+		int uid2 = std::max(user1_id, user2_id);
+		std::string check_sql =
+			"SELECT thread_id FROM private_chat "
+			"WHERE (user1_id = ? AND user2_id = ?) "
+			"FOR UPDATE;";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement(check_sql));
+		pstmt->setInt64(1, uid1);
+		pstmt->setInt64(2, uid2);
+		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+
+		if (res->next()) {
+			// 如果已存在，返回该 thread_id
+			thread_id = res->getInt("thread_id");
+			conn->commit();  // 提交事务
+			return true;
+		}
+
+		// 2. 如果未找到，创建新的 chat_thread 和 private_chat 记录
+		// 在 chat_thread 表插入新记录
+		std::string insert_chat_thread_sql =
+			"INSERT INTO chat_thread (type, created_at) VALUES ('private', NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_insert_thread(conn->prepareStatement(insert_chat_thread_sql));
+		pstmt_insert_thread->executeUpdate();
+
+		// 获取新插入的 thread_id
+		std::string get_last_insert_id_sql = "SELECT LAST_INSERT_ID();";
+		std::unique_ptr<sql::PreparedStatement> pstmt_last_insert_id(conn->prepareStatement(get_last_insert_id_sql));
+		std::unique_ptr<sql::ResultSet> res_last_id(pstmt_last_insert_id->executeQuery());
+		res_last_id->next();
+		thread_id = res_last_id->getInt(1);
+
+		// 3. 在 private_chat 表插入新记录
+		std::string insert_private_chat_sql =
+			"INSERT INTO private_chat (thread_id, user1_id, user2_id, created_at) "
+			"VALUES (?, ?, ?, NOW());";
+
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_insert_private(conn->prepareStatement(insert_private_chat_sql));
+		pstmt_insert_private->setInt64(1, thread_id);
+		pstmt_insert_private->setInt64(2, uid1);
+		pstmt_insert_private->setInt64(3, uid2);
+		pstmt_insert_private->executeUpdate();
+
+		// 提交事务
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e) {
+		std::cerr << "SQLException: " << e.what() << std::endl;
+		conn->rollback();
+		return false;
+	}
+	return false;
+}

@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // 踢人
     connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_notify_offline, this, &MainWindow::SlotOffline);
     // 服务器断开
-    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_connection_close, this, &MainWindow::SlotExcepConOffline);
+    connect(TcpMgr::GetInstance().get(),&TcpMgr::sig_connection_closed, this, &MainWindow::SlotExcepConOffline);
     //测试用
     //emit TcpMgr::GetInstance()->sig_swich_chatdlg();
 }
