@@ -478,6 +478,51 @@ void TcpMgr::initHandlers()
         qDebug() << "Receive Heart Beat Msg Success";
 
     });
+
+    _handlers.insert(ID_LOAD_CHAT_THREAD_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(len);
+        qDebug() << "handle id is " << id << " data is " << data;
+        // 将QByteArray转换为QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+
+        // 检查转换是否成功
+        if (jsonDoc.isNull()) {
+            qDebug() << "Failed to create QJsonDocument.";
+            return;
+        }
+
+        QJsonObject jsonObj = jsonDoc.object();
+
+        if (!jsonObj.contains("error")) {
+            int err = ErrorCodes::ERR_JSON;
+            qDebug() << "chat thread json parse failed " << err;
+            return;
+        }
+
+        int err = jsonObj["error"].toInt();
+        if (err != ErrorCodes::SUCCESS) {
+            qDebug() << "get chat thread rsp failed, error is " << err;
+            return;
+        }
+
+        qDebug() << "Receive chat thread rsp Success";
+
+        auto thread_array = jsonObj["threads"].toArray();
+        std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads;
+        for (const QJsonValue& value : thread_array) {
+            auto cti = std::make_shared<ChatThreadInfo>();
+            cti->_thread_id = value["thread_id"].toInt();
+            cti->_type = value["type"].toString();
+            cti->_user1_id = value["user1_id"].toInt();
+            cti->_user2_id = value["user2_id"].toInt();
+            chat_threads.push_back(cti);
+        }
+
+        bool load_more = jsonObj["load_more"].toBool();
+        int next_last_id = jsonObj["next_last_id"].toInt();
+        //发送信号通知界面
+        emit sig_load_chat_thread(load_more, next_last_id, chat_threads);
+    });
 }
 
 void TcpMgr::handleMsg(ReqId id, int len, QByteArray data)

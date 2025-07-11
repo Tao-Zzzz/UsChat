@@ -95,6 +95,9 @@ void LogicSystem::RegisterCallBacks() {
 	_fun_callbacks[ID_HEART_BEAT_REQ] = std::bind(&LogicSystem::HeartBeatHandler, this,
 		placeholders::_1, placeholders::_2, placeholders::_3);
 
+	_fun_callbacks[ID_LOAD_CHAT_THREAD_REQ] = std::bind(&LogicSystem::GetUserThreadsHandler, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
 }
 
 void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short &msg_id, const string &msg_data) {
@@ -509,6 +512,48 @@ void LogicSystem::HeartBeatHandler(std::shared_ptr<CSession> session, const shor
 	Json::Value  rtvalue;
 	rtvalue["error"] = ErrorCodes::Success;
 	session->Send(rtvalue.toStyledString(), ID_HEARTBEAT_RSP);
+}
+
+void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
+	const short& msg_id, const string& msg_data)
+{
+	//从数据库加chat_threads记录
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+	auto uid = root["uid"].asInt();
+	std::cout << "get uid  threads  " << uid << std::endl;
+
+	Json::Value  rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["uid"] = uid;
+	Defer defer([this, &rtvalue, session]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_LOAD_CHAT_THREAD_RSP);
+		});
+
+	std::vector<std::shared_ptr<ChatThreadInfo>> threads;
+	bool res = GetUserThreads(uid, threads);
+	if (!res) {
+		rtvalue["error"] = ErrorCodes::UidInvalid;
+		return;
+	}
+
+	//整理threads数据写入json返回
+	for (auto& thread : threads) {
+		Json::Value thread_value;
+		thread_value["thread_id"] = int(thread->_thread_id);
+		thread_value["type"] = thread->_type;
+		thread_value["user1_id"] = thread->_user1_id;
+		thread_value["user2_id"] = thread->_user2_id;
+		rtvalue["threads"].append(thread_value);
+	}
+}
+
+bool LogicSystem::GetUserThreads(int userId,
+	std::vector<std::shared_ptr<ChatThreadInfo>>& threads)
+{
+	return MysqlMgr::GetInstance()->GetUserThreads(userId, threads);
 }
 
 
