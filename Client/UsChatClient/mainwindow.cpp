@@ -108,6 +108,8 @@ void MainWindow::SlotSwitchChat()
     _login_dlg->hide();
     this->setMinimumSize(QSize(1050,900));
     this->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    _ui_status = CHAT_UI;
+    _chat_dlg->loadChatList();
 }
 
 

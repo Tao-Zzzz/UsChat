@@ -95,7 +95,7 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
 void ChatPage::paintEvent(QPaintEvent *event)
 {
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }

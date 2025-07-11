@@ -40,8 +40,10 @@ enum ReqId{
     ID_NOTIFY_OFF_LINE_REQ = 1021, //通知用户下线
     ID_HEART_BEAT_REQ = 1023,      //心跳请求
     ID_HEARTBEAT_RSP = 1024,       //心跳回复
-    ID_LOAD_CHAT_THREAD_REQ = 1025, //加载聊天记录请求
-    ID_LOAD_CHAT_THREAD_RSP = 1026, //加载聊天记录回复
+    ID_LOAD_CHAT_THREAD_REQ = 1025,      //加载聊天线程
+    ID_LOAD_CHAT_THREAD_RSP = 1026,      //加载聊天线程回复
+    ID_CREATE_PRIVATE_CHAT_REQ = 1027, //创建私聊请求
+    ID_CREATE_PRIVATE_CHAT_RSP = 1028, //创建私聊回复
 };
 
 enum ErrorCodes{
@@ -100,7 +102,7 @@ enum ChatUIMode{
     SearchMode, //搜索模式
     ChatMode, //聊天模式
     ContactMode, //联系模式
-    SettingMode,
+    SettingsMode,
 };
 
 //自定义QListWidgetItem的几种类型

@@ -847,7 +847,7 @@ void ChatDialog::slot_auth_rsp(std::shared_ptr<AuthRsp> auth_rsp)
 //todo: 点击搜索的联系人聊天，跳转到聊天界面，之后添加申请创建私聊或者查找已有 私聊消息
 void ChatDialog::slot_jump_chat_item(std::shared_ptr<SearchInfo> si)
 {
-    qDebug() << "slot jump chat item " << endl;
+    qDebug() << "slot jump chat item ";
     auto chat_thread_data = UserMgr::GetInstance()->GetChatThreadByUid(si->_uid);
     if (chat_thread_data) {
         auto find_iter = _chat_thread_items.find(chat_thread_data->GetThreadId());
@@ -894,7 +894,7 @@ void ChatDialog::slot_jump_chat_item(std::shared_ptr<SearchInfo> si)
 
 void ChatDialog::slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> user_info)
 {
-    qDebug() << "slot jump chat item " << endl;
+    qDebug() << "slot jump chat item ";
     auto chat_thread_data = UserMgr::GetInstance()->GetChatThreadByUid(user_info->_uid);
     if (chat_thread_data) {
         auto find_iter = _chat_thread_items.find(chat_thread_data->GetThreadId());

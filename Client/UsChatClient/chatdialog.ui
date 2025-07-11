@@ -141,7 +141,7 @@
           </widget>
          </item>
          <item>
-          <widget class="StateWidget" name="side_setting_lb" native="true">
+          <widget class="StateWidget" name="side_settings_lb" native="true">
            <property name="minimumSize">
             <size>
              <width>30</width>
