@@ -28,7 +28,7 @@ Status ChatServiceImpl::NotifyAddFriend(ServerContext* context, const AddFriendR
 	if (session == nullptr) {
 		return Status::OK;
 	}
-	
+
 	//在内存中则直接发送通知对方
 	Json::Value  rtvalue;
 	rtvalue["error"] = ErrorCodes::Success;
