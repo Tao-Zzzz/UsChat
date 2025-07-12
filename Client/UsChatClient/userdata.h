@@ -193,7 +193,8 @@ public:
     int  GetOtherId();
     QString GetGroupName();
     QMap<int, std::shared_ptr<ChatDataBase>> GetMsgMap();
-    int  GetThreadId();
+    int GetThreadId();
+    int GetLastMsgId();
     QMap<int, std::shared_ptr<ChatDataBase>>&  GetMsgMapRef();
     void AppendMsg(int msg_id, std::shared_ptr<ChatDataBase> base_msg);
     QString GetLastMsg();

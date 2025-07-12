@@ -72,6 +72,12 @@ int ChatThreadData::GetThreadId()
     return _thread_id;
 }
 
+int ChatThreadData::GetLastMsgId()
+{
+    return _last_msg_id;
+}
+
+
 QMap<int, std::shared_ptr<ChatDataBase>>& ChatThreadData::GetMsgMapRef()
 {
     return _msg_map;

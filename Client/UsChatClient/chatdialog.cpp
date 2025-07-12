@@ -313,7 +313,6 @@ void ChatDialog::UpdateChatMsg(std::vector<std::shared_ptr<TextChatData> > msgda
     }
 }
 
-
 void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
                                        std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads)
 {
@@ -363,11 +362,9 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
         return;
     }
 
-    //更新聊天界面信息
-    SetSelectChatItem();
-    SetSelectChatPage();
     showLoadingDlg(false);
-
+    //继续加载聊天数据
+    loadChatMsg();
 }
 
 void ChatDialog::slot_create_private_chat(int uid, int other_id, int thread_id)
@@ -390,6 +387,55 @@ void ChatDialog::slot_create_private_chat(int uid, int other_id, int thread_id)
     SetSelectChatPage(thread_id);
     slot_side_chat();
     return;
+}
+
+void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, std::vector<std::shared_ptr<TextChatData>> msglists)
+{
+    _cur_load_chat->SetLastMsgId(msg_id);
+    //加载聊天信息
+    for (auto& chat_msg : msglists) {
+        _cur_load_chat->AppendMsg(chat_msg->GetMsgId(), chat_msg);
+    }
+
+    //还有未加载完的消息，就继续加载
+    if (load_more) {
+        //发送请求给服务器
+        //发送请求逻辑
+        QJsonObject jsonObj;
+        jsonObj["thread_id"] = _cur_load_chat->GetThreadId();
+        jsonObj["message_id"] = _cur_load_chat->GetLastMsgId();
+
+        QJsonDocument doc(jsonObj);
+        QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+
+        //发送tcp请求给chat server
+        emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_LOAD_CHAT_MSG_REQ, jsonData);
+        return;
+    }
+
+    //获取下一个chat_thread
+    _cur_load_chat = UserMgr::GetInstance()->GetNextLoadData();
+    //都加载完了
+    if(!_cur_load_chat){
+        //更新聊天界面信息
+        SetSelectChatItem();
+        SetSelectChatPage();
+        showLoadingDlg(false);
+        return;
+    }
+
+    //继续加载下一个聊天
+    //发送请求给服务器
+    //发送请求逻辑
+    QJsonObject jsonObj;
+    jsonObj["thread_id"] = _cur_load_chat->GetThreadId();
+    jsonObj["message_id"] = _cur_load_chat->GetLastMsgId();
+
+    QJsonDocument doc(jsonObj);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+
+    //发送tcp请求给chat server
+    emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_LOAD_CHAT_MSG_REQ, jsonData);
 }
 
 void ChatDialog::showLoadingDlg(bool show)
