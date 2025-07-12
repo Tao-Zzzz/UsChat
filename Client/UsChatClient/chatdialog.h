@@ -40,6 +40,11 @@ private:
     void loadMoreConUser();
     void SetSelectChatItem(int thread_id = 0);
     void SetSelectChatPage(int thread_id = 0);
+    void loadChatMsg();
+
+    // 当前正在加载的会话
+    std::shared_ptr<ChatThreadData> _cur_load_chat;
+
     Ui::ChatDialog *ui;
     bool _b_loading;
     QList<StateWidget*> _lb_list;

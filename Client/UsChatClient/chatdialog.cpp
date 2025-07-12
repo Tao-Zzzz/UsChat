@@ -623,6 +623,28 @@ void ChatDialog::SetSelectChatPage(int thread_id)
 
 }
 
+void ChatDialog::loadChatMsg() {
+
+    //发送聊天记录请求
+    _cur_load_chat = UserMgr::GetInstance()->GetCurLoadData();
+    if (_cur_load_chat == nullptr) {
+        return;
+    }
+
+    showLoadingDlg(true);
+
+    //发送请求给服务器
+    //发送请求逻辑
+    QJsonObject jsonObj;
+    jsonObj["thread_id"] = _cur_load_chat->GetThreadId();
+    jsonObj["message_id"] = _cur_load_chat->GetLastMsgId();
+
+    QJsonDocument doc(jsonObj);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+
+    //发送tcp请求给chat server
+    emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_LOAD_CHAT_MSG_REQ, jsonData);
+}
 
 void ChatDialog::ShowSearch(bool bsearch)
 {

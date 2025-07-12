@@ -42,11 +42,14 @@ public:
     int GetThreadIdByUid(int uid);
     std::shared_ptr<ChatThreadData> GetChatThreadByUid(int uid);
     void AddMsgUnRsp(std::shared_ptr<TextChatData> msg);
+    std::shared_ptr<ChatThreadData> GetCurLoadData();
 private:
     UserMgr();
     std::shared_ptr<UserInfo> _user_info;
     std::vector<std::shared_ptr<ApplyInfo>> _apply_list;
     std::vector<std::shared_ptr<UserInfo>> _friend_list;
+    // 会话列表
+    std::vector<int> _chat_thread_ids;
     QMap<int, std::shared_ptr<UserInfo>> _friend_map;
     QString _token;
     int _chat_loaded;

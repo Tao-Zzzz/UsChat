@@ -285,4 +285,19 @@ void UserMgr::AddMsgUnRsp(std::shared_ptr<TextChatData> msg)
     _msg_unrsp_map.insert(msg->GetUniqueId(), msg);
 }
 
+// 获取当前申请的会话
+std::shared_ptr<ChatThreadData> UserMgr::GetCurLoadData()
+{
+    if (_cur_load_chat_index >= _chat_thread_ids.size()) {
+        return nullptr;
+    }
+
+    auto iter = _chat_map.find(_chat_thread_ids[_cur_load_chat_index]);
+    if (iter == _chat_map.end()) {
+        return nullptr;
+    }
+
+    return iter.value();
+}
+
 
