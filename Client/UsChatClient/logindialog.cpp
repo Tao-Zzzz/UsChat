@@ -39,6 +39,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     //连接tcp管理者发出的登陆失败信号
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_login_failed, this, &LoginDialog::slot_login_failed);
 
+
     initHead();
 }
 
@@ -261,3 +262,9 @@ void LoginDialog::DelTipErr(TipErr te){
 
     showTip(_tip_errs.first(), false);
 }
+
+void LoginDialog::on_pass_edit_returnPressed()
+{
+    on_login_btn_clicked();
+}
+

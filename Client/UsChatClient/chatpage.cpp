@@ -25,6 +25,8 @@ ChatPage::ChatPage(QWidget *parent) :
     ui->emo_lb->SetState("normal","hover","press","normal","hover","press");
     ui->file_lb->SetState("normal","hover","press","normal","hover","press");
 
+    //连接对端消息通知
+    connect(ui->chatEdit, &MessageTextEdit::send,this, &ChatPage::on_send_btn_clicked);
 }
 
 ChatPage::~ChatPage()
