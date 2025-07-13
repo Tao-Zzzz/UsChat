@@ -63,6 +63,9 @@
     <ClCompile Include="ChatServer2.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DistLock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsioIOServicePool.h">

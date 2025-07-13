@@ -40,9 +40,11 @@ public:
     void SetLastChatThreadId(int id);
     void AddChatThreadData(std::shared_ptr<ChatThreadData> chat_thread_data, int other_uid);
     int GetThreadIdByUid(int uid);
+
     std::shared_ptr<ChatThreadData> GetChatThreadByUid(int uid);
     void AddMsgUnRsp(std::shared_ptr<TextChatData> msg);
     std::shared_ptr<ChatThreadData> GetCurLoadData();
+    std::shared_ptr<ChatThreadData> GetNextLoadData();
 private:
     UserMgr();
     std::shared_ptr<UserInfo> _user_info;

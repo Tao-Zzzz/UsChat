@@ -1,5 +1,6 @@
 #include "RedisMgr.h"
-
+#include "Defer.h"
+#include "DistLock.h"
 
 // 单链接过程	
 RedisMgr::RedisMgr(){

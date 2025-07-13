@@ -235,39 +235,72 @@ void ChatDialog::slot_item_clicked(QListWidgetItem* item)
 }
 
 //todo：添加聊天消息, 将消息放到用户区和thread_id关联zack
-void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists)
+void ChatDialog::slot_text_chat_msg(std::shared_ptr<TextChatData> msg)
 {
-    //auto find_iter = _chat_items_added.find(msg->_from_uid);
-    //if (find_iter != _chat_items_added.end()) {
-    //	qDebug() << "set chat item msg, uid is " << msg->_from_uid;
-    //	QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
-    //	auto chat_wid = qobject_cast<ChatUserWid*>(widget);
-    //	if (!chat_wid) {
-    //		return;
-    //	}
-    //	chat_wid->updateLastMsg(msg->_chat_msgs);
-    //	//更新当前聊天页面记录
-    //	UpdateChatMsg(msg->_chat_msgs);
-    //	UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
-    //	return;
-    //}
-
-    ////如果没找到，则创建新的插入listwidget
-
-    //auto* chat_user_wid = new ChatUserWid();
-    ////查询好友信息
-    //auto fi_ptr = UserMgr::GetInstance()->GetFriendById(msg->_from_uid);
-    //chat_user_wid->SetInfo(fi_ptr);
-    //QListWidgetItem* item = new QListWidgetItem;
-    ////qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
-    //item->setSizeHint(chat_user_wid->sizeHint());
-    //chat_user_wid->updateLastMsg(msg->_chat_msgs);
-    //UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
-    //ui->chat_user_list->insertItem(0, item);
-    //ui->chat_user_list->setItemWidget(item, chat_user_wid);
-    //_chat_items_added.insert(msg->_from_uid, item);
-
+    auto find_iter = _chat_thread_items.find(msg->thread_id);
+    if (find_iter != _chat_thread_items.end()) {
+        qDebug() << "set chat item msg, uid is " << msg->_from_uid;
+        QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
+        auto chat_wid = qobject_cast<ChatUserWid*>(widget);
+        if (!chat_wid) {
+            return;
+        }
+        chat_wid->updateLastMsg(msg->_chat_msgs);
+        //更新当前聊天页面记录
+        UpdateChatMsg(msg->_chat_msgs);
+        UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
+        return;
+    }else {
+        auto* chat_user_wid = new ChatUserWid();
+        chat_user_wid->SetChatData(chat_thread_data);
+        QListWidgetItem* item = new QListWidgetItem;
+        qDebug() << "chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+        ui->chat_user_list->insertItem(0, item);
+        ui->chat_user_list->setItemWidget(item, chat_user_wid);
+        _chat_thread_items.insert(chat_thread_data->GetThreadId(), item);
+        ui->side_chat_lb->SetSelected(true);
+        // SetSelectChatItem(chat_thread_data->GetThreadId());
+        // //更新聊天界面信息
+        // SetSelectChatPage(chat_thread_data->GetThreadId());
+        // slot_side_chat();
+        return;
+    }
 }
+
+
+// void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists)
+// {
+//     auto find_iter = _chat_items_added.find(msg->_from_uid);
+//     if (find_iter != _chat_items_added.end()) {
+//         qDebug() << "set chat item msg, uid is " << msg->_from_uid;
+//         QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
+//         auto chat_wid = qobject_cast<ChatUserWid*>(widget);
+//         if (!chat_wid) {
+//             return;
+//         }
+//         chat_wid->updateLastMsg(msg->_chat_msgs);
+//         //更新当前聊天页面记录
+//         UpdateChatMsg(msg->_chat_msgs);
+//         UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
+//         return;
+//     }
+
+//     //如果没找到，则创建新的插入listwidget
+
+//     auto* chat_user_wid = new ChatUserWid();
+//     //查询好友信息
+//     auto fi_ptr = UserMgr::GetInstance()->GetFriendById(msg->_from_uid);
+//     chat_user_wid->SetInfo(fi_ptr);
+//     QListWidgetItem* item = new QListWidgetItem;
+//     //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+//     item->setSizeHint(chat_user_wid->sizeHint());
+//     chat_user_wid->updateLastMsg(msg->_chat_msgs);
+//     UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
+//     ui->chat_user_list->insertItem(0, item);
+//     ui->chat_user_list->setItemWidget(item, chat_user_wid);
+//     _chat_items_added.insert(msg->_from_uid, item);
+
+// }
 
 
 bool ChatDialog::eventFilter(QObject* watched, QEvent* event)

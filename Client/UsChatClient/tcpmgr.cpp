@@ -636,8 +636,9 @@ void TcpMgr::initHandlers()
             auto msg_content = data["msg_content"].toString();
             QString chat_time = data["chat_time"].toString();
             auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
-                                                            ChatMsgType::TEXT, msg_content, send_uid, chat_time);
+                                                            ChatMsgType::TEXT, msg_content, send_uid);
             chat_datas.push_back(chat_data);
+            // 好像少了一个聊天时间
         }
 
         //发送信号通知界面

@@ -1,4 +1,5 @@
 #include "MysqlPool.h"
+#include <chrono>
 
 MysqlPool::MysqlPool(const std::string& url, const std::string& user, const std::string& pass, const std::string& schema, int poolSize)
 	: url_(url), user_(user), pass_(pass), schema_(schema), poolSize_(poolSize), b_stop_(false) {

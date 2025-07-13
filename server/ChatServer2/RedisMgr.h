@@ -8,7 +8,8 @@
 class RedisConPool {
 public:
 	RedisConPool(size_t poolSize, const char* host, int port, const char* pwd)
-		: poolSize_(poolSize), host_(host), port_(port), b_stop_(false), pwd_(pwd), counter_(0){
+		: poolSize_(poolSize), host_(host), port_(port), b_stop_(false), pwd_(pwd), counter_(0),
+			fail_count_(0){
 		for (size_t i = 0; i < poolSize_; ++i) {
 			auto* context = redisConnect(host, port);
 			if (context == nullptr || context->err != 0) {
@@ -32,11 +33,12 @@ public:
 			connections_.push(context);
 		}
 
+		// 没有detach, 汇合的
 		check_thread_ = std::thread([this]() {
 			while (!b_stop_) {
 				counter_++;
 				if (counter_ >= 60) {
-					checkThread();
+					checkThreadPro();
 					counter_ = 0;
 				}
 
@@ -59,6 +61,7 @@ public:
 		}
 	}
 
+	// 等待,肯定会得到一个连接
 	redisContext* getConnection() {
 		std::unique_lock<std::mutex> lock(mutex_);
 		cond_.wait(lock, [this] { 
@@ -71,6 +74,22 @@ public:
 		if (b_stop_) {
 			return  nullptr;
 		}
+		auto* context = connections_.front();
+		connections_.pop();
+		return context;
+	}
+
+	// 非阻塞取出
+	redisContext* getConNonBlock() {
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (b_stop_) {
+			return nullptr;
+		}
+
+		if (connections_.empty()) {
+			return nullptr;
+		}
+
 		auto* context = connections_.front();
 		connections_.pop();
 		return context;
@@ -92,6 +111,103 @@ public:
 	}
 
 private:
+
+	void checkThreadPro() {
+		size_t pool_size;
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			pool_size = connections_.size();		
+		}
+
+		std::cout << "---开始检查redis的线程池---" << std::endl;
+
+		for (int i = 0; i < pool_size && !b_stop_; i++) {
+			// 非阻塞获取
+			auto* context = getConNonBlock();
+			if (context == nullptr) {
+				break;
+			}
+
+			redisReply* reply = nullptr;
+			try {
+				reply = (redisReply*)redisCommand(context, "PING");
+				
+				// IO层协议是否出错
+				if (context->err) {
+					std::cout << "Connection error: " << context->err << std::endl;
+					if (reply) {
+						freeReplyObject(reply);
+					}
+
+					redisFree(context);
+					fail_count_++;
+					continue;
+				}
+
+				// Redis返回的是否是ERROR
+				if (!reply || reply->type == REDIS_REPLY_ERROR) {
+					std::cout << "reply is null, redis ping failed: " << reply->type << std::endl;
+				
+					if (reply) {
+						freeReplyObject(reply);
+					}
+
+					redisFree(context);
+					fail_count_++;
+					continue;
+				}
+
+				std::cout << "redis connection alive" << std::endl;
+				freeReplyObject(reply);
+				returnConnection(context);
+			}
+			catch(std::exception& e){
+				if (reply) {
+					freeReplyObject(reply);
+				}
+
+				redisFree(context);
+				fail_count_++;
+			}
+		}
+
+		while (fail_count_ > 0) {
+			auto res = reconnect();
+			if (res) {
+				fail_count_--;
+			}
+			else {
+				// 已经出错了都别试了
+				break;
+			}
+		}
+	}
+
+	bool reconnect() {
+		auto* context = redisConnect(host_, port_);
+		if (context == nullptr || context->err != 0) {
+			printf("Connection error: %s\n", context ? context->errstr : "Can't allocate redis context");
+			if (context != nullptr) {
+				redisFree(context);
+			}
+			return false;
+		}
+
+		auto reply = (redisReply*)redisCommand(context, "AUTH %s", pwd_);
+		if (reply->type == REDIS_REPLY_ERROR) {
+			std::cout << "redis 认证失败" << std::endl;
+			freeReplyObject(reply);
+			redisFree(context);
+			return false;
+		}
+
+		freeReplyObject(reply);
+		std::cout << "redis 认证成功" << std::endl;
+		returnConnection(context);
+		return true;
+	}
+
+	// 一个大锁, 不够精细
 	void checkThread() {
 		std::lock_guard<std::mutex> lock(mutex_);
 		if (b_stop_) {
@@ -124,7 +240,7 @@ private:
 
 				auto reply = (redisReply*)redisCommand(context, "AUTH %s", pwd_);
 				if (reply->type == REDIS_REPLY_ERROR) {
-					std::cout << "认证失败" << std::endl;
+					std::cout << "Redis认证失败" << std::endl;
 					//执行成功 释放redisCommand执行后返回的redisReply所占用的内存
 					freeReplyObject(reply);
 					continue;
@@ -132,7 +248,7 @@ private:
 
 				//执行成功 释放redisCommand执行后返回的redisReply所占用的内存
 				freeReplyObject(reply);
-				std::cout << "认证成功" << std::endl;
+				std::cout << "Redis认证成功" << std::endl;
 				connections_.push(context);
 			}
 		}
@@ -147,6 +263,7 @@ private:
 	std::condition_variable cond_;
 	std::thread  check_thread_;
 	int counter_;
+	std::atomic<int> fail_count_;
 };
 
 class RedisMgr: public Singleton<RedisMgr>, 

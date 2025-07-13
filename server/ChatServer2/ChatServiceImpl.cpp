@@ -28,7 +28,7 @@ Status ChatServiceImpl::NotifyAddFriend(ServerContext* context, const AddFriendR
 	if (session == nullptr) {
 		return Status::OK;
 	}
-	
+
 	//在内存中则直接发送通知对方
 	Json::Value  rtvalue;
 	rtvalue["error"] = ErrorCodes::Success;
@@ -82,6 +82,16 @@ Status ChatServiceImpl::NotifyAuthFriend(ServerContext* context, const AuthFrien
 		rtvalue["error"] = ErrorCodes::UidInvalid;
 	}
 
+	for (auto& msg : request->textmsgs()) {
+		Json::Value  chat;
+		chat["sender"] = msg.sender_id();
+		chat["msg_id"] = msg.msg_id();
+		chat["thread_id"] = msg.thread_id();
+		chat["unique_id"] = msg.unique_id();
+		chat["msg_content"] = msg.msgcontent();
+		rtvalue["chat_datas"].append(chat);
+	}
+
 	std::string return_str = rtvalue.toStyledString();
 
 	session->Send(return_str, ID_NOTIFY_AUTH_FRIEND_REQ);
@@ -111,7 +121,9 @@ Status ChatServiceImpl::NotifyTextChatMsg(::grpc::ServerContext* context,
 	for (auto& msg : request->textmsgs()) {
 		Json::Value element;
 		element["content"] = msg.msgcontent();
-		element["msgid"] = msg.msgid();
+		element["unique_id"] = msg.unique_id();
+		element["msg_id"] = msg.msg_id();
+		element["thread_id"] = msg.thread_id();
 		text_array.append(element);
 	}
 	rtvalue["text_array"] = text_array;
@@ -166,16 +178,12 @@ bool ChatServiceImpl::GetBaseInfo(std::string base_key, int uid, std::shared_ptr
 		redis_root["icon"] = userinfo->icon;
 		RedisMgr::GetInstance()->Set(base_key, redis_root.toStyledString());
 	}
-	
+
 	return true;
 }
 
-void ChatServiceImpl::RegisterServer(std::shared_ptr<CServer> pServer)
-{
-	_p_server = pServer;
-}
-
-Status ChatServiceImpl::NotifyKickUser(::grpc::ServerContext* context, const KickUserReq* request, KickUserRsp* reply)
+Status ChatServiceImpl::NotifyKickUser(::grpc::ServerContext* context,
+	const KickUserReq* request, KickUserRsp* reply)
 {
 	//查找用户是否在本服务器
 	auto uid = request->uid();
@@ -197,4 +205,9 @@ Status ChatServiceImpl::NotifyKickUser(::grpc::ServerContext* context, const Kic
 	_p_server->ClearSession(session->GetSessionId());
 
 	return Status::OK;
+}
+
+void ChatServiceImpl::RegisterServer(std::shared_ptr<CServer> pServer)
+{
+	_p_server = pServer;
 }

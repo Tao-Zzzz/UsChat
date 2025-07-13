@@ -1,7 +1,6 @@
 #include "clickedbtn.h"
 #include <QVariant>
 #include "global.h"
-#include <QKeyEvent>
 
 ClickedBtn::ClickedBtn(QWidget *parent):QPushButton (parent)
 {

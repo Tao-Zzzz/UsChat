@@ -300,4 +300,10 @@ std::shared_ptr<ChatThreadData> UserMgr::GetCurLoadData()
     return iter.value();
 }
 
+std::shared_ptr<ChatThreadData> UserMgr::GetNextLoadData()
+{
+    _cur_load_chat_index++;
+    return GetCurLoadData();
+}
+
 

@@ -53,7 +53,7 @@ private:
     ChatUIMode _state;
     QWidget* _last_widget;
     //todo...
-    //QMap<int, QListWidgetItem*> _chat_items_added;
+    QMap<int, QListWidgetItem*> _chat_items_added;
     //chat_thred_idͶӦitemӳϵ
     QMap<int, QListWidgetItem*>  _chat_thread_items;
     int _cur_chat_thread_id;
@@ -76,7 +76,8 @@ public slots:
     void slot_jump_chat_item(std::shared_ptr<SearchInfo> si);
     void slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> ui);
     void slot_item_clicked(QListWidgetItem *item);
-    void slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists);
+    // void slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists);
+    void slot_text_chat_msg(std::shared_ptr<TextChatData> msg);
     void slot_load_chat_thread(bool load_more, int last_thread_id,
          std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads);
 
