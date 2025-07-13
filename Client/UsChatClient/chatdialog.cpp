@@ -235,36 +235,43 @@ void ChatDialog::slot_item_clicked(QListWidgetItem* item)
 }
 
 //todo：添加聊天消息, 将消息放到用户区和thread_id关联zack
-void ChatDialog::slot_text_chat_msg(std::shared_ptr<TextChatData> msg)
+void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists)
 {
-    auto find_iter = _chat_thread_items.find(msg->thread_id);
-    if (find_iter != _chat_thread_items.end()) {
-        qDebug() << "set chat item msg, uid is " << msg->_from_uid;
-        QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
-        auto chat_wid = qobject_cast<ChatUserWid*>(widget);
-        if (!chat_wid) {
-            return;
+    for(auto& msg : msglists){
+        auto find_iter = _chat_thread_items.find(msg->GetThreadId());
+        shared_ptr<ChatThreadData> user_thread = UserMgr::GetInstance()->GetChatThreadByThreadId(msg->GetThreadId());
+        if (find_iter != _chat_thread_items.end()) {
+            qDebug() << "set chat item msg, uid is " << msg->GetSendUid();
+            QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
+            auto chat_wid = qobject_cast<ChatUserWid*>(widget);
+            if (!chat_wid) {
+                continue;
+            }
+            // chat_wid->updateLastMsg(msg->GetContent());
+            //更新当前聊天页面记录
+            // UpdateChatMsg(msg);
+            // 增加数据, 再修改页面
+            shared_ptr<ChatThreadData> user_thread = UserMgr::GetInstance()->GetChatThreadByThreadId(msg->GetThreadId());
+            user_thread->AppendMsg(msg);
+            ui->chat_page->AppendChatMsg(msg);
+        }else {
+            // 还没开启会话, 创建会话(UI),
+            auto* chat_user_wid = new ChatUserWid();
+            chat_user_wid->SetChatData(user_thread);
+            QListWidgetItem* item = new QListWidgetItem;
+            qDebug() << "chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+
+            ui->chat_user_list->insertItem(0, item);
+            ui->chat_user_list->setItemWidget(item, chat_user_wid);
+            _chat_thread_items.insert(user_thread->GetThreadId(), item);
+            ui->side_chat_lb->SetSelected(true);
+            // SetSelectChatItem(chat_thread_data->GetThreadId());
+            // //更新聊天界面信息
+            // SetSelectChatPage(chat_thread_data->GetThreadId());
+            // slot_side_chat();
         }
-        chat_wid->updateLastMsg(msg->_chat_msgs);
-        //更新当前聊天页面记录
-        UpdateChatMsg(msg->_chat_msgs);
-        UserMgr::GetInstance()->AppendFriendChatMsg(msg->_from_uid, msg->_chat_msgs);
-        return;
-    }else {
-        auto* chat_user_wid = new ChatUserWid();
-        chat_user_wid->SetChatData(chat_thread_data);
-        QListWidgetItem* item = new QListWidgetItem;
-        qDebug() << "chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
-        ui->chat_user_list->insertItem(0, item);
-        ui->chat_user_list->setItemWidget(item, chat_user_wid);
-        _chat_thread_items.insert(chat_thread_data->GetThreadId(), item);
-        ui->side_chat_lb->SetSelected(true);
-        // SetSelectChatItem(chat_thread_data->GetThreadId());
-        // //更新聊天界面信息
-        // SetSelectChatPage(chat_thread_data->GetThreadId());
-        // slot_side_chat();
-        return;
     }
+
 }
 
 

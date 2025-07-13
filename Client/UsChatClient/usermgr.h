@@ -35,7 +35,7 @@ public:
     void AddFriend(std::shared_ptr<AuthRsp> auth_rsp);
     void AddFriend(std::shared_ptr<AuthInfo> auth_info);
     std::shared_ptr<UserInfo> GetFriendById(int uid);
-    void AppendFriendChatMsg(int friend_id,std::vector<std::shared_ptr<TextChatData>>);
+    // void AppendFriendChatMsg(int friend_id,std::vector<std::shared_ptr<TextChatData>>);
     int GetLastChatThreadId();
     void SetLastChatThreadId(int id);
     void AddChatThreadData(std::shared_ptr<ChatThreadData> chat_thread_data, int other_uid);
@@ -45,6 +45,7 @@ public:
     void AddMsgUnRsp(std::shared_ptr<TextChatData> msg);
     std::shared_ptr<ChatThreadData> GetCurLoadData();
     std::shared_ptr<ChatThreadData> GetNextLoadData();
+    std::shared_ptr<ChatThreadData> GetChatThreadByThreadId(int thread_id);
 private:
     UserMgr();
     std::shared_ptr<UserInfo> _user_info;

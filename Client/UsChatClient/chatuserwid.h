@@ -20,6 +20,8 @@ public:
     std::shared_ptr<ChatThreadData> GetChatData();
     void ShowRedPoint(bool bshow);
     void updateLastMsg(std::vector<std::shared_ptr<TextChatData>> msgs);
+    void SetLastMsgAndUpdate(int last_msg_id, QString last_msg);
+
 private:
     Ui::ChatUserWid *ui;
     std::shared_ptr<ChatThreadData> _chat_data;

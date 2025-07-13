@@ -306,4 +306,14 @@ std::shared_ptr<ChatThreadData> UserMgr::GetNextLoadData()
     return GetCurLoadData();
 }
 
+std::shared_ptr<ChatThreadData> UserMgr::GetChatThreadByThreadId(int thread_id)
+{
+    auto iter = _chat_map.find(thread_id);
+    if (iter == _chat_map.end()) {
+        return nullptr;
+    }
+
+    return iter.value();
+}
+
 
