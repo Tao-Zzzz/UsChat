@@ -794,3 +794,45 @@ bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
 	}
 	return false;
 }
+
+long long MysqlDao::InsertMsg(int thread_id, int sender_id, int recv_id, std::string& content) {
+	auto con = pool_->getConnection();
+	if (con == nullptr) {
+		return -1;
+	}
+
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+
+	try {
+		// 插入语句
+		std::unique_ptr<sql::PreparedStatement> pstmt(
+			con->_con->prepareStatement(
+				"INSERT INTO chat_message (thread_id, sender_id, recv_id, content) VALUES (?, ?, ?, ?)"
+			)
+		);
+		pstmt->setInt(1, thread_id);
+		pstmt->setInt(2, sender_id);
+		pstmt->setInt(3, recv_id);
+		pstmt->setString(4, content);
+		pstmt->executeUpdate();
+
+		// 查询自增 ID
+		std::unique_ptr<sql::Statement> stmt(con->_con->createStatement());
+		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery("SELECT LAST_INSERT_ID()"));
+		if (res->next()) {
+			return res->getInt64(1); // message_id
+		}
+		else {
+			return -1;
+		}
+	}
+	catch (sql::SQLException& e) {
+		std::cerr << "InsertMsg SQLException: " << e.what()
+			<< " (MySQL error code: " << e.getErrorCode()
+			<< ", SQLState: " << e.getSQLState() << " )" << std::endl;
+		return -1;
+	}
+}
+

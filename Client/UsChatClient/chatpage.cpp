@@ -161,6 +161,7 @@ void ChatPage::on_send_btn_clicked()
             auto content = QString::fromUtf8(utf8Message);
             obj["content"] = content;
             obj["unique_id"] = uuidString;
+            obj["thread_id"] = _chat_data->GetThreadId();
             textArray.append(obj);
             //todo... 注意，此处先按私聊处理
             auto txt_msg = std::make_shared<TextChatData>(uuidString, thread_id, ChatFormType::PRIVATE,

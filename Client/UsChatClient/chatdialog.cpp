@@ -237,6 +237,9 @@ void ChatDialog::slot_item_clicked(QListWidgetItem* item)
 //todo：添加聊天消息, 将消息放到用户区和thread_id关联zack
 void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> msglists)
 {
+    qDebug() << "-------------------------------";
+    qDebug() << _chat_thread_items;
+    qDebug() << "-------------------------------";
     for(auto& msg : msglists){
         auto find_iter = _chat_thread_items.find(msg->GetThreadId());
         shared_ptr<ChatThreadData> user_thread = UserMgr::GetInstance()->GetChatThreadByThreadId(msg->GetThreadId());
@@ -251,8 +254,7 @@ void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> m
             //更新当前聊天页面记录
             // UpdateChatMsg(msg);
             // 增加数据, 再修改页面
-            shared_ptr<ChatThreadData> user_thread = UserMgr::GetInstance()->GetChatThreadByThreadId(msg->GetThreadId());
-            user_thread->AppendMsg(msg);
+            user_thread->AddMsg(msg);
             ui->chat_page->AppendChatMsg(msg);
         }else {
             // 还没开启会话, 创建会话(UI),

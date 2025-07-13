@@ -29,6 +29,7 @@ public:
 		int& nextLastId);
 
 	bool CreatePrivateChat(int user1_id, int user2_id, int& thread_id);
+	long long InsertMsg(int thread_id, int sender_id, int recv_id, std::string& content);
 private:
 	MysqlMgr();
 	MysqlDao  _dao;

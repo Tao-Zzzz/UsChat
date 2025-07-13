@@ -468,15 +468,33 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	auto uid = root["fromuid"].asInt();
 	auto touid = root["touid"].asInt();
 
-	const Json::Value  arrays = root["text_array"];
+	const Json::Value& text_array = root["text_array"];
+	if (!text_array.isArray()) {
+		// 报错或返回
+		return;
+	}
+
+	for (const auto& item : text_array) {
+		std::string unique_id = item["unique_id"].asString();
+		std::string content = item["content"].asString();
+		int thread_id = item["thread_id"].asInt();
+
+		// 你想做的处理，比如插入数据库
+		long long msg_id = MysqlMgr::GetInstance()->InsertMsg(thread_id, uid, touid, content);
+		if (msg_id == -1) {
+			// 插入失败处理
+			continue;
+		}
+
+		// 可以把 msg_id 写回去
+		const_cast<Json::Value&>(item)["msg_id"] = Json::Int(msg_id);
+	}
 
 	Json::Value  rtvalue;
 	rtvalue["error"] = ErrorCodes::Success;
-	rtvalue["text_array"] = arrays;
+	rtvalue["text_array"] = text_array;
 	rtvalue["fromuid"] = uid;
 	rtvalue["touid"] = touid;
-
-	//插入数据库
 
 
 	Defer defer([this, &rtvalue, session]() {
@@ -512,14 +530,18 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	TextChatMsgReq text_msg_req;
 	text_msg_req.set_fromuid(uid);
 	text_msg_req.set_touid(touid);
-	for (const auto& txt_obj : arrays) {
+	for (const auto& txt_obj : text_array) {
 		auto content = txt_obj["content"].asString();
 		auto unique_id = txt_obj["unique_id"].asString();
+		auto chat_msg_id_ = txt_obj["msg_id"].asInt();
+		auto thread_id = txt_obj["thread_id"].asInt();
 		std::cout << "content is " << content << std::endl;
 		std::cout << "unique_id is " << unique_id << std::endl;
 		auto* text_msg = text_msg_req.add_textmsgs();
 		text_msg->set_unique_id(unique_id);
 		text_msg->set_msgcontent(content);
+		text_msg->set_thread_id(thread_id);
+		text_msg->set_msg_id(chat_msg_id_);
 	}
 
 
