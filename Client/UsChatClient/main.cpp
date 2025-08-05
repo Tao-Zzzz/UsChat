@@ -4,6 +4,7 @@
 #include "global.h"
 #include <QStyleFactory>
 #include <QPalette>
+#include "tcpmgr.h"
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
 
     qDebug()<< "gate_url_prefix: " << gate_url_prefix ;
 
+    TcpThread tcpthread;
     MainWindow w;
     w.show();
     return a.exec();

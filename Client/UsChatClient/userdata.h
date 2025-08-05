@@ -10,6 +10,7 @@
 
 class SearchInfo {
 public:
+    SearchInfo() = default;
     SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon);
     int _uid;
     QString _name;
@@ -18,6 +19,8 @@ public:
     int _sex;
     QString _icon;
 };
+Q_DECLARE_METATYPE(SearchInfo)
+Q_DECLARE_METATYPE(std::shared_ptr<SearchInfo>)
 
 class AddFriendApply {
 public:
@@ -32,6 +35,7 @@ public:
 };
 
 struct ApplyInfo {
+    ApplyInfo() = default;
     ApplyInfo(int uid, QString name, QString desc,
               QString icon, QString nick, int sex, int status)
         :_uid(uid),_name(name),_desc(desc),
@@ -54,6 +58,8 @@ struct ApplyInfo {
     int _sex;
     int _status;
 };
+Q_DECLARE_METATYPE(ApplyInfo)
+Q_DECLARE_METATYPE(std::shared_ptr<ApplyInfo>)
 
 class TextChatData;
 struct AuthInfo {

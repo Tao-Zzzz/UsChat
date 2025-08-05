@@ -8,46 +8,55 @@ UserMgr::~UserMgr()
 }
 
 void UserMgr::SetUserInfo(std::shared_ptr<UserInfo> user_info) {
+    std::lock_guard<std::mutex> lock(_mtx);
     _user_info = user_info;
 }
 
 void UserMgr::SetToken(QString token)
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     _token = token;
 }
 
 int UserMgr::GetUid()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info->_uid;
 }
 
 QString UserMgr::GetName()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info->_name;
 }
 
 QString UserMgr::GetNick()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info->_nick;
 }
 
 QString UserMgr::GetIcon()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info->_icon;
 }
 
 QString UserMgr::GetDesc()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info->_desc;
 }
 
 std::shared_ptr<UserInfo> UserMgr::GetUserInfo()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _user_info;
 }
 
 void UserMgr::AppendApplyList(QJsonArray array)
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     // 遍历 QJsonArray 并输出每个元素
     for (const QJsonValue &value : array) {
         auto name = value["name"].toString();
@@ -64,6 +73,7 @@ void UserMgr::AppendApplyList(QJsonArray array)
 }
 
 void UserMgr::AppendFriendList(QJsonArray array) {
+    std::lock_guard<std::mutex> lock(_mtx);
     // 遍历 QJsonArray 并输出每个元素
     for (const QJsonValue& value : array) {
         auto name = value["name"].toString();
@@ -83,11 +93,13 @@ void UserMgr::AppendFriendList(QJsonArray array) {
 
 std::vector<std::shared_ptr<ApplyInfo> > UserMgr::GetApplyList()
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     return _apply_list;
 }
 
 void UserMgr::AddApplyList(std::shared_ptr<ApplyInfo> app)
 {
+    std::lock_guard<std::mutex> lock(_mtx);
     _apply_list.push_back(app);
 }
 

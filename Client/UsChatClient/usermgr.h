@@ -65,6 +65,7 @@ private:
     QMap<int, int> _uid_to_thread_id;
     //已发送的消息，还未收到回应的。
     QMap<QString, std::shared_ptr<TextChatData>> _msg_unrsp_map;
+    std::mutex _mtx;
 public slots:
     void SlotAddFriendRsp(std::shared_ptr<AuthRsp> rsp);
     void SlotAddFriendAuth(std::shared_ptr<AuthInfo> auth);

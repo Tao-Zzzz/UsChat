@@ -80,11 +80,14 @@ extern QString gate_url_prefix;
 
 
 struct ServerInfo{
+    ServerInfo() = default;
+    ServerInfo(const ServerInfo& other):Host(other.Host),Port(other.Port),Token(other.Token),Uid(other.Uid){}
     QString Host;
     QString Port;
     QString Token;
     int Uid;
 };
+Q_DECLARE_METATYPE(ServerInfo)
 
 enum class ChatRole
 {
