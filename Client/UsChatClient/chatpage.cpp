@@ -38,7 +38,7 @@ void ChatPage::UpdateChatStatus(QString unique_id, int status)
 {
     auto iter = _unrsp_item_map.find(unique_id);
     if (iter != _unrsp_item_map.end()) {
-        iter.value()->setStatus(status);
+        iter.value()->setState(status);
         _unrsp_item_map.erase(iter);
     }
 }
@@ -185,7 +185,7 @@ void ChatPage::on_send_btn_clicked()
             textArray.append(obj);
             //todo... 注意，此处先按私聊处理
             auto txt_msg = std::make_shared<TextChatData>(uuidString, thread_id, ChatFormType::PRIVATE,
-                                                          ChatMsgType::TEXT, content, user_info->_uid);
+                                                          ChatMsgType::TEXT, content, user_info->_uid, 0);
             //将未回复的消息加入到未回复列表中，以便后续处理
             UserMgr::GetInstance()->AddMsgUnRsp(txt_msg);
         }

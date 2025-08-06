@@ -36,7 +36,7 @@ ChatDataBase::ChatDataBase(int msg_id, QString unique_id, int thread_id, ChatFor
 
 void ChatDataBase::SetUniqueId(int unique_id)
 {
-    _unique_id = unique_id;
+    _unique_id = QString::number(unique_id);
 }
 
 QString ChatDataBase::GetUniqueId()

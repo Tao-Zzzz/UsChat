@@ -136,6 +136,7 @@ AuthFriendRsp ChatGrpcClient::NotifyAuthFriend(std::string server_ip, const Auth
 	return rsp;
 }
 
+
 TextChatMsgRsp ChatGrpcClient::NotifyTextChatMsg(std::string server_ip,
 	const TextChatMsgReq& req, const Json::Value& rtvalue) {
 
@@ -149,8 +150,6 @@ TextChatMsgRsp ChatGrpcClient::NotifyTextChatMsg(std::string server_ip,
 			TextChatData* new_msg = rsp.add_textmsgs();
 			new_msg->set_unique_id(text_data.unique_id());
 			new_msg->set_msgcontent(text_data.msgcontent());
-			new_msg->set_thread_id(text_data.thread_id());
-			new_msg->set_msg_id(text_data.msg_id());
 		}
 
 		});
@@ -175,6 +174,46 @@ TextChatMsgRsp ChatGrpcClient::NotifyTextChatMsg(std::string server_ip,
 
 	return rsp;
 }
+
+//TextChatMsgRsp ChatGrpcClient::NotifyTextChatMsg(std::string server_ip,
+//	const TextChatMsgReq& req, const Json::Value& rtvalue) {
+//
+//	TextChatMsgRsp rsp;
+//	rsp.set_error(ErrorCodes::Success);
+//
+//	Defer defer([&rsp, &req]() {
+//		rsp.set_fromuid(req.fromuid());
+//		rsp.set_touid(req.touid());
+//		for (const auto& text_data : req.textmsgs()) {
+//			TextChatData* new_msg = rsp.add_textmsgs();
+//			new_msg->set_unique_id(text_data.unique_id());
+//			new_msg->set_msgcontent(text_data.msgcontent());
+//			new_msg->set_thread_id(text_data.thread_id());
+//			new_msg->set_msg_id(text_data.msg_id());
+//		}
+//
+//		});
+//
+//	auto find_iter = _pools.find(server_ip);
+//	if (find_iter == _pools.end()) {
+//		return rsp;
+//	}
+//
+//	auto& pool = find_iter->second;
+//	ClientContext context;
+//	auto stub = pool->getConnection();
+//	Status status = stub->NotifyTextChatMsg(&context, req, &rsp);
+//	Defer defercon([&stub, this, &pool]() {
+//		pool->returnConnection(std::move(stub));
+//		});
+//
+//	if (!status.ok()) {
+//		rsp.set_error(ErrorCodes::RPCFailed);
+//		return rsp;
+//	}
+//
+//	return rsp;
+//}
 
 KickUserRsp ChatGrpcClient::NotifyKickUser(std::string server_ip, const KickUserReq& req)
 {

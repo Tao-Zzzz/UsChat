@@ -352,8 +352,10 @@ void TcpMgr::initHandlers()
             auto thread_id = data["thread_id"].toInt();
             auto unique_id = data["unique_id"].toInt();
             auto msg_content = data["msg_content"].toString();
+            QString chat_time = data["chat_time"].toString();
+            auto status = data["status"].toInt();
             auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
-                                                            ChatMsgType::TEXT, msg_content, send_uid);
+                                                            ChatMsgType::TEXT, msg_content, send_uid, status, chat_time);
             chat_datas.push_back(chat_data);
         }
 
@@ -434,8 +436,9 @@ void TcpMgr::initHandlers()
             auto thread_id = data["thread_id"].toInt();
             auto unique_id = data["unique_id"].toInt();
             auto msg_content = data["msg_content"].toString();
+            auto status = data["status"].toInt();
             auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
-                                                            ChatMsgType::TEXT, msg_content, send_uid);
+                                                            ChatMsgType::TEXT, msg_content, send_uid, status);
             chat_datas.push_back(chat_data);
         }
 
@@ -731,8 +734,9 @@ void TcpMgr::initHandlers()
             auto unique_id = data["unique_id"].toInt();
             auto msg_content = data["msg_content"].toString();
             QString chat_time = data["chat_time"].toString();
+            int status = data["status"].toInt();
             auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
-                                                            ChatMsgType::TEXT, msg_content, send_uid);
+                                                            ChatMsgType::TEXT, msg_content, send_uid, status,chat_time);
             chat_datas.push_back(chat_data);
             // 好像少了一个聊天时间
         }
