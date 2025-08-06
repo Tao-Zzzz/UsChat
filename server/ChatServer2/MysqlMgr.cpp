@@ -78,3 +78,7 @@ long long MysqlMgr::InsertMsg(int thread_id, int sender_id, int recv_id, std::st
 {
 	return _dao.InsertMsg(thread_id, sender_id, recv_id, content);
 }
+
+bool MysqlMgr::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas) {
+	return _dao.AddChatMsg(chat_datas);
+}

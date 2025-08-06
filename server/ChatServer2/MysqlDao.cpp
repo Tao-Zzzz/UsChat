@@ -836,3 +836,64 @@ long long MysqlDao::InsertMsg(int thread_id, int sender_id, int recv_id, std::st
 	}
 }
 
+bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas) {
+	auto con = pool_->getConnection();
+	if (!con) {
+		return false;
+	}
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+	auto& conn = con->_con;
+
+
+	try {
+		//关闭自动提交，以手动管理事务
+		conn->setAutoCommit(false);
+		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
+			conn->prepareStatement(
+				"INSERT INTO chat_message "
+				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
+				"VALUES (?, ?, ?, ?, ?, ?, ?)"
+			)
+		);
+
+		for (auto& msg : chat_datas) {
+			// 普通字段
+			pstmt->setUInt64(1, msg->thread_id);
+			pstmt->setUInt64(2, msg->sender_id);
+			pstmt->setUInt64(3, msg->recv_id);
+			pstmt->setString(4, msg->content);
+
+			pstmt->setString(5, msg->chat_time);  // created_at
+			pstmt->setString(6, msg->chat_time);  // updated_at
+
+			pstmt->setInt(7, msg->status);
+			pstmt->executeUpdate();
+
+			// 2. 取 LAST_INSERT_ID()
+			std::unique_ptr<sql::Statement> keyStmt(
+				conn->createStatement()
+			);
+			std::unique_ptr<sql::ResultSet> rs(
+				keyStmt->executeQuery("SELECT LAST_INSERT_ID()")
+			);
+			if (rs->next()) {
+				msg->message_id = rs->getUInt64(1);
+			}
+			else {
+				continue;
+			}
+		}
+
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e) {
+		std::cerr << "SQLException: " << e.what() << std::endl;
+		conn->rollback();
+		return false;
+	}
+	return true;
+
+}

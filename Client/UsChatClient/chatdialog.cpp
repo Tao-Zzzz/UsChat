@@ -171,6 +171,9 @@ ChatDialog::ChatDialog(QWidget* parent) :
     //连接tcp返回的创建私聊的回复
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_create_private_chat,
             this, &ChatDialog::slot_create_private_chat);
+
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_chat_msg_rsp,
+            this, &ChatDialog::slot_add_chat_msg);
 }
 
 ChatDialog::~ChatDialog()
@@ -478,6 +481,25 @@ void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, s
 
     //发送tcp请求给chat server
     emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_LOAD_CHAT_MSG_REQ, jsonData);
+}
+
+void ChatDialog::slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<TextChatData>> msglists) {
+    // auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(thread_id);
+    // if (chat_data == nullptr) {
+    //     return;
+    // }
+
+    // //将消息放入数据中管理
+    // for (auto& msg : msglists) {
+    //     chat_data->MoveMsg(msg);
+
+    //     if (_cur_chat_thread_id != thread_id) {
+    //         continue;
+    //     }
+    //     //更新聊天界面信息
+    //     ui->chat_page->UpdateChatStatus(msg->GetUniqueId(),msg->GetStatus());
+    // }
+
 }
 
 void ChatDialog::showLoadingDlg(bool show)

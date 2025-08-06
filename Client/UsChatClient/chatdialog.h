@@ -84,6 +84,7 @@ public slots:
     void slot_create_private_chat(int uid, int other_id, int thread_id);
     void slot_load_chat_msg(int thread_id, int msg_id, bool load_more,
          std::vector<std::shared_ptr<TextChatData>> msglists);
+    void slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<TextChatData>> msglists);
 private slots:
 };
 

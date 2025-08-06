@@ -34,6 +34,15 @@ ChatPage::~ChatPage()
     delete ui;
 }
 
+void ChatPage::UpdateChatStatus(QString unique_id, int status)
+{
+    auto iter = _unrsp_item_map.find(unique_id);
+    if (iter != _unrsp_item_map.end()) {
+        iter.value()->setStatus(status);
+        _unrsp_item_map.erase(iter);
+    }
+}
+
 void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     _chat_data = chat_data;
     auto other_id = _chat_data->GetOtherId();
@@ -51,9 +60,14 @@ void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     }
     ui->title_lb->setText(friend_info->_name);
     ui->chat_data_list->removeAllItem();
+
+    // _unrsp_item_map.clear();
     for(auto & msg : chat_data->GetMsgMapRef()){
         AppendChatMsg(msg);
     }
+    // for (auto& msg : chat_data->GetMsgUnRspRef()) {
+    //     AppendChatMsg(msg);
+    // }
 }
 
 void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
@@ -72,7 +86,11 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
         }
 
         pChatItem->setWidget(pBubble);
+        // pChatItem->setStatus(status);
         ui->chat_data_list->appendChatItem(pChatItem);
+        // if (status == 0) {
+        //     _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+        // }
     }
     else {
         role = ChatRole::Other;

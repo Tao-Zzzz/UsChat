@@ -474,7 +474,25 @@ void TcpMgr::initHandlers()
         }
 
         qDebug() << "Receive Text Chat Rsp Success " ;
-        //ui设置送达等标记 todo...
+        //收到消息后转发给页面
+        auto thread_id = jsonObj["thread_id"].toInt();
+        auto sender = jsonObj["fromuid"].toInt();
+
+
+        std::vector<std::shared_ptr<TextChatData>> chat_datas;
+        for (const QJsonValue& data : jsonObj["chat_datas"].toArray()) {
+            auto msg_id = data["message_id"].toInt();
+            auto unique_id = data["unique_id"].toString();
+            auto msg_content = data["content"].toString();
+            QString chat_time = data["chat_time"].toString();
+            int status = data["status"].toInt();
+            auto chat_data = std::make_shared<TextChatData>(msg_id,unique_id, thread_id, ChatFormType::PRIVATE,
+                                                            ChatMsgType::TEXT, msg_content, sender, status, chat_time);
+            chat_datas.push_back(chat_data);
+        }
+
+        //发送信号通知界面
+        emit sig_chat_msg_rsp(thread_id, chat_datas);
     });
 
     _handlers.insert(ID_NOTIFY_TEXT_CHAT_MSG_REQ, [this](ReqId id, int len, QByteArray data) {
@@ -505,17 +523,22 @@ void TcpMgr::initHandlers()
 
         qDebug() << "Receive Text Chat Notify Success " ;
 
+        //收到消息后转发给页面
+        auto thread_id = jsonObj["thread_id"].toInt();
+        auto sender = jsonObj["fromuid"].toInt();
+
         std::vector<std::shared_ptr<TextChatData>> msg_vecs;
         // 遍历 QJsonArray 并输出每个元素
-        for (const QJsonValue& value : jsonObj["text_array"].toArray()) {
+        for (const QJsonValue& value : jsonObj["chat_datas"].toArray()) {
             int msg_id = value["msg_id"].toInt();
             QString unique_id = value["unique_id"].toString();
             QString content = value["content"].toString();
             int thread_id = value["thread_id"].toInt();
-
-            auto text_chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
-                                                                 ChatMsgType::TEXT, content, jsonObj["fromuid"].toInt());
-            msg_vecs.push_back(text_chat_data);
+            QString chat_time = value["chat_time"].toString();
+            int status = value["status"].toInt();
+            auto chat_data = std::make_shared<TextChatData>(msg_id, unique_id, thread_id, ChatFormType::PRIVATE,
+                                                            ChatMsgType::TEXT, content, sender, status, chat_time);
+            msg_vecs.push_back(chat_data);
         }
 
         emit sig_text_chat_msg(msg_vecs);
