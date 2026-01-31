@@ -54,7 +54,7 @@ private:
     QTimer * _timer;
     LoadingDlg* _loading_dlg;
     std::shared_ptr<ChatThreadData> _cur_load_chat;
-    QMenu* _add_menu; // 在头文件声明，避免每次点击都 new 一个
+    QMenu* _add_menu = nullptr; // 在头文件声明，避免每次点击都 new 一个
  
 public slots:
     void slot_loading_chat_user();
@@ -86,7 +86,8 @@ public slots:
     void slot_add_img_msg(int thread_id, std::shared_ptr<ImgChatData> img_msg);
     void slot_reset_icon(QString path);
     void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info);
-    void slot_create_group();
+    void slot_start_create_group();
+    void slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
 private slots:
 
     void on_add_btn_clicked();

@@ -1,5 +1,5 @@
 #include "creategroupdialog.h"
-
+#include "tcpmgr.h"
 CreateGroupDialog::CreateGroupDialog(QWidget *parent) : QDialog(parent) {
     initUI();
     loadFriendList();
@@ -53,7 +53,7 @@ void CreateGroupDialog::initUI() {
 
     // 信号连接
     connect(_searchEdit, &QLineEdit::textChanged, this, &CreateGroupDialog::onSearchTextChanged);
-    connect(okBtn, &QPushButton::clicked, this, &QDialog::accept);
+    connect(okBtn, &QPushButton::clicked, this, &CreateGroupDialog::slot_on_btn_clicked);
     connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 }
 
@@ -110,6 +110,9 @@ void CreateGroupDialog::onRemoveSelected(int uid) {
     updateSelectedCount();
 }
 
+
+
+// search还没搞
 void CreateGroupDialog::onSearchTextChanged(const QString& text) {
     for(int i = 0; i < _friendListWidget->count(); ++i) {
         auto* item = _friendListWidget->item(i);
@@ -124,3 +127,38 @@ void CreateGroupDialog::onSearchTextChanged(const QString& text) {
 void CreateGroupDialog::updateSelectedCount() {
     _countLabel->setText(QString("已选 %1 个联系人").arg(_right_items.size()));
 }
+
+void CreateGroupDialog::slot_on_btn_clicked()
+{
+    qDebug() << "create group btn clicked";
+
+    if(_right_items.empty()){
+
+        return;
+    }
+
+    // 1. 当前用户 uid
+    int uid = UserMgr::GetInstance()->GetUid();
+
+    QJsonObject jsonObj;
+    jsonObj["uid"] = uid;
+
+    // 2. other_member：已选成员 uid 数组
+    QJsonArray memberArray;
+    for (const auto& it : _right_items) {
+        memberArray.append(it.first);   // key 就是 uid
+    }
+
+    jsonObj["other_member"] = memberArray;
+
+    // 3. 序列化
+    QJsonDocument doc(jsonObj);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+
+    // 4. 发送 TCP 请求
+    emit TcpMgr::GetInstance()->sig_send_data(
+                                   ReqId::ID_CREATE_GROUP_REQ,
+                                   jsonData
+                                   );
+}
+

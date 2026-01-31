@@ -27,6 +27,19 @@ QSize ChatUserWid::sizeHint() const
 void ChatUserWid::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     _chat_data = chat_data;
     auto other_id = _chat_data->GetOtherId();
+    //群聊逻辑
+    if(other_id == 0){
+        //先加载默认图形先
+        QPixmap pixmap(":/res/head_1.jpg"); // 加载默认头像图片
+        QPixmap scaledPixmap = pixmap.scaled(ui->icon_lb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        ui->icon_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+        ui->icon_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+
+        ui->user_name_lb->setText(chat_data->GetGroupName());
+
+        ui->user_chat_lb->setText(chat_data->GetLastMsg());
+        return;
+    }
     auto other_info = UserMgr::GetInstance()->GetFriendById(other_id);
     // 加载图片
 

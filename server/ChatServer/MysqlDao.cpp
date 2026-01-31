@@ -1046,3 +1046,87 @@ bool MysqlDao::AddChatMsg(std::shared_ptr<ChatMessage> chat_data) {
 	}
 }
 
+bool MysqlDao::CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id)
+{
+	auto con = pool_->getConnection();
+	if (!con) {
+		return false;
+	}
+
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+
+	auto& conn = con->_con;
+
+	try {
+		// 开启事务
+		conn->setAutoCommit(false);
+
+		// 1. 创建 chat_thread（群聊）
+		std::string insert_thread_sql =
+			"INSERT INTO chat_thread (type, created_at) "
+			"VALUES ('group', NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_thread(
+			conn->prepareStatement(insert_thread_sql));
+		pstmt_thread->executeUpdate();
+
+		// 获取 thread_id
+		std::string last_id_sql = "SELECT LAST_INSERT_ID();";
+		std::unique_ptr<sql::PreparedStatement> pstmt_last_id(
+			conn->prepareStatement(last_id_sql));
+		std::unique_ptr<sql::ResultSet> res_last_id(
+			pstmt_last_id->executeQuery());
+		res_last_id->next();
+		thread_id = res_last_id->getInt64(1);
+
+		// 2. 创建 group_chat（name 可为空）
+		std::string insert_group_chat_sql =
+			"INSERT INTO group_chat (thread_id, name, created_at) "
+			"VALUES (?, NULL, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_group_chat(
+			conn->prepareStatement(insert_group_chat_sql));
+		pstmt_group_chat->setInt64(1, thread_id);
+		pstmt_group_chat->executeUpdate();
+
+		// 3. 插入群主（role = 2）
+		std::string insert_member_sql =
+			"INSERT INTO group_chat_member "
+			"(thread_id, user_id, role, joined_at) "
+			"VALUES (?, ?, ?, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_member(
+			conn->prepareStatement(insert_member_sql));
+
+		// 群主
+		pstmt_member->setInt64(1, thread_id);
+		pstmt_member->setInt64(2, user_id);
+		pstmt_member->setInt(3, 2);   // 创建者
+		pstmt_member->executeUpdate();
+
+		// 4. 插入普通成员（role = 0）
+		for (int uid : member_uids) {
+			if (uid == user_id) {
+				continue; // 防御：避免重复插自己
+			}
+
+			pstmt_member->setInt64(1, thread_id);
+			pstmt_member->setInt64(2, uid);
+			pstmt_member->setInt(3, 0); // 普通成员
+			pstmt_member->executeUpdate();
+		}
+
+		// 提交事务
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e) {
+		conn->rollback();
+		std::cerr << "SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")"
+			<< std::endl;
+		return false;
+	}
+}

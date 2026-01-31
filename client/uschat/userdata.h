@@ -247,6 +247,9 @@ public:
     ChatThreadData() = default;
     ChatThreadData(int other_id, int thread_id, int last_msg_id):
         _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){}
+    ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id):
+        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){}
+
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
     void UpdateProgress(std::shared_ptr<MsgInfo> msg);
@@ -272,7 +275,7 @@ private:
     //群聊信息,成员列表
     std::vector<int> _group_members;
     //群聊名称
-    QString _group_name;
+    QString _group_name = "";
     //缓存消息map，抽象为基类，因为会有图片等其他类型消息
     QMap<int, std::shared_ptr<ChatDataBase>>  _msg_map;
     //缓存未回复的消息

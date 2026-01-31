@@ -160,6 +160,7 @@ void TcpMgr::registerMetaType() {
     qRegisterMetaType<std::shared_ptr<ChatThreadData>>("std::shared_ptr<ChatThreadData>");
     qRegisterMetaType<ReqId>("ReqId");
     qRegisterMetaType<std::shared_ptr<ImgChatData>>("std::shared_ptr<ImgChatData>");
+    qRegisterMetaType<std::vector<int>>("std::vector<int>");
 }
 
 void TcpMgr::CloseConnection(){
@@ -848,6 +849,48 @@ void TcpMgr::initHandlers()
 
         });
     
+    _handlers.insert(ID_CREATE_GROUP_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(len);
+        qDebug() << "handle id is " << id << " data is " << data;
+        // 将QByteArray转换为QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+
+        // 检查转换是否成功
+        if (jsonDoc.isNull()) {
+            qDebug() << "Failed to create QJsonDocument.";
+            return;
+        }
+
+        QJsonObject jsonObj = jsonDoc.object();
+
+        if (!jsonObj.contains("error")) {
+            int err = ErrorCodes::ERR_JSON;
+            qDebug() << "parse create private chat json parse failed " << err;
+            return;
+        }
+
+        int err = jsonObj["error"].toInt();
+        if (err != ErrorCodes::SUCCESS) {
+            qDebug() << "get create private chat failed, error is " << err;
+            return;
+        }
+
+        qDebug() << "Receive create group chat rsp Success";
+
+        int uid = jsonObj["uid"].toInt();
+        int thread_id = jsonObj["thread_id"].toInt();
+
+        // 解析 other_member
+        QJsonArray memberArray = jsonObj["other_member"].toArray();
+        std::vector<int> member_uids;
+        for (const QJsonValue& v : memberArray) {
+            member_uids.push_back(v.toInt());
+        }
+
+
+        //发送信号通知界面
+        emit sig_create_group_chat(uid, member_uids, thread_id);
+    });
 }
 
 void TcpMgr::handleMsg(ReqId id, int len, QByteArray data)

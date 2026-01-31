@@ -81,6 +81,9 @@ enum ReqId{
     ID_FILE_INFO_SYNC_RSP     =  1042,     //文件信息同步回复
     ID_IMG_CHAT_CONTINUE_UPLOAD_REQ = 1043,  //续传聊天图片资源请求
     ID_IMG_CHAT_CONTINUE_UPLOAD_RSP = 1044,  //续传聊天图片资源回复
+
+    ID_CREATE_GROUP_REQ = 1101,
+    ID_CREATE_GROUP_RSP = 1102,
 };
 Q_DECLARE_METATYPE(ReqId)
 

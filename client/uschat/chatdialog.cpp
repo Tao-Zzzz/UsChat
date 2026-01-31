@@ -244,6 +244,9 @@ ChatDialog::ChatDialog(QWidget* parent) :
 	//接收tcp返回的上传进度信息
 	connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_update_upload_progress, 
 		this, &ChatDialog::slot_update_upload_progress);
+
+    //创建群聊
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_create_group_chat, this, &ChatDialog::slot_create_group_chat);
 }
 
 ChatDialog::~ChatDialog()
@@ -691,12 +694,14 @@ void ChatDialog::loadMoreConUser()
 	}
 }
 
+//设置当前聚焦的会话
 void ChatDialog::SetSelectChatItem(int thread_id)
 {
 	if (ui->chat_user_list->count() <= 0) {
 		return;
 	}
 
+    // 用不上, 不可能为0
 	if (thread_id == 0) {
 		ui->chat_user_list->setCurrentRow(0);
 		QListWidgetItem* firstItem = ui->chat_user_list->item(0);
@@ -759,9 +764,12 @@ void ChatDialog::SetSelectChatPage(int thread_id)
 
 	auto find_iter = _chat_thread_items.find(thread_id);
 	if (find_iter == _chat_thread_items.end()) {
+        qDebug() << "thread_id [" << thread_id << "] do not have history msg";
 		return;
 	}
 
+
+    //先从list获取当前会话的widget,再转成基类,判断是什么类型,再转成具体的类型
 	//转为widget
 	QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
 	if (!widget) {
@@ -1078,7 +1086,7 @@ void ChatDialog::slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> use
 			ui->side_chat_lb->SetSelected(true);
 			SetSelectChatItem(chat_thread_data->GetThreadId());
 			//更新聊天界面信息
-			SetSelectChatPage(chat_thread_data->GetThreadId());
+            SetSelectChatPage(chat_thread_data->GetThreadId());
 			slot_side_chat();
 			return;
 		} //说明之前有缓存过聊天列表，只是被删除了，那么重新加进来即可
@@ -1150,7 +1158,7 @@ void ChatDialog::on_add_btn_clicked()
         _add_menu->addAction(addFriend);
 
         // 逻辑处理...
-        connect(createGroup, &QAction::triggered, this, &ChatDialog::slot_create_group);
+        connect(createGroup, &QAction::triggered, this, &ChatDialog::slot_start_create_group);
     }
 
     // 弹出菜单位置处理
@@ -1158,11 +1166,38 @@ void ChatDialog::on_add_btn_clicked()
     _add_menu->exec(pos);
 }
 
-void ChatDialog::slot_create_group(){
+void ChatDialog::slot_start_create_group(){
     CreateGroupDialog dlg(this);
     if(dlg.exec() == QDialog::Accepted) {
         // 如果点击了确定，在这里处理创建群聊的 gRPC 请求
         // 你可以给 CreateGroupDialog 加一个公共方法 getSelectedUids()
         qDebug() << "开始创建群聊...";
     }
+}
+
+void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id)
+{
+    //构造会话数据
+    auto* chat_user_wid = new ChatUserWid();
+    auto chat_thread_data = std::make_shared<ChatThreadData>(other_id, thread_id, 0);
+    if (chat_thread_data == nullptr) {
+        return;
+    }
+    UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
+
+    chat_user_wid->SetChatData(chat_thread_data);
+    QListWidgetItem* item = new QListWidgetItem;
+    item->setSizeHint(chat_user_wid->sizeHint());
+    qDebug() << "chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+    ui->chat_user_list->insertItem(0, item);
+    ui->chat_user_list->setItemWidget(item, chat_user_wid);
+    _chat_thread_items.insert(thread_id, item);
+
+    ui->side_chat_lb->SetSelected(true);
+    //切换会话三件套
+    SetSelectChatItem(thread_id);
+    //更新聊天界面信息
+    SetSelectChatPage(thread_id);
+    slot_side_chat();
+    return;
 }

@@ -34,13 +34,26 @@ ChatPage::~ChatPage()
     delete ui;
 }
 
+//在页面具体设置数据信息
 void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     _chat_data = chat_data;
     auto other_id = _chat_data->GetOtherId();
     if(other_id == 0) {
         //说明是群聊
         ui->title_lb->setText(_chat_data->GetGroupName());
-        //todo...加载群聊信息和成员信息
+
+        ui->chat_data_list->removeAllItem();
+        _unrsp_item_map.clear();
+        _base_item_map.clear();
+
+        // 1. 加载历史消息（和私聊完全一样）
+        for (auto& msg : chat_data->GetMsgMapRef()) {
+            AppendChatMsg(msg);
+        }
+
+        for (auto& msg : chat_data->GetMsgUnRspRef()) {
+            AppendChatMsg(msg);
+        }
         return;
     }
 
@@ -68,19 +81,27 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
     ChatRole role;
     if (msg->GetSendUid() == self_info->_uid) {
         role = ChatRole::Self;
+        // 聊天基类, 名字与头像的设置
         ChatItemBase* pChatItem = new ChatItemBase(role);
         
         pChatItem->setUserName(self_info->_name);
         SetSelfIcon(pChatItem, self_info->_icon);
         QWidget* pBubble = nullptr;
+        // 如果是文字,则有一个文字专属的bubble
         if (msg->GetMsgType() == ChatMsgType::TEXT) {
             pBubble = new TextBubble(role, msg->GetMsgContent());
         }
      
         pChatItem->setWidget(pBubble);
+        // 设置当前状态,消息当中有
         auto status = msg->GetStatus();
         pChatItem->setStatus(status);
+        //消息列表中放入这条消息
         ui->chat_data_list->appendChatItem(pChatItem);
+
+
+
+        //而且是没有收到服务器确认的, 这个可能需要改一改,下面也有一个一样的
         _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
     }
     else {

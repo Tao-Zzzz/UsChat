@@ -87,3 +87,8 @@ bool MysqlMgr::AddChatMsg(std::shared_ptr<ChatMessage> chat_data) {
 	return _dao.AddChatMsg(chat_data);
 }
 
+bool MysqlMgr::CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id)
+{
+	return _dao.CreateGroupChat(user_id, member_uids, thread_id);;
+}
+

@@ -252,6 +252,7 @@ void UserMgr::AddFriend(std::shared_ptr<AuthRsp> auth_rsp)
     std::lock_guard<std::mutex> lock(_mtx);
     auto friend_info = std::make_shared<UserInfo>(auth_rsp);
     _friend_map[friend_info->_uid] = friend_info;
+    _friend_list.push_back(friend_info);
 }
 
 void UserMgr::AddFriend(std::shared_ptr<AuthInfo> auth_info)
@@ -259,6 +260,7 @@ void UserMgr::AddFriend(std::shared_ptr<AuthInfo> auth_info)
     std::lock_guard<std::mutex> lock(_mtx);
     auto friend_info = std::make_shared<UserInfo>(auth_info);
     _friend_map[friend_info->_uid] = friend_info;
+    _friend_list.push_back(friend_info);
 }
 
 std::shared_ptr<UserInfo> UserMgr::GetFriendById(int uid)

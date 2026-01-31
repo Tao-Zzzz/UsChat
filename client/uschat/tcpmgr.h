@@ -80,6 +80,7 @@ signals:
 
     void sig_chat_msg_rsp(int thread_id, std::vector<std::shared_ptr<TextChatData>> msg_list);
     void sig_chat_img_rsp(int thread_id, std::shared_ptr<ImgChatData> msg_list);
+    void sig_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
 };
 
 #endif // TCPMGR_H

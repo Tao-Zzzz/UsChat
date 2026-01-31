@@ -14,7 +14,7 @@
 #include <map>
 #include <algorithm>
 #include "usermgr.h"
-
+#include <QMap>
 
 // --- 1. 左侧：带复选框的好友项 ---
 class FriendCheckItem : public QWidget {
@@ -113,6 +113,7 @@ private slots:
     void onSearchTextChanged(const QString& text);
     void onFriendChecked(std::shared_ptr<UserInfo> info, bool checked);
     void onRemoveSelected(int uid);
+    void slot_on_btn_clicked();
 
 private:
     void initUI();

@@ -111,6 +111,8 @@ void LogicSystem::RegisterCallBacks() {
 	_fun_callbacks[ID_IMG_CHAT_MSG_REQ] = std::bind(&LogicSystem::DealChatImgMsg, this,
 		placeholders::_1, placeholders::_2, placeholders::_3);
 
+	_fun_callbacks[ID_CREATE_GROUP_REQ] = std::bind(&LogicSystem::CreateGroupChat, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
 }
 
 void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short &msg_id, const string &msg_data) {
@@ -964,3 +966,52 @@ void LogicSystem::DealChatImgMsg(std::shared_ptr<CSession> session,
 
 }
 
+
+void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	// 发起者 uid
+	int uid = root["uid"].asInt();
+
+	// 解析 other_member
+	std::vector<int> other_members;
+	const Json::Value& members = root["other_member"];
+
+	if (members.isArray()) {
+		for (int i = 0; i < members.size(); ++i) {
+			other_members.push_back(members[i].asInt());
+		}
+	}
+
+	// 构造返回值
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["uid"] = uid;
+
+	// 回传数组（可选）
+	Json::Value memberArray(Json::arrayValue);
+	for (int mid : other_members) {
+		memberArray.append(mid);
+	}
+	rtvalue["other_member"] = memberArray;
+
+
+	Defer defer([this, &rtvalue, session]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_CREATE_GROUP_RSP);
+		});
+
+	int thread_id = 0;
+	bool res = MysqlMgr::GetInstance()->CreateGroupChat(uid, other_members, thread_id);
+	if (!res) {
+		rtvalue["error"] = ErrorCodes::CREATE_CHAT_FAILED;
+		return;
+	}
+
+	rtvalue["thread_id"] = thread_id;
+
+	// todo... 这里可能要通知所有人群聊已经创建完毕
+}
