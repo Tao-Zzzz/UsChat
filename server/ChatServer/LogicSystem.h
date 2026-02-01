@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include "data.h"
 
+
 class CServer;
 typedef  function<void(shared_ptr<CSession>, const short &msg_id, const string &msg_data)> FunCallBack;
 class LogicSystem:public Singleton<LogicSystem>

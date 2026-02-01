@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include "data.h"
 
+
 class CServer;
 typedef  function<void(shared_ptr<CSession>, const short &msg_id, const string &msg_data)> FunCallBack;
 class LogicSystem:public Singleton<LogicSystem>
@@ -47,6 +48,9 @@ private:
 		int& nextLastId);
 	void CreatePrivateChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 	void LoadChatMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+	void DealChatImgMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+	void CreateGroupChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+	
 	std::thread _worker_thread;
 	std::queue<shared_ptr<LogicNode>> _msg_que;
 	std::mutex _mutex;

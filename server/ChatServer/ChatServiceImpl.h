@@ -24,6 +24,8 @@ using message::TextChatData;
 using message::KickUserReq;
 using message::KickUserRsp;
 
+using message::GroupTextChatMsgReq;
+using message::GroupTextChatMsgRsp;
 
 class ChatServiceImpl final: public ChatService::Service
 {
@@ -37,7 +39,8 @@ public:
 
 	Status NotifyTextChatMsg(::grpc::ServerContext* context, 
 		const TextChatMsgReq* request, TextChatMsgRsp* response) override;
-
+	
+	Status NotifyGroupTextChatMsg(::grpc::ServerContext* context, const GroupTextChatMsgReq* request, GroupTextChatMsgRsp* reply);
 	bool GetBaseInfo(std::string base_key, int uid, std::shared_ptr<UserInfo>& userinfo);
 
 	//接受rpc踢人请求

@@ -126,6 +126,8 @@ message TextChatMsgRsp {
 	repeated TextChatData textmsgs = 5;
 }
 
+
+
 message KickUserReq{
 	int32 uid = 1;
 }
@@ -135,6 +137,21 @@ message KickUserRsp{
 	int32 uid = 2;
 }
 
+message GroupTextChatMsgReq {
+    int32 fromuid = 1;
+    int32 thread_id = 2;
+    repeated int32 touids = 3;    
+    repeated TextChatData textmsgs = 4;
+}
+
+message GroupTextChatMsgRsp {
+    int32 error = 1;
+    int32 fromuid = 2;
+    int32 thread_id = 3;
+    repeated int32 touids = 4;
+    repeated TextChatData textmsgs = 5;
+}
+
 service ChatService {
 	rpc NotifyAddFriend(AddFriendReq) returns (AddFriendRsp) {}
 	rpc RplyAddFriend(RplyFriendReq) returns (RplyFriendRsp) {}
@@ -142,4 +159,5 @@ service ChatService {
 	rpc NotifyAuthFriend(AuthFriendReq) returns (AuthFriendRsp) {}
 	rpc NotifyTextChatMsg(TextChatMsgReq) returns (TextChatMsgRsp){}
 	rpc NotifyKickUser(KickUserReq) returns (KickUserRsp){}
+	rpc NotifyGroupTextChatMsg(GroupTextChatMsgReq) returns (GroupTextChatMsgRsp) {}
 }

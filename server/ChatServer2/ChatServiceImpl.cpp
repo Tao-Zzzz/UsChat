@@ -138,6 +138,59 @@ Status ChatServiceImpl::NotifyTextChatMsg(::grpc::ServerContext* context,
 	return Status::OK;
 }
 
+Status ChatServiceImpl::NotifyGroupTextChatMsg(
+	::grpc::ServerContext* context,
+	const GroupTextChatMsgReq* request,
+	GroupTextChatMsgRsp* reply)
+{
+	std::cout << "received grpc group chat msg from uid: " << request->fromuid() << std::endl;
+	reply->set_error(ErrorCodes::Success);
+	reply->set_fromuid(request->fromuid());
+	reply->set_thread_id(request->thread_id());
+
+	for (auto uid : request->touids()) {
+		reply->add_touids(uid);
+	}
+
+	for (const auto& msg : request->textmsgs()) {
+		auto* m = reply->add_textmsgs();
+		m->set_unique_id(msg.unique_id());
+		m->set_msg_id(msg.msg_id());
+		m->set_msgcontent(msg.msgcontent());
+		m->set_chat_time(msg.chat_time());
+	}
+
+	// 核心：遍历 touids
+	for (auto touid : request->touids()) {
+		auto session = UserMgr::GetInstance()->GetSession(touid);
+		if (!session) {
+			continue;
+		}
+
+		Json::Value rtvalue;
+		rtvalue["error"] = ErrorCodes::Success;
+		rtvalue["fromuid"] = request->fromuid();
+		rtvalue["thread_id"] = request->thread_id();
+		rtvalue["touid"] = 0;   // ★关键标志
+
+		Json::Value arr;
+		for (const auto& msg : request->textmsgs()) {
+			Json::Value e;
+			e["content"] = msg.msgcontent();
+			e["unique_id"] = msg.unique_id();
+			e["message_id"] = msg.msg_id();
+			e["chat_time"] = msg.chat_time();
+			arr.append(e);
+		}
+
+		rtvalue["chat_datas"] = arr;
+		std::cout << "send chat req to client " << std::endl;
+		session->Send(
+			rtvalue.toStyledString(), ID_NOTIFY_TEXT_CHAT_MSG_REQ);
+	}
+
+	return Status::OK;
+}
 
 bool ChatServiceImpl::GetBaseInfo(std::string base_key, int uid, std::shared_ptr<UserInfo>& userinfo)
 {

@@ -1,4 +1,4 @@
-#include "MysqlDao.h"
+ï»¿#include "MysqlDao.h"
 #include "ConfigMgr.h"
 
 MysqlDao::MysqlDao()
@@ -23,19 +23,19 @@ int MysqlDao::RegUser(const std::string& name, const std::string& email, const s
 		if (con == nullptr) {
 			return false;
 		}
-		// ×¼±¸µ÷ÓÃ´æ´¢¹ı³Ì
+		// å‡†å¤‡è°ƒç”¨å­˜å‚¨è¿‡ç¨‹
 		std::unique_ptr < sql::PreparedStatement > stmt(con->_con->prepareStatement("CALL reg_user(?,?,?,@result)"));
-		// ÉèÖÃÊäÈë²ÎÊı
+		// è®¾ç½®è¾“å…¥å‚æ•°
 		stmt->setString(1, name);
 		stmt->setString(2, email);
 		stmt->setString(3, pwd);
 
-		// ÓÉÓÚPreparedStatement²»Ö±½ÓÖ§³Ö×¢²áÊä³ö²ÎÊı£¬ÎÒÃÇĞèÒªÊ¹ÓÃ»á»°±äÁ¿»òÆäËû·½·¨À´»ñÈ¡Êä³ö²ÎÊıµÄÖµ
+		// ç”±äºPreparedStatementä¸ç›´æ¥æ”¯æŒæ³¨å†Œè¾“å‡ºå‚æ•°ï¼Œæˆ‘ä»¬éœ€è¦ä½¿ç”¨ä¼šè¯å˜é‡æˆ–å…¶ä»–æ–¹æ³•æ¥è·å–è¾“å‡ºå‚æ•°çš„å€¼
 
-		  // Ö´ĞĞ´æ´¢¹ı³Ì
+		  // æ‰§è¡Œå­˜å‚¨è¿‡ç¨‹
 		stmt->execute();
-		// Èç¹û´æ´¢¹ı³ÌÉèÖÃÁË»á»°±äÁ¿»òÓĞÆäËû·½Ê½»ñÈ¡Êä³ö²ÎÊıµÄÖµ£¬Äã¿ÉÒÔÔÚÕâÀïÖ´ĞĞSELECT²éÑ¯À´»ñÈ¡ËüÃÇ
-	   // ÀıÈç£¬Èç¹û´æ´¢¹ı³ÌÉèÖÃÁËÒ»¸ö»á»°±äÁ¿@resultÀ´´æ´¢Êä³ö½á¹û£¬¿ÉÒÔÕâÑù»ñÈ¡£º
+		// å¦‚æœå­˜å‚¨è¿‡ç¨‹è®¾ç½®äº†ä¼šè¯å˜é‡æˆ–æœ‰å…¶ä»–æ–¹å¼è·å–è¾“å‡ºå‚æ•°çš„å€¼ï¼Œä½ å¯ä»¥åœ¨è¿™é‡Œæ‰§è¡ŒSELECTæŸ¥è¯¢æ¥è·å–å®ƒä»¬
+	   // ä¾‹å¦‚ï¼Œå¦‚æœå­˜å‚¨è¿‡ç¨‹è®¾ç½®äº†ä¸€ä¸ªä¼šè¯å˜é‡@resultæ¥å­˜å‚¨è¾“å‡ºç»“æœï¼Œå¯ä»¥è¿™æ ·è·å–ï¼š
 		std::unique_ptr<sql::Statement> stmtResult(con->_con->createStatement());
 		std::unique_ptr<sql::ResultSet> res(stmtResult->executeQuery("SELECT @result AS result"));
 		if (res->next()) {
@@ -63,16 +63,16 @@ bool MysqlDao::CheckEmail(const std::string& name, const std::string& email) {
 			return false;
 		}
 
-		// ×¼±¸²éÑ¯Óï¾ä
+		// å‡†å¤‡æŸ¥è¯¢è¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("SELECT email FROM user WHERE name = ?"));
 
-		// °ó¶¨²ÎÊı
+		// ç»‘å®šå‚æ•°
 		pstmt->setString(1, name);
 
-		// Ö´ĞĞ²éÑ¯
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			std::cout << "Check Email: " << res->getString("email") << std::endl;
 			if (email != res->getString("email")) {
@@ -100,14 +100,14 @@ bool MysqlDao::UpdatePwd(const std::string& name, const std::string& newpwd) {
 			return false;
 		}
 
-		// ×¼±¸²éÑ¯Óï¾ä
+		// å‡†å¤‡æŸ¥è¯¢è¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("UPDATE user SET pwd = ? WHERE name = ?"));
 
-		// °ó¶¨²ÎÊı
+		// ç»‘å®šå‚æ•°
 		pstmt->setString(2, name);
 		pstmt->setString(1, newpwd);
 
-		// Ö´ĞĞ¸üĞÂ
+		// æ‰§è¡Œæ›´æ–°
 		int updateCount = pstmt->executeUpdate();
 
 		std::cout << "Updated rows: " << updateCount << std::endl;
@@ -134,17 +134,17 @@ bool MysqlDao::CheckPwd(const std::string& name, const std::string& pwd, UserInf
 		});
 
 	try {
-		// ×¼±¸SQLÓï¾ä
+		// å‡†å¤‡SQLè¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("SELECT * FROM user WHERE name = ?"));
-		pstmt->setString(1, name); // ½«usernameÌæ»»ÎªÄãÒª²éÑ¯µÄÓÃ»§Ãû
+		pstmt->setString(1, name); // å°†usernameæ›¿æ¢ä¸ºä½ è¦æŸ¥è¯¢çš„ç”¨æˆ·å
 
-		// Ö´ĞĞ²éÑ¯
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 		std::string origin_pwd = "";
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			origin_pwd = res->getString("pwd");
-			// Êä³ö²éÑ¯µ½µÄÃÜÂë
+			// è¾“å‡ºæŸ¥è¯¢åˆ°çš„å¯†ç 
 			std::cout << "Password: " << origin_pwd << std::endl;
 			break;
 		}
@@ -179,7 +179,7 @@ bool MysqlDao::AddFriendApply(const int& from, const int& to,
 		});
 
 	try {
-		// ×¼±¸SQLÓï¾ä
+		// å‡†å¤‡SQLè¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(
 			con->_con->prepareStatement("INSERT INTO friend_apply (from_uid, to_uid, descs, back_name) "
 				"values (?,?,?,?) "
@@ -190,7 +190,7 @@ bool MysqlDao::AddFriendApply(const int& from, const int& to,
 		pstmt->setString(4, back_name);
 		pstmt->setString(5, desc);
 		pstmt->setString(6, back_name);
-		// Ö´ĞĞ¸üĞÂ
+		// æ‰§è¡Œæ›´æ–°
 		int rowAffected = pstmt->executeUpdate();
 		if (rowAffected < 0) {
 			return false;
@@ -219,13 +219,13 @@ bool MysqlDao::AuthFriendApply(const int& from, const int& to) {
 		});
 
 	try {
-		// ×¼±¸SQLÓï¾ä
+		// å‡†å¤‡SQLè¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("UPDATE friend_apply SET status = 1 "
 			"WHERE from_uid = ? AND to_uid = ?"));
-		//·´¹ıÀ´µÄÉêÇëÊ±from£¬ÑéÖ¤Ê±to
+		//åè¿‡æ¥çš„ç”³è¯·æ—¶fromï¼ŒéªŒè¯æ—¶to
 		pstmt->setInt(1, to); // from id
 		pstmt->setInt(2, from);
-		// Ö´ĞĞ¸üĞÂ
+		// æ‰§è¡Œæ›´æ–°
 		int rowAffected = pstmt->executeUpdate();
 		if (rowAffected < 0) {
 			return false;
@@ -243,6 +243,7 @@ bool MysqlDao::AuthFriendApply(const int& from, const int& to) {
 	return true;
 }
 
+
 bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 	std::vector<std::shared_ptr<AddFriendMsg>>& chat_datas) {
 	auto con = pool_->getConnection();
@@ -255,14 +256,13 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 		});
 
 	try {
-
-		//¿ªÊ¼ÊÂÎñ
+		// å¼€å§‹äº‹åŠ¡
 		con->_con->setAutoCommit(false);
 		std::string reverse_back;
 		std::string apply_desc;
 
 		{
-			// 1. Ëø¶¨²¢¶ÁÈ¡
+			// 1. é”å®šå¹¶è¯»å–
 			std::unique_ptr<sql::PreparedStatement> selStmt(con->_con->prepareStatement(
 				"SELECT back_name, descs "
 				"FROM friend_apply "
@@ -279,55 +279,76 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 				apply_desc = rsSel->getString("descs");
 			}
 			else {
-				// Ã»ÓĞ¶ÔÓ¦µÄÉêÇë¼ÇÂ¼£¬Ö±½Ó rollback ²¢·µ»ØÊ§°Ü
+				// æ²¡æœ‰å¯¹åº”çš„ç”³è¯·è®°å½•ï¼Œç›´æ¥ rollback å¹¶è¿”å›å¤±è´¥
 				con->_con->rollback();
 				return false;
 			}
 		}
-		
+
 		{
-			// 2. Ö´ĞĞÕæÕıµÄ¸üĞÂ
+			// 2. æ‰§è¡ŒçœŸæ­£çš„æ›´æ–°
 			std::unique_ptr<sql::PreparedStatement> updStmt(con->_con->prepareStatement(
 				"UPDATE friend_apply "
 				"SET status = 1 "
 				"WHERE from_uid = ? AND to_uid = ?"
 			));
-	
+
 			updStmt->setInt(1, to);
 			updStmt->setInt(2, from);
 
 			if (updStmt->executeUpdate() != 1) {
-				// ¸üĞÂĞĞÊı²»¶Ô£¬»Ø¹ö
+				// æ›´æ–°è¡Œæ•°ä¸å¯¹ï¼Œå›æ»š
 				con->_con->rollback();
 				return false;
 			}
 		}
-		
+
 		{
-			// 3. ×¼±¸µÚÒ»¸öSQLÓï¾ä, ²åÈëÈÏÖ¤·½ºÃÓÑÊı¾İ
-			std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("INSERT IGNORE INTO friend(self_id, friend_id, back) "
-				"VALUES (?, ?, ?) "
+			// 3. æ’å…¥å¥½å‹å…³ç³» - å…³é”®æ”¹è¿›ï¼šæŒ‰ç…§å›ºå®šé¡ºåºæ’å…¥é¿å…æ­»é”
+			// ç¡®å®šæ’å…¥é¡ºåºï¼šå§‹ç»ˆæŒ‰ç…§ uid å¤§å°é¡ºåº
+			int smaller_uid = std::min(from, to);
+			int larger_uid = std::max(from, to);
+
+			// ç¬¬ä¸€æ¬¡æ’å…¥ï¼šè¾ƒå°çš„ uid ä½œä¸º self_id
+			std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement(
+				"INSERT IGNORE INTO friend(self_id, friend_id, back) "
+				"VALUES (?, ?, ?)"
 			));
-			//·´¹ıÀ´µÄÉêÇëÊ±from£¬ÑéÖ¤Ê±to
-			pstmt->setInt(1, from); // from id
-			pstmt->setInt(2, to);
-			pstmt->setString(3, back_name);
-			// Ö´ĞĞ¸üĞÂ
+
+			if (from == smaller_uid) {
+				pstmt->setInt(1, from);
+				pstmt->setInt(2, to);
+				pstmt->setString(3, back_name);
+			}
+			else {
+				pstmt->setInt(1, to);
+				pstmt->setInt(2, from);
+				pstmt->setString(3, reverse_back);
+			}
+
 			int rowAffected = pstmt->executeUpdate();
 			if (rowAffected < 0) {
 				con->_con->rollback();
 				return false;
 			}
 
-			//×¼±¸µÚ¶ş¸öSQLÓï¾ä£¬²åÈëÉêÇë·½ºÃÓÑÊı¾İ
-			std::unique_ptr<sql::PreparedStatement> pstmt2(con->_con->prepareStatement("INSERT IGNORE INTO friend(self_id, friend_id, back) "
-				"VALUES (?, ?, ?) "
+			// ç¬¬äºŒæ¬¡æ’å…¥ï¼šè¾ƒå¤§çš„ uid ä½œä¸º self_id
+			std::unique_ptr<sql::PreparedStatement> pstmt2(con->_con->prepareStatement(
+				"INSERT IGNORE INTO friend(self_id, friend_id, back) "
+				"VALUES (?, ?, ?)"
 			));
-			//·´¹ıÀ´µÄÉêÇëÊ±from£¬ÑéÖ¤Ê±to
-			pstmt2->setInt(1, to); // from id
-			pstmt2->setInt(2, from);
-			pstmt2->setString(3, reverse_back);
-			// Ö´ĞĞ¸üĞÂ
+
+			if (from == larger_uid) {
+				pstmt2->setInt(1, from);
+				pstmt2->setInt(2, to);
+				pstmt2->setString(3, back_name);
+			}
+			else {
+				pstmt2->setInt(1, to);
+				pstmt2->setInt(2, from);
+				pstmt2->setString(3, reverse_back);
+			}
+
 			int rowAffected2 = pstmt2->executeUpdate();
 			if (rowAffected2 < 0) {
 				con->_con->rollback();
@@ -335,15 +356,13 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 			}
 		}
 
-		
-
-		// 4. ´´½¨ chat_thread
+		// 4. åˆ›å»º chat_thread
 		long long threadId = 0;
 		{
 			std::unique_ptr<sql::PreparedStatement> threadStmt(con->_con->prepareStatement(
-				"INSERT INTO chat_thread (type, created_at) VALUES ('private', NOW());"
+				"INSERT INTO chat_thread (type, created_at) VALUES ('private', NOW())"
 			));
-			
+
 			threadStmt->executeUpdate();
 
 			std::unique_ptr<sql::Statement> stmt(con->_con->createStatement());
@@ -355,11 +374,12 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 				threadId = rs->getInt64(1);
 			}
 			else {
+				con->_con->rollback();
 				return false;
 			}
 		}
 
-		// 5. ²åÈë private_chat
+		// 5. æ’å…¥ private_chat
 		{
 			std::unique_ptr<sql::PreparedStatement> pcStmt(con->_con->prepareStatement(
 				"INSERT INTO private_chat(thread_id, user1_id, user2_id) VALUES (?, ?, ?)"
@@ -368,27 +388,37 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 			pcStmt->setInt64(1, threadId);
 			pcStmt->setInt(2, from);
 			pcStmt->setInt(3, to);
-			if (pcStmt->executeUpdate() < 0) return false;
+
+			if (pcStmt->executeUpdate() < 0) {
+				con->_con->rollback();
+				return false;
+			}
 		}
 
-		// 6. ¿ÉÑ¡£º²åÈë³õÊ¼ÏûÏ¢µ½ chat_message
-		if (apply_desc.empty() == false)
+		// 6. æ’å…¥åˆå§‹æ¶ˆæ¯ï¼ˆç”³è¯·æè¿°ï¼‰
+		if (!apply_desc.empty())
 		{
 			std::unique_ptr<sql::PreparedStatement> msgStmt(con->_con->prepareStatement(
-				"INSERT INTO chat_message(thread_id, sender_id, recv_id, content,created_at, updated_at, status) VALUES (?, ?, ?, ?,NOW(),NOW(),?)"
+				"INSERT INTO chat_message(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
+				"VALUES (?, ?, ?, ?, NOW(), NOW(), ?)"
 			));
-		
+
 			msgStmt->setInt64(1, threadId);
 			msgStmt->setInt(2, to);
 			msgStmt->setInt(3, from);
 			msgStmt->setString(4, apply_desc);
 			msgStmt->setInt(5, 2);
-			if (msgStmt->executeUpdate() < 0) { return false; }
+
+			if (msgStmt->executeUpdate() < 0) {
+				con->_con->rollback();
+				return false;
+			}
 
 			std::unique_ptr<sql::Statement> stmt(con->_con->createStatement());
 			std::unique_ptr<sql::ResultSet> rs(
 				stmt->executeQuery("SELECT LAST_INSERT_ID()")
 			);
+
 			if (rs->next()) {
 				auto messageId = rs->getInt64(1);
 				auto tx_data = std::make_shared<AddFriendMsg>();
@@ -402,28 +432,34 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 				chat_datas.push_back(tx_data);
 			}
 			else {
+				con->_con->rollback();
 				return false;
 			}
 		}
 
+		// 7. æ’å…¥æˆä¸ºå¥½å‹çš„æ¶ˆæ¯
 		{
 			std::unique_ptr<sql::PreparedStatement> msgStmt(con->_con->prepareStatement(
-				"INSERT INTO chat_message(thread_id, sender_id, recv_id, content, created_at, updated_at, status) VALUES (?, ?, ?, ?,NOW(),NOW(),?)"
+				"INSERT INTO chat_message(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
+				"VALUES (?, ?, ?, ?, NOW(), NOW(), ?)"
 			));
-		
+
 			msgStmt->setInt64(1, threadId);
 			msgStmt->setInt(2, from);
 			msgStmt->setInt(3, to);
 			msgStmt->setString(4, "We are friends now!");
-
 			msgStmt->setInt(5, 2);
 
-			if (msgStmt->executeUpdate() < 0) { return false; }
+			if (msgStmt->executeUpdate() < 0) {
+				con->_con->rollback();
+				return false;
+			}
 
 			std::unique_ptr<sql::Statement> stmt(con->_con->createStatement());
 			std::unique_ptr<sql::ResultSet> rs(
 				stmt->executeQuery("SELECT LAST_INSERT_ID()")
 			);
+
 			if (rs->next()) {
 				auto messageId = rs->getInt64(1);
 				auto tx_data = std::make_shared<AddFriendMsg>();
@@ -436,30 +472,38 @@ bool MysqlDao::AddFriend(const int& from, const int& to, std::string back_name,
 				chat_datas.push_back(tx_data);
 			}
 			else {
+				con->_con->rollback();
 				return false;
 			}
 		}
 
-		// Ìá½»ÊÂÎñ
+		// æäº¤äº‹åŠ¡
 		con->_con->commit();
 		std::cout << "addfriend insert friends success" << std::endl;
 
 		return true;
 	}
 	catch (sql::SQLException& e) {
-		// Èç¹û·¢Éú´íÎó£¬»Ø¹öÊÂÎñ
+		// å¦‚æœå‘ç”Ÿé”™è¯¯ï¼Œå›æ»šäº‹åŠ¡
 		if (con) {
 			con->_con->rollback();
 		}
 		std::cerr << "SQLException: " << e.what();
 		std::cerr << " (MySQL error code: " << e.getErrorCode();
 		std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+
+		// å¦‚æœæ˜¯æ­»é”é”™è¯¯ï¼ˆ1213ï¼‰ï¼Œå¯ä»¥è€ƒè™‘é‡è¯•
+		if (e.getErrorCode() == 1213) {
+			std::cerr << "Deadlock detected, consider retry" << std::endl;
+		}
+
 		return false;
 	}
 
-
 	return true;
 }
+
+
 
 std::shared_ptr<UserInfo> MysqlDao::GetUser(int uid)
 {
@@ -473,14 +517,14 @@ std::shared_ptr<UserInfo> MysqlDao::GetUser(int uid)
 		});
 
 	try {
-		// ×¼±¸SQLÓï¾ä
+		// å‡†å¤‡SQLè¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("SELECT * FROM user WHERE uid = ?"));
-		pstmt->setInt(1, uid); // ½«uidÌæ»»ÎªÄãÒª²éÑ¯µÄuid
+		pstmt->setInt(1, uid); // å°†uidæ›¿æ¢ä¸ºä½ è¦æŸ¥è¯¢çš„uid
 
-		// Ö´ĞĞ²éÑ¯
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 		std::shared_ptr<UserInfo> user_ptr = nullptr;
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			user_ptr.reset(new UserInfo);
 			user_ptr->pwd = res->getString("pwd");
@@ -515,14 +559,14 @@ std::shared_ptr<UserInfo> MysqlDao::GetUser(std::string name)
 		});
 
 	try {
-		// ×¼±¸SQLÓï¾ä
+		// å‡†å¤‡SQLè¯­å¥
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("SELECT * FROM user WHERE name = ?"));
-		pstmt->setString(1, name); // ½«uidÌæ»»ÎªÄãÒª²éÑ¯µÄuid
+		pstmt->setString(1, name); // å°†uidæ›¿æ¢ä¸ºä½ è¦æŸ¥è¯¢çš„uid
 
-		// Ö´ĞĞ²éÑ¯
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 		std::shared_ptr<UserInfo> user_ptr = nullptr;
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			user_ptr.reset(new UserInfo);
 			user_ptr->pwd = res->getString("pwd");
@@ -558,17 +602,17 @@ bool MysqlDao::GetApplyList(int touid, std::vector<std::shared_ptr<ApplyInfo>>& 
 
 
 	try {
-		// ×¼±¸SQLÓï¾ä, ¸ù¾İÆğÊ¼idºÍÏŞÖÆÌõÊı·µ»ØÁĞ±í
+		// å‡†å¤‡SQLè¯­å¥, æ ¹æ®èµ·å§‹idå’Œé™åˆ¶æ¡æ•°è¿”å›åˆ—è¡¨
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("select apply.from_uid, apply.status, user.name, "
 			"user.nick, user.sex from friend_apply as apply join user on apply.from_uid = user.uid where apply.to_uid = ? "
 			"and apply.id > ? order by apply.id ASC LIMIT ? "));
 
-		pstmt->setInt(1, touid); // ½«uidÌæ»»ÎªÄãÒª²éÑ¯µÄuid
-		pstmt->setInt(2, begin); // ÆğÊ¼id
-		pstmt->setInt(3, limit); //Æ«ÒÆÁ¿
-		// Ö´ĞĞ²éÑ¯
+		pstmt->setInt(1, touid); // å°†uidæ›¿æ¢ä¸ºä½ è¦æŸ¥è¯¢çš„uid
+		pstmt->setInt(2, begin); // èµ·å§‹id
+		pstmt->setInt(3, limit); //åç§»é‡
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			auto name = res->getString("name");
 			auto uid = res->getInt("from_uid");
@@ -601,18 +645,18 @@ bool MysqlDao::GetFriendList(int self_id, std::vector<std::shared_ptr<UserInfo> 
 
 
 	try {
-		// ×¼±¸SQLÓï¾ä, ¸ù¾İÆğÊ¼idºÍÏŞÖÆÌõÊı·µ»ØÁĞ±í
+		// å‡†å¤‡SQLè¯­å¥, æ ¹æ®èµ·å§‹idå’Œé™åˆ¶æ¡æ•°è¿”å›åˆ—è¡¨
 		std::unique_ptr<sql::PreparedStatement> pstmt(con->_con->prepareStatement("select * from friend where self_id = ? "));
 
-		pstmt->setInt(1, self_id); // ½«uidÌæ»»ÎªÄãÒª²éÑ¯µÄuid
+		pstmt->setInt(1, self_id); // å°†uidæ›¿æ¢ä¸ºä½ è¦æŸ¥è¯¢çš„uid
 
-		// Ö´ĞĞ²éÑ¯
+		// æ‰§è¡ŒæŸ¥è¯¢
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
-		// ±éÀú½á¹û¼¯
+		// éå†ç»“æœé›†
 		while (res->next()) {
 			auto friend_id = res->getInt("friend_id");
 			auto back = res->getString("back");
-			//ÔÙÒ»´Î²éÑ¯friend_id¶ÔÓ¦µÄĞÅÏ¢
+			//å†ä¸€æ¬¡æŸ¥è¯¢friend_idå¯¹åº”çš„ä¿¡æ¯
 			auto user_info = GetUser(friend_id);
 			if (user_info == nullptr) {
 				continue;
@@ -633,16 +677,105 @@ bool MysqlDao::GetFriendList(int self_id, std::vector<std::shared_ptr<UserInfo> 
 	return true;
 }
 
-// ĞÂÔöÁ½¸öÊä³ö²ÎÊı£ºloadMore, nextLastId
+//// æ–°å¢ä¸¤ä¸ªè¾“å‡ºå‚æ•°ï¼šloadMore, nextLastId
+//bool MysqlDao::GetUserThreads(
+//	int64_t userId,
+//	int64_t lastId,
+//	int      pageSize,
+//	std::vector<std::shared_ptr<ChatThreadInfo>>& threads,
+//	bool& loadMore,
+//	int& nextLastId)
+//{
+//	// åˆå§‹çŠ¶æ€
+//	loadMore = false;
+//	nextLastId = lastId;
+//	threads.clear();
+//
+//	auto con = pool_->getConnection();
+//	if (!con) {
+//		return false;
+//	}
+//	Defer defer([this, &con]() {
+//		pool_->returnConnection(std::move(con));
+//		});
+//	auto& conn = con->_con;
+//
+//	try {
+//		// å‡†å¤‡åˆ†é¡µæŸ¥è¯¢ï¼šCTE + UNION ALL + ORDER + LIMIT N+1
+//		std::string sql =
+//			"WITH all_threads AS ( "
+//			"  SELECT thread_id, 'private' AS type, user1_id, user2_id "
+//			"    FROM private_chat "
+//			"   WHERE (user1_id = ? OR user2_id = ?) "
+//			"     AND thread_id > ? "
+//			"  UNION ALL "
+//			"  SELECT thread_id, 'group'   AS type, 0 AS user1_id, 0 AS user2_id "
+//			"    FROM group_chat_member "
+//			"   WHERE user_id   = ? "
+//			"     AND thread_id > ? "
+//			") "
+//			"SELECT thread_id, type, user1_id, user2_id "
+//			"  FROM all_threads "
+//			" ORDER BY thread_id "
+//			" LIMIT ?;";
+//
+//		std::unique_ptr<sql::PreparedStatement> pstmt(
+//			conn->prepareStatement(sql));
+//
+//		// ç»‘å®šå‚æ•°ï¼š? å¯¹åº” (userId, userId, lastId, userId, lastId, pageSize+1)
+//		int idx = 1;
+//		pstmt->setInt64(idx++, userId);              // private.user1_id
+//		pstmt->setInt64(idx++, userId);              // private.user2_id
+//		pstmt->setInt64(idx++, lastId);              // private.thread_id > lastId
+//		pstmt->setInt64(idx++, userId);              // group.user_id
+//		pstmt->setInt64(idx++, lastId);              // group.thread_id > lastId
+//		pstmt->setInt(idx++, pageSize + 1);          // LIMIT pageSize+1
+//
+//		// æ‰§è¡Œ
+//		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+//
+//		// å…ˆæŠŠæ‰€æœ‰è¡Œè¯»åˆ°ä¸´æ—¶å®¹å™¨
+//		std::vector<std::shared_ptr<ChatThreadInfo>> tmp;
+//		while (res->next()) {
+//			auto cti = std::make_shared<ChatThreadInfo>();
+//			cti->_thread_id = res->getInt64("thread_id");
+//			cti->_type = res->getString("type");
+//			cti->_user1_id = res->getInt64("user1_id");
+//			cti->_user2_id = res->getInt64("user2_id");
+//			tmp.push_back(cti);
+//		}
+//
+//		// åˆ¤æ–­æ˜¯å¦å¤šå–åˆ°ä¸€æ¡
+//		if ((int)tmp.size() > pageSize) {
+//			loadMore = true;
+//			tmp.pop_back();  // ä¸¢æ‰ç¬¬ pageSize+1 æ¡
+//		}
+//
+//		// å¦‚æœè¿˜æœ‰æ•°æ®ï¼Œæ›´æ–° nextLastId ä¸ºæœ€åä¸€æ¡çš„ thread_id
+//		if (!tmp.empty()) {
+//			nextLastId = tmp.back()->_thread_id;
+//		}
+//
+//		// ç§»å…¥è¾“å‡ºå‘é‡
+//		threads = std::move(tmp);
+//	}
+//	catch (sql::SQLException& e) {
+//		std::cerr << "SQLException: " << e.what()
+//			<< " (MySQL error code: " << e.getErrorCode()
+//			<< ", SQLState: " << e.getSQLState() << ")\n";
+//		return false;
+//	}
+//
+//	return true;
+//}
 bool MysqlDao::GetUserThreads(
 	int64_t userId,
 	int64_t lastId,
-	int      pageSize,
+	int     pageSize,
 	std::vector<std::shared_ptr<ChatThreadInfo>>& threads,
 	bool& loadMore,
 	int& nextLastId)
 {
-	// ³õÊ¼×´Ì¬
 	loadMore = false;
 	nextLastId = lastId;
 	threads.clear();
@@ -651,13 +784,15 @@ bool MysqlDao::GetUserThreads(
 	if (!con) {
 		return false;
 	}
+
 	Defer defer([this, &con]() {
 		pool_->returnConnection(std::move(con));
 		});
+
 	auto& conn = con->_con;
 
 	try {
-		// ×¼±¸·ÖÒ³²éÑ¯£ºCTE + UNION ALL + ORDER + LIMIT N+1
+		// 1ï¸å…ˆæŸ¥è¯¢â€œæˆ‘å‚ä¸çš„æ‰€æœ‰ threadâ€ï¼ˆprivate + groupï¼‰
 		std::string sql =
 			"WITH all_threads AS ( "
 			"  SELECT thread_id, 'private' AS type, user1_id, user2_id "
@@ -665,9 +800,9 @@ bool MysqlDao::GetUserThreads(
 			"   WHERE (user1_id = ? OR user2_id = ?) "
 			"     AND thread_id > ? "
 			"  UNION ALL "
-			"  SELECT thread_id, 'group'   AS type, 0 AS user1_id, 0 AS user2_id "
+			"  SELECT thread_id, 'group' AS type, 0 AS user1_id, 0 AS user2_id "
 			"    FROM group_chat_member "
-			"   WHERE user_id   = ? "
+			"   WHERE user_id = ? "
 			"     AND thread_id > ? "
 			") "
 			"SELECT thread_id, type, user1_id, user2_id "
@@ -678,19 +813,16 @@ bool MysqlDao::GetUserThreads(
 		std::unique_ptr<sql::PreparedStatement> pstmt(
 			conn->prepareStatement(sql));
 
-		// °ó¶¨²ÎÊı£º? ¶ÔÓ¦ (userId, userId, lastId, userId, lastId, pageSize+1)
 		int idx = 1;
-		pstmt->setInt64(idx++, userId);              // private.user1_id
-		pstmt->setInt64(idx++, userId);              // private.user2_id
-		pstmt->setInt64(idx++, lastId);              // private.thread_id > lastId
-		pstmt->setInt64(idx++, userId);              // group.user_id
-		pstmt->setInt64(idx++, lastId);              // group.thread_id > lastId
-		pstmt->setInt(idx++, pageSize + 1);          // LIMIT pageSize+1
+		pstmt->setInt64(idx++, userId);
+		pstmt->setInt64(idx++, userId);
+		pstmt->setInt64(idx++, lastId);
+		pstmt->setInt64(idx++, userId);
+		pstmt->setInt64(idx++, lastId);
+		pstmt->setInt(idx++, pageSize + 1);
 
-		// Ö´ĞĞ
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 
-		// ÏÈ°ÑËùÓĞĞĞ¶Áµ½ÁÙÊ±ÈİÆ÷
 		std::vector<std::shared_ptr<ChatThreadInfo>> tmp;
 		while (res->next()) {
 			auto cti = std::make_shared<ChatThreadInfo>();
@@ -701,19 +833,81 @@ bool MysqlDao::GetUserThreads(
 			tmp.push_back(cti);
 		}
 
-		// ÅĞ¶ÏÊÇ·ñ¶àÈ¡µ½Ò»Ìõ
+		// 2ï¸ åˆ†é¡µåˆ¤æ–­
 		if ((int)tmp.size() > pageSize) {
 			loadMore = true;
-			tmp.pop_back();  // ¶ªµôµÚ pageSize+1 Ìõ
+			tmp.pop_back();
 		}
 
-		// Èç¹û»¹ÓĞÊı¾İ£¬¸üĞÂ nextLastId Îª×îºóÒ»ÌõµÄ thread_id
 		if (!tmp.empty()) {
 			nextLastId = tmp.back()->_thread_id;
 		}
 
-		// ÒÆÈëÊä³öÏòÁ¿
+		// 3ï¸ æ”¶é›†æ‰€æœ‰ group çš„ thread_id
+		std::vector<int64_t> groupThreadIds;
+		for (auto& t : tmp) {
+			if (t->_type == "group") {
+				groupThreadIds.push_back(t->_thread_id);
+			}
+		}
+
+		// 4ï¸ å¦‚æœæœ‰ç¾¤èŠï¼Œæ‰¹é‡æŸ¥ç¾¤æˆå‘˜
+		if (!groupThreadIds.empty()) {
+			std::ostringstream oss;
+			oss << "SELECT thread_id, user_id, role, muted_until "
+				"FROM group_chat_member WHERE thread_id IN (";
+			for (size_t i = 0; i < groupThreadIds.size(); ++i) {
+				if (i > 0) oss << ",";
+				oss << "?";
+			}
+			oss << ");";
+
+			std::unique_ptr<sql::PreparedStatement> gpstmt(
+				conn->prepareStatement(oss.str()));
+
+			int pidx = 1;
+			for (auto tid : groupThreadIds) {
+				gpstmt->setInt64(pidx++, tid);
+			}
+
+			std::unique_ptr<sql::ResultSet> gres(gpstmt->executeQuery());
+
+			// å»ºç«‹ thread_id -> ChatThreadInfo æ˜ å°„
+			std::unordered_map<int64_t, std::shared_ptr<ChatThreadInfo>> threadMap;
+			for (auto& t : tmp) {
+				if (t->_type == "group") {
+					threadMap[t->_thread_id] = t;
+				}
+			}
+
+			// å¡«å……æˆå‘˜æ•°æ®
+			while (gres->next()) {
+				int64_t tid = gres->getInt64("thread_id");
+				int64_t uid = gres->getInt64("user_id");
+
+				auto it = threadMap.find(tid);
+				if (it == threadMap.end()) continue;
+
+				auto& thread = it->second;
+
+				thread->_member_ids.push_back((int)uid);
+
+				auto gi = std::make_shared<GroupInfo>();
+				gi->_role = gres->getInt("role");
+
+				if (gres->isNull("muted_until")) {
+					gi->_mute_until.clear();
+				}
+				else {
+					gi->_mute_until = gres->getString("muted_until");
+				}
+
+				thread->_meber_infos[(int)uid] = gi;
+			}
+		}
+
 		threads = std::move(tmp);
+		return true;
 	}
 	catch (sql::SQLException& e) {
 		std::cerr << "SQLException: " << e.what()
@@ -721,8 +915,6 @@ bool MysqlDao::GetUserThreads(
 			<< ", SQLState: " << e.getSQLState() << ")\n";
 		return false;
 	}
-
-	return true;
 }
 
 bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
@@ -731,20 +923,21 @@ bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
 	if (!con) {
 		return false;
 	}
+
 	Defer defer([this, &con]() {
 		pool_->returnConnection(std::move(con));
 		});
+
 	auto& conn = con->_con;
+	int uid1 = std::min(user1_id, user2_id);
+	int uid2 = std::max(user1_id, user2_id);
 	try {
-		// ¿ªÆôÊÂÎñ
+		// å¼€å¯äº‹åŠ¡
 		conn->setAutoCommit(false);
-		// 1. ²éÑ¯ÊÇ·ñÒÑ´æÔÚË½ÁÄ²¢¼ÓĞĞ¼¶Ëø
-		int uid1 = std::min(user1_id, user2_id);
-		int uid2 = std::max(user1_id, user2_id);
+		// 1. å…ˆå°è¯•æŸ¥è¯¢å·²å­˜åœ¨çš„è®°å½•(æ— é”)
 		std::string check_sql =
 			"SELECT thread_id FROM private_chat "
-			"WHERE (user1_id = ? AND user2_id = ?) "
-			"FOR UPDATE;";
+			"WHERE user1_id = ? AND user2_id = ?;";
 
 		std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement(check_sql));
 		pstmt->setInt64(1, uid1);
@@ -752,28 +945,28 @@ bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
 		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
 
 		if (res->next()) {
-			// Èç¹ûÒÑ´æÔÚ£¬·µ»Ø¸Ã thread_id
+			// å¦‚æœå·²å­˜åœ¨ï¼Œè¿”å›è¯¥ thread_id
 			thread_id = res->getInt("thread_id");
-			conn->commit();  // Ìá½»ÊÂÎñ
+			conn->commit();  // æäº¤äº‹åŠ¡
 			return true;
 		}
 
-		// 2. Èç¹ûÎ´ÕÒµ½£¬´´½¨ĞÂµÄ chat_thread ºÍ private_chat ¼ÇÂ¼
-		// ÔÚ chat_thread ±í²åÈëĞÂ¼ÇÂ¼
+		// 2. å¦‚æœæœªæ‰¾åˆ°ï¼Œåˆ›å»ºæ–°çš„ chat_thread å’Œ private_chat è®°å½•
+		// åœ¨ chat_thread è¡¨æ’å…¥æ–°è®°å½•
 		std::string insert_chat_thread_sql =
 			"INSERT INTO chat_thread (type, created_at) VALUES ('private', NOW());";
 
 		std::unique_ptr<sql::PreparedStatement> pstmt_insert_thread(conn->prepareStatement(insert_chat_thread_sql));
 		pstmt_insert_thread->executeUpdate();
 
-		// »ñÈ¡ĞÂ²åÈëµÄ thread_id
+		// è·å–æ–°æ’å…¥çš„ thread_id
 		std::string get_last_insert_id_sql = "SELECT LAST_INSERT_ID();";
 		std::unique_ptr<sql::PreparedStatement> pstmt_last_insert_id(conn->prepareStatement(get_last_insert_id_sql));
 		std::unique_ptr<sql::ResultSet> res_last_id(pstmt_last_insert_id->executeQuery());
 		res_last_id->next();
 		thread_id = res_last_id->getInt(1);
 
-		// 3. ÔÚ private_chat ±í²åÈëĞÂ¼ÇÂ¼
+		// 3. åœ¨ private_chat è¡¨æ’å…¥æ–°è®°å½•
 		std::string insert_private_chat_sql =
 			"INSERT INTO private_chat (thread_id, user1_id, user2_id, created_at) "
 			"VALUES (?, ?, ?, NOW());";
@@ -785,19 +978,111 @@ bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
 		pstmt_insert_private->setInt64(3, uid2);
 		pstmt_insert_private->executeUpdate();
 
-		// Ìá½»ÊÂÎñ
+		// æäº¤äº‹åŠ¡
 		conn->commit();
 		return true;
 	}
 	catch (sql::SQLException& e) {
-		std::cerr << "SQLException: " << e.what() << std::endl;
 		conn->rollback();
+
+		// æ£€æŸ¥æ˜¯å¦æ˜¯å”¯ä¸€é”®å†²çª (MySQL error code 1062)
+		if (e.getErrorCode() == 1062) {
+			// é‡æ–°æŸ¥è¯¢å·²å­˜åœ¨çš„è®°å½•
+			try {
+				conn->setAutoCommit(true);
+				std::string retry_sql =
+					"SELECT thread_id FROM private_chat "
+					"WHERE user1_id = ? AND user2_id = ?;";
+				std::unique_ptr<sql::PreparedStatement> pstmt_retry(
+					conn->prepareStatement(retry_sql));
+				pstmt_retry->setInt64(1, uid1);
+				pstmt_retry->setInt64(2, uid2);
+				std::unique_ptr<sql::ResultSet> res_retry(pstmt_retry->executeQuery());
+
+				if (res_retry->next()) {
+					thread_id = res_retry->getInt("thread_id");
+					return true;
+				}
+			}
+			catch (...) {
+				return false;
+			}
+		}
+
+		std::cerr << "SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")" << std::endl;
 		return false;
 	}
 	return false;
 }
 
-std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_message_id, int page_size)
+//å•èŠçš„æ—§ç‰ˆ
+//std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_message_id, int page_size)
+//{
+//	auto con = pool_->getConnection();
+//	if (!con) {
+//		return nullptr;
+//	}
+//	Defer defer([this, &con]() {
+//		pool_->returnConnection(std::move(con));
+//		});
+//	auto& conn = con->_con;
+//
+//
+//	try {
+//		auto page_res = std::make_shared<PageResult>();
+//		page_res->load_more = false;
+//		page_res->next_cursor = last_message_id;
+//
+//		// SQLï¼šå¤šå–ä¸€æ¡ï¼Œç”¨äºåˆ¤æ–­æ˜¯å¦è¿˜æœ‰æ›´å¤š
+//		const std::string sql = R"(
+//        SELECT message_id, thread_id, sender_id, recv_id, content,
+//               created_at, updated_at, status
+//        FROM chat_message
+//        WHERE thread_id = ?
+//          AND message_id > ?
+//        ORDER BY message_id ASC
+//        LIMIT ?
+//		)";
+//
+//		uint32_t fetch_limit = page_size + 1;
+//		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
+//			conn->prepareStatement(sql)
+//			);
+//		pstmt->setInt(1, thread_id);
+//		pstmt->setInt(2, last_message_id);
+//		pstmt->setInt(3, fetch_limit);
+//
+//		auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
+//
+//		// è¯»å– fetch_limit æ¡è®°å½•
+//		while (rs->next()) {
+//			ChatMessage msg;
+//			msg.message_id = rs->getUInt64("message_id");
+//			msg.thread_id = rs->getUInt64("thread_id");
+//			msg.sender_id = rs->getUInt64("sender_id");
+//			msg.recv_id = rs->getUInt64("recv_id");
+//			msg.content = rs->getString("content");
+//			msg.chat_time = rs->getString("created_at");
+//			msg.status = rs->getInt("status");
+//			page_res->messages.push_back(std::move(msg));
+//		}
+//
+//		return page_res;
+//	}
+//	catch (sql::SQLException& e) {
+//		std::cerr << "SQLException: " << e.what() << std::endl;
+//		conn->rollback();
+//		return nullptr;
+//	}
+//	return nullptr;
+//
+//}
+
+std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(
+	int thread_id,
+	int last_message_id,
+	int page_size)
 {
 	auto con = pool_->getConnection();
 	if (!con) {
@@ -808,35 +1093,51 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_messag
 		});
 	auto& conn = con->_con;
 
-
 	try {
 		auto page_res = std::make_shared<PageResult>();
 		page_res->load_more = false;
 		page_res->next_cursor = last_message_id;
 
-		// SQL£º¶àÈ¡Ò»Ìõ£¬ÓÃÓÚÅĞ¶ÏÊÇ·ñ»¹ÓĞ¸ü¶à
 		const std::string sql = R"(
-        SELECT message_id, thread_id, sender_id, recv_id, content,
-               created_at, updated_at, status
-        FROM chat_message
-        WHERE thread_id = ?
-          AND message_id > ?
-        ORDER BY message_id ASC
-        LIMIT ?
-		)";
+            SELECT 
+                m.message_id,
+                m.thread_id,
+                m.sender_id,
+                m.recv_id,
+                m.content,
+                m.created_at,
+                m.updated_at,
+                m.status,
+                t.type AS thread_type
+            FROM chat_message m
+            JOIN chat_thread t
+              ON m.thread_id = t.id
+            WHERE m.thread_id = ?
+              AND m.message_id > ?
+            ORDER BY m.message_id ASC
+            LIMIT ?
+        )";
 
 		uint32_t fetch_limit = page_size + 1;
 		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
 			conn->prepareStatement(sql)
-			);
+		);
+
 		pstmt->setInt(1, thread_id);
 		pstmt->setInt(2, last_message_id);
 		pstmt->setInt(3, fetch_limit);
 
 		auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
-		// ¶ÁÈ¡ fetch_limit Ìõ¼ÇÂ¼
+		bool first_row = true;
+
 		while (rs->next()) {
+			// thread_type åªéœ€è¦è¯»ä¸€æ¬¡
+			if (first_row) {
+				page_res->thread_type = rs->getString("thread_type");
+				first_row = false;
+			}
+
 			ChatMessage msg;
 			msg.message_id = rs->getUInt64("message_id");
 			msg.thread_id = rs->getUInt64("thread_id");
@@ -845,7 +1146,19 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_messag
 			msg.content = rs->getString("content");
 			msg.chat_time = rs->getString("created_at");
 			msg.status = rs->getInt("status");
+
 			page_res->messages.push_back(std::move(msg));
+		}
+
+		// å¤šå–ä¸€æ¡ï¼Œç”¨äºåˆ¤æ–­æ˜¯å¦è¿˜æœ‰æ›´å¤š
+		if ((int)page_res->messages.size() > page_size) {
+			page_res->load_more = true;
+			page_res->messages.pop_back();
+		}
+
+		if (!page_res->messages.empty()) {
+			page_res->next_cursor =
+				page_res->messages.back().message_id;
 		}
 
 		return page_res;
@@ -855,8 +1168,6 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_messag
 		conn->rollback();
 		return nullptr;
 	}
-	return nullptr;
-
 }
 
 
@@ -872,7 +1183,7 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 
 
 	try {
-		//¹Ø±Õ×Ô¶¯Ìá½»£¬ÒÔÊÖ¶¯¹ÜÀíÊÂÎñ
+		//å…³é—­è‡ªåŠ¨æäº¤ï¼Œä»¥æ‰‹åŠ¨ç®¡ç†äº‹åŠ¡
 		conn->setAutoCommit(false);
 		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
 			conn->prepareStatement(
@@ -883,7 +1194,7 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 		);
 
 		for (auto& msg : chat_datas) {
-			// ÆÕÍ¨×Ö¶Î
+			// æ™®é€šå­—æ®µ
 			pstmt->setUInt64(1, msg->thread_id);
 			pstmt->setUInt64(2, msg->sender_id);
 			pstmt->setUInt64(3, msg->recv_id);
@@ -895,7 +1206,7 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 			pstmt->setInt(7, msg->status);
 			pstmt->executeUpdate();
 
-			// 2. È¡ LAST_INSERT_ID()
+			// 2. å– LAST_INSERT_ID()
 			std::unique_ptr<sql::Statement> keyStmt(
 				conn->createStatement()
 			);
@@ -920,4 +1231,142 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 	}
 	return true;
 
+}
+
+bool MysqlDao::AddChatMsg(std::shared_ptr<ChatMessage> chat_data) {
+	auto con = pool_->getConnection();
+	if (!con) {
+		return false;
+	}
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+	auto& conn = con->_con;
+
+	try {
+		//å…³é—­è‡ªåŠ¨æäº¤ï¼Œä»¥æ‰‹åŠ¨ç®¡ç†äº‹åŠ¡
+		conn->setAutoCommit(false);
+		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
+			conn->prepareStatement(
+				"INSERT INTO chat_message "
+				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
+				"VALUES (?, ?, ?, ?, ?, ?, ?)"
+			)
+			);
+
+		// ç»‘å®šå‚æ•°
+		pstmt->setUInt64(1, chat_data->thread_id);
+		pstmt->setUInt64(2, chat_data->sender_id);
+		pstmt->setUInt64(3, chat_data->recv_id);
+		pstmt->setString(4, chat_data->content);
+		pstmt->setString(5, chat_data->chat_time);  // created_at
+		pstmt->setString(6, chat_data->chat_time);  // updated_at
+		pstmt->setInt(7, chat_data->status);
+
+		pstmt->executeUpdate();
+
+		// è·å–è‡ªå¢ä¸»é”®
+		std::unique_ptr<sql::Statement> keyStmt(
+			conn->createStatement()
+		);
+		std::unique_ptr<sql::ResultSet> rs(
+			keyStmt->executeQuery("SELECT LAST_INSERT_ID()")
+		);
+		if (rs->next()) {
+			chat_data->message_id = rs->getUInt64(1);
+		}
+
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e) {
+		std::cerr << "SQLException: " << e.what() << std::endl;
+		conn->rollback();
+		return false;
+	}
+}
+
+bool MysqlDao::CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id)
+{
+	auto con = pool_->getConnection();
+	if (!con) {
+		return false;
+	}
+
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+
+	auto& conn = con->_con;
+
+	try {
+		// å¼€å¯äº‹åŠ¡
+		conn->setAutoCommit(false);
+
+		// 1. åˆ›å»º chat_threadï¼ˆç¾¤èŠï¼‰
+		std::string insert_thread_sql =
+			"INSERT INTO chat_thread (type, created_at) "
+			"VALUES ('group', NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_thread(
+			conn->prepareStatement(insert_thread_sql));
+		pstmt_thread->executeUpdate();
+
+		// è·å– thread_id
+		std::string last_id_sql = "SELECT LAST_INSERT_ID();";
+		std::unique_ptr<sql::PreparedStatement> pstmt_last_id(
+			conn->prepareStatement(last_id_sql));
+		std::unique_ptr<sql::ResultSet> res_last_id(
+			pstmt_last_id->executeQuery());
+		res_last_id->next();
+		thread_id = res_last_id->getInt64(1);
+
+		// 2. åˆ›å»º group_chatï¼ˆname å¯ä¸ºç©ºï¼‰
+		std::string insert_group_chat_sql =
+			"INSERT INTO group_chat (thread_id, name, created_at) "
+			"VALUES (?, NULL, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_group_chat(
+			conn->prepareStatement(insert_group_chat_sql));
+		pstmt_group_chat->setInt64(1, thread_id);
+		pstmt_group_chat->executeUpdate();
+
+		// 3. æ’å…¥ç¾¤ä¸»ï¼ˆrole = 2ï¼‰
+		std::string insert_member_sql =
+			"INSERT INTO group_chat_member "
+			"(thread_id, user_id, role, joined_at) "
+			"VALUES (?, ?, ?, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_member(
+			conn->prepareStatement(insert_member_sql));
+
+		// ç¾¤ä¸»
+		pstmt_member->setInt64(1, thread_id);
+		pstmt_member->setInt64(2, user_id);
+		pstmt_member->setInt(3, 2);   // åˆ›å»ºè€…
+		pstmt_member->executeUpdate();
+
+		// 4. æ’å…¥æ™®é€šæˆå‘˜ï¼ˆrole = 0ï¼‰
+		for (int uid : member_uids) {
+			if (uid == user_id) {
+				continue; // é˜²å¾¡ï¼šé¿å…é‡å¤æ’è‡ªå·±
+			}
+
+			pstmt_member->setInt64(1, thread_id);
+			pstmt_member->setInt64(2, uid);
+			pstmt_member->setInt(3, 0); // æ™®é€šæˆå‘˜
+			pstmt_member->executeUpdate();
+		}
+
+		// æäº¤äº‹åŠ¡
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e) {
+		conn->rollback();
+		std::cerr << "SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")"
+			<< std::endl;
+		return false;
+	}
 }

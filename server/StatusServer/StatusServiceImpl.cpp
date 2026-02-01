@@ -1,19 +1,19 @@
-#include "StatusServiceImpl.h"
+ #include "StatusServiceImpl.h"
 #include "ConfigMgr.h"
 #include "const.h"
 #include "RedisMgr.h"
-#include <climits>
+#include <climits> 
 
 std::string generate_unique_string() {
 	// 创建UUID对象
-	boost::uuids::uuid uuid = boost::uuids::random_generator()();
+	boost::uuids::uuid uuid = boost::uuids::random_generator()();                   
 
 	// 将UUID转换为字符串
 	std::string unique_string = to_string(uuid);
 
 	return unique_string;
 }
-
+                                                 
 Status StatusServiceImpl::GetChatServer(ServerContext* context, const GetChatServerReq* request, GetChatServerRsp* reply)
 {
 	std::string prefix("llfc status server has received :  ");
@@ -50,6 +50,7 @@ StatusServiceImpl::StatusServiceImpl()
 		server.host = cfg[word]["Host"];
 		server.name = cfg[word]["Name"];
 		_servers[server.name] = server;
+		std::cout << "Server : " << server.name << std::endl;
 	}
 
 }
@@ -58,35 +59,39 @@ ChatServer StatusServiceImpl::getChatServer() {
 	std::lock_guard<std::mutex> guard(_server_mtx);
 	auto minServer = _servers.begin()->second;
 	
-	//auto count_str = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, minServer.name);
-	//if (count_str.empty()) {
-	//	//不存在则默认设置为最大
-	//	minServer.con_count = INT_MAX;
-	//}
-	//else {
-	//	minServer.con_count = std::stoi(count_str);
-	//}
+	// 1. 获取当前 minServer 在 Redis 中的最新连接数
+	auto count_str = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, minServer.name);
+	if (count_str.empty()) {
+		// 不存在则默认设置为最大，确保它在后续比较中处于劣势
+		minServer.con_count = INT_MAX;
+	}
+	else {
+		minServer.con_count = std::stoi(count_str);
+	}
+	std::cout << "最开始的minServer: " << minServer.name << " con_count: " << minServer.con_count << std::endl;
+	// 2. 遍历所有服务器，寻找连接数更小的服务器
+	for (auto& server : _servers) {
+		// 跳过已经处理过的 minServer
+		if (server.second.name == minServer.name) {
+			continue;
+		}
 
+		// 获取当前遍历到的服务器的连接数
+		auto cur_count_str = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, server.second.name);
+		if (cur_count_str.empty()) {
+			server.second.con_count = INT_MAX;
+		}
+		else {
+			server.second.con_count = std::stoi(cur_count_str);
+		}
 
-	//// 使用范围基于for循环
-	//for ( auto& server : _servers) {
-	//	
-	//	if (server.second.name == minServer.name) {
-	//		continue;
-	//	}
-
-	//	auto count_str = RedisMgr::GetInstance()->HGet(LOGIN_COUNT, server.second.name);
-	//	if (count_str.empty()) {
-	//		server.second.con_count = INT_MAX;
-	//	}
-	//	else {
-	//		server.second.con_count = std::stoi(count_str);
-	//	}
-
-	//	if (server.second.con_count < minServer.con_count) {
-	//		minServer = server.second;
-	//	}
-	//}
+		std::cout << "Server: " << server.second.name << " con_count: " << server.second.con_count << std::endl;
+		
+		// 比较并更新最小值
+		if (server.second.con_count < minServer.con_count) {
+			minServer = server.second;
+		}
+	}
 
 	return minServer;
 }

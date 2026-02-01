@@ -582,7 +582,7 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	Json::Value root;
 	reader.parse(msg_data, root);
 
-	auto uid = root["fromuid"].asInt();
+	auto fromuid = root["fromuid"].asInt();
 	auto thread_id = root["thread_id"].asInt();
 	const Json::Value arrays = root["text_array"];
 	auto touid = root["touid"].asInt();
@@ -604,7 +604,7 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	for (const auto& txt_obj : arrays) {
 		auto chat_msg = std::make_shared<ChatMessage>();
 		chat_msg->chat_time = timestamp;
-		chat_msg->sender_id = uid;
+		chat_msg->sender_id = fromuid;
 		// 如果是群聊，数据库里的 recv_id 可以设为 0，靠 thread_id 区分
 		chat_msg->recv_id = (touid == 0) ? 0 : touid;
 		chat_msg->unique_id = txt_obj["unique_id"].asString();
@@ -619,7 +619,7 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 	// 3. 构造返回给发送者的回执 (RSP)
 	Json::Value rtvalue;
 	rtvalue["error"] = ErrorCodes::Success;
-	rtvalue["fromuid"] = uid;
+	rtvalue["fromuid"] = fromuid;
 	rtvalue["touid"] = touid;
 	rtvalue["thread_id"] = thread_id;
 
@@ -638,10 +638,11 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 		session->Send(rtvalue.toStyledString(), ID_TEXT_CHAT_MSG_RSP);
 		});
 
+	std::unordered_map<std::string, std::vector<int>> notify_map;
 	// 4. 遍历接收者列表，发送通知 (NOTIFY)
 	for (int current_touid : receiver_uids) {
 		// 过滤掉发送者自己
-		if (current_touid == uid) continue;
+		if (current_touid == fromuid) continue;
 
 		// 查询 Redis 查找当前接收者对应的 server ip
 		auto to_str = std::to_string(current_touid);
@@ -657,6 +658,7 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 		auto& cfg = ConfigMgr::Inst();
 		auto self_name = cfg["SelfServer"]["Name"];
 
+
 		// 情况 A: 目标用户在当前服务器
 		if (to_ip_value == self_name) {
 			auto target_session = UserMgr::GetInstance()->GetSession(current_touid);
@@ -667,18 +669,31 @@ void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short
 		}
 
 		// 情况 B: 目标用户在其他服务器，走 gRPC 转发
-		TextChatMsgReq text_msg_req;
-		text_msg_req.set_fromuid(uid);
-		text_msg_req.set_touid(current_touid);
-		text_msg_req.set_thread_id(thread_id);
+		
+		notify_map[to_ip_value].push_back(current_touid);
+
+
+	}
+
+	for (auto it = notify_map.begin(); it != notify_map.end(); ++it) {
+		auto& server_ip = it->first;
+		auto& uids = it->second;
+
+		GroupTextChatMsgReq req;
+		req.set_fromuid(fromuid);
+		req.set_thread_id(thread_id);
+		for (auto uid : uids) req.add_touids(uid);
+
 		for (const auto& chat_data : chat_datas) {
-			auto* text_msg = text_msg_req.add_textmsgs();
+			auto* text_msg = req.add_textmsgs();
 			text_msg->set_unique_id(chat_data->unique_id);
 			text_msg->set_msgcontent(chat_data->content);
 			text_msg->set_msg_id(chat_data->message_id);
 			text_msg->set_chat_time(chat_data->chat_time);
 		}
-		ChatGrpcClient::GetInstance()->NotifyTextChatMsg(to_ip_value, text_msg_req, notify_value);
+		std::cout << "-------------------------------------------------------------------" << server_ip << std::endl;
+		std::cout << "sending grpc group chat to server_ip: " << server_ip << std::endl;
+		ChatGrpcClient::GetInstance()->NotifyGroupTextChatMsg(server_ip, req, rtvalue);
 	}
 }
 

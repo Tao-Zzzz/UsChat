@@ -174,6 +174,52 @@ TextChatMsgRsp ChatGrpcClient::NotifyTextChatMsg(std::string server_ip,
 	return rsp;
 }
 
+GroupTextChatMsgRsp ChatGrpcClient::NotifyGroupTextChatMsg(
+	std::string server_ip,
+	const GroupTextChatMsgReq& req,
+	const Json::Value& rtvalue)
+{
+	GroupTextChatMsgRsp rsp;
+	rsp.set_error(ErrorCodes::Success);
+
+	Defer defer([&rsp, &req]() {
+		rsp.set_fromuid(req.fromuid());
+		rsp.set_thread_id(req.thread_id());
+		for (auto uid : req.touids()) {
+			rsp.add_touids(uid);
+		}
+		for (const auto& text_data : req.textmsgs()) {
+			auto* msg = rsp.add_textmsgs();
+			msg->set_unique_id(text_data.unique_id());
+			msg->set_msg_id(text_data.msg_id());
+			msg->set_msgcontent(text_data.msgcontent());
+			msg->set_chat_time(text_data.chat_time());
+		}
+		});
+
+	auto it = _pools.find(server_ip);
+	if (it == _pools.end()) {
+		return rsp;
+	}
+
+	auto& pool = it->second;
+	ClientContext context;
+	auto stub = pool->getConnection();
+
+	Status status = stub->NotifyGroupTextChatMsg(&context, req, &rsp);
+	std::cout << "send grpc to other chatserver" << std::endl;
+	Defer defercon([&stub, &pool]() {
+		pool->returnConnection(std::move(stub));
+		});
+
+	if (!status.ok()) {
+		rsp.set_error(ErrorCodes::RPCFailed);
+	}
+
+	return rsp;
+}
+
+
 KickUserRsp ChatGrpcClient::NotifyKickUser(std::string server_ip, const KickUserReq& req)
 {
 	KickUserRsp rsp;
