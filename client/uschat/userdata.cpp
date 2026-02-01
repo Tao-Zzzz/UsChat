@@ -71,6 +71,7 @@ void ChatThreadData::AddMsg(std::shared_ptr<ChatDataBase> msg)
     _last_msg_id = msg->GetMsgId();
 }
 
+//收到确认的消息
 void ChatThreadData::MoveMsg(std::shared_ptr<ChatDataBase> msg) {
 
     auto iter = _msg_unrsp_map.find(msg->GetUniqueId());
@@ -176,4 +177,9 @@ std::shared_ptr<ChatDataBase> ChatThreadData::GetChatDataBase(int msg_id) {
     }
 
     return iter.value();
+}
+
+std::vector<int> ChatThreadData::GetGroupMemberUids()
+{
+    return _group_members;
 }

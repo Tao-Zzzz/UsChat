@@ -261,6 +261,7 @@ public:
     ChatThreadData() = default;
     ChatThreadData(int other_id, int thread_id, int last_msg_id):
         _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){}
+    // 创建群聊时用的,这里的构造没有自己的uid
     ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id):
         _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
         // 创建群聊, 自己是群主, 其他还都是默认, 那么信息也是默认
@@ -268,10 +269,12 @@ public:
         for(int member_id : other_id){
             _group_members_info[member_id] = std::make_shared<GroupInfo>(0,"");
         }
-        
+
+        // 可以加上自己的uid
+        //todo...
     }
     
-    
+    //启动时加载群聊用的, 这里的构造有自己的uid
     ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id,QMap<int, std::shared_ptr<GroupInfo>> group_members_info);
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
@@ -289,13 +292,14 @@ public:
     QMap<QString, std::shared_ptr<ChatDataBase>>& GetMsgUnRspRef();
     void AppendUnRspMsg(QString unique_id, std::shared_ptr<ChatDataBase> base_msg);
     std::shared_ptr<ChatDataBase> GetChatDataBase(int msg_id);
+    std::vector<int> GetGroupMemberUids();
 private:
     //如果是私聊，则为对方的id；如果是群聊，则为0
     int _other_id;
     int _last_msg_id;
     int _thread_id;
     QString _last_msg;
-    //群聊信息,成员列表
+    //群聊信息,成员列表, 包不包含自己是个大坑, 注意了
     std::vector<int> _group_members;
     // todo
     QMap<int, std::shared_ptr<GroupInfo>> _group_members_info;

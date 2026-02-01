@@ -479,101 +479,207 @@ void LogicSystem::AuthFriendApply(std::shared_ptr<CSession> session, const short
 	ChatGrpcClient::GetInstance()->NotifyAuthFriend(to_ip_value, auth_req);
 }
 
+//void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data) {
+//	Json::Reader reader;
+//	Json::Value root;
+//	reader.parse(msg_data, root);
+//
+//	auto uid = root["fromuid"].asInt();
+//	auto touid = root["touid"].asInt();
+//
+//	const Json::Value  arrays = root["text_array"];
+//	
+//	Json::Value  rtvalue;
+//	rtvalue["error"] = ErrorCodes::Success;
+//
+//	rtvalue["fromuid"] = uid;
+//	rtvalue["touid"] = touid;
+//	auto thread_id = root["thread_id"].asInt();
+//	rtvalue["thread_id"] = thread_id;
+//	std::vector<std::shared_ptr<ChatMessage>> chat_datas;
+//	auto timestamp = getCurrentTimestamp();
+//	for (const auto& txt_obj : arrays) {
+//		auto content = txt_obj["content"].asString();
+//		auto unique_id = txt_obj["unique_id"].asString();
+//		std::cout << "content is " << content << std::endl;
+//		std::cout << "unique_id is " << unique_id << std::endl;
+//		auto chat_msg = std::make_shared<ChatMessage>();
+//		chat_msg->chat_time = timestamp;
+//		chat_msg->sender_id = uid;
+//		chat_msg->recv_id = touid;
+//		chat_msg->unique_id = unique_id;
+//		chat_msg->thread_id = thread_id;
+//		chat_msg->content = content;
+//		chat_msg->status = 2;
+//		chat_datas.push_back(chat_msg);
+//	}
+//
+//
+//	//插入数据库
+//	MysqlMgr::GetInstance()->AddChatMsg(chat_datas);
+//
+//
+//	for (const auto& chat_data : chat_datas) {
+//		Json::Value  chat_msg;
+//		chat_msg["message_id"] = chat_data->message_id;
+//		chat_msg["unique_id"] = chat_data->unique_id;
+//		chat_msg["content"] = chat_data->content;
+//		chat_msg["status"] = chat_data->status;
+//		chat_msg["chat_time"] = chat_data->chat_time;
+//		rtvalue["chat_datas"].append(chat_msg);
+//	}
+//
+//	Defer defer([this, &rtvalue, session]() {
+//		std::string return_str = rtvalue.toStyledString();
+//		session->Send(return_str, ID_TEXT_CHAT_MSG_RSP);
+//		});
+//
+//
+//	//查询redis 查找touid对应的server ip
+//	auto to_str = std::to_string(touid);
+//	auto to_ip_key = USERIPPREFIX + to_str;
+//	std::string to_ip_value = "";
+//	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+//	if (!b_ip) {
+//		return;
+//	}
+//
+//	auto& cfg = ConfigMgr::Inst();
+//	auto self_name = cfg["SelfServer"]["Name"];
+//	//直接通知对方有认证通过消息
+//	if (to_ip_value == self_name) {
+//		auto session = UserMgr::GetInstance()->GetSession(touid);
+//		if (session) {
+//			//在内存中则直接发送通知对方
+//			std::string return_str = rtvalue.toStyledString();
+//			session->Send(return_str, ID_NOTIFY_TEXT_CHAT_MSG_REQ);
+//		}
+//
+//		return ;
+//	}
+//
+//
+//	TextChatMsgReq text_msg_req;
+//	text_msg_req.set_fromuid(uid);
+//	text_msg_req.set_touid(touid);
+//	text_msg_req.set_thread_id(thread_id);
+//	for (const auto& chat_data : chat_datas) {
+//		auto *text_msg = text_msg_req.add_textmsgs();
+//		text_msg->set_unique_id(chat_data->unique_id);
+//		text_msg->set_msgcontent(chat_data->content);
+//		text_msg->set_msg_id(chat_data->message_id);
+//		text_msg->set_chat_time(chat_data->chat_time);
+//	}
+//
+//
+//	//发送通知 todo...
+//	ChatGrpcClient::GetInstance()->NotifyTextChatMsg(to_ip_value, text_msg_req, rtvalue);
+//}
+
+
 void LogicSystem::DealChatTextMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data) {
 	Json::Reader reader;
 	Json::Value root;
 	reader.parse(msg_data, root);
 
 	auto uid = root["fromuid"].asInt();
-	auto touid = root["touid"].asInt();
-
-	const Json::Value  arrays = root["text_array"];
-	
-	Json::Value  rtvalue;
-	rtvalue["error"] = ErrorCodes::Success;
-
-	rtvalue["fromuid"] = uid;
-	rtvalue["touid"] = touid;
 	auto thread_id = root["thread_id"].asInt();
-	rtvalue["thread_id"] = thread_id;
+	const Json::Value arrays = root["text_array"];
+	auto touid = root["touid"].asInt();
+	// 1. 解析所有的接收者
+	std::vector<int> receiver_uids;
+	if (touid == 0) {
+		for (const auto& id_val : root["to_member_uids"]) {
+			receiver_uids.push_back(id_val.asInt());
+		}
+	}
+	else {
+		// 兼容单聊旧逻辑
+		receiver_uids.push_back(root["touid"].asInt());
+	}
+
+	// 2. 构造消息体并存库 (只存一次)
 	std::vector<std::shared_ptr<ChatMessage>> chat_datas;
 	auto timestamp = getCurrentTimestamp();
 	for (const auto& txt_obj : arrays) {
-		auto content = txt_obj["content"].asString();
-		auto unique_id = txt_obj["unique_id"].asString();
-		std::cout << "content is " << content << std::endl;
-		std::cout << "unique_id is " << unique_id << std::endl;
 		auto chat_msg = std::make_shared<ChatMessage>();
 		chat_msg->chat_time = timestamp;
 		chat_msg->sender_id = uid;
-		chat_msg->recv_id = touid;
-		chat_msg->unique_id = unique_id;
+		// 如果是群聊，数据库里的 recv_id 可以设为 0，靠 thread_id 区分
+		chat_msg->recv_id = (touid == 0) ? 0 : touid;
+		chat_msg->unique_id = txt_obj["unique_id"].asString();
 		chat_msg->thread_id = thread_id;
-		chat_msg->content = content;
+		chat_msg->content = txt_obj["content"].asString();
 		chat_msg->status = 2;
 		chat_datas.push_back(chat_msg);
 	}
 
-
-	//插入数据库
 	MysqlMgr::GetInstance()->AddChatMsg(chat_datas);
 
+	// 3. 构造返回给发送者的回执 (RSP)
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["fromuid"] = uid;
+	rtvalue["touid"] = touid;
+	rtvalue["thread_id"] = thread_id;
 
 	for (const auto& chat_data : chat_datas) {
-		Json::Value  chat_msg;
-		chat_msg["message_id"] = chat_data->message_id;
-		chat_msg["unique_id"] = chat_data->unique_id;
-		chat_msg["content"] = chat_data->content;
-		chat_msg["status"] = chat_data->status;
-		chat_msg["chat_time"] = chat_data->chat_time;
-		rtvalue["chat_datas"].append(chat_msg);
+		Json::Value msg_node;
+		msg_node["message_id"] = chat_data->message_id;
+		msg_node["unique_id"] = chat_data->unique_id;
+		msg_node["content"] = chat_data->content;
+		msg_node["status"] = chat_data->status;
+		msg_node["chat_time"] = chat_data->chat_time;
+		rtvalue["chat_datas"].append(msg_node);
 	}
 
+	// 回复发送者
 	Defer defer([this, &rtvalue, session]() {
-		std::string return_str = rtvalue.toStyledString();
-		session->Send(return_str, ID_TEXT_CHAT_MSG_RSP);
+		session->Send(rtvalue.toStyledString(), ID_TEXT_CHAT_MSG_RSP);
 		});
 
+	// 4. 遍历接收者列表，发送通知 (NOTIFY)
+	for (int current_touid : receiver_uids) {
+		// 过滤掉发送者自己
+		if (current_touid == uid) continue;
 
-	//查询redis 查找touid对应的server ip
-	auto to_str = std::to_string(touid);
-	auto to_ip_key = USERIPPREFIX + to_str;
-	std::string to_ip_value = "";
-	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
-	if (!b_ip) {
-		return;
-	}
+		// 查询 Redis 查找当前接收者对应的 server ip
+		auto to_str = std::to_string(current_touid);
+		auto to_ip_key = USERIPPREFIX + to_str;
+		std::string to_ip_value = "";
+		bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+		if (!b_ip) continue; // 用户不在线
 
-	auto& cfg = ConfigMgr::Inst();
-	auto self_name = cfg["SelfServer"]["Name"];
-	//直接通知对方有认证通过消息
-	if (to_ip_value == self_name) {
-		auto session = UserMgr::GetInstance()->GetSession(touid);
-		if (session) {
-			//在内存中则直接发送通知对方
-			std::string return_str = rtvalue.toStyledString();
-			session->Send(return_str, ID_NOTIFY_TEXT_CHAT_MSG_REQ);
+		// 准备转发给接收者的 Json 结构
+		Json::Value notify_value = rtvalue;
+		notify_value["touid"] = current_touid; // 这里的 touid 设置为当前接收者
+
+		auto& cfg = ConfigMgr::Inst();
+		auto self_name = cfg["SelfServer"]["Name"];
+
+		// 情况 A: 目标用户在当前服务器
+		if (to_ip_value == self_name) {
+			auto target_session = UserMgr::GetInstance()->GetSession(current_touid);
+			if (target_session) {
+				target_session->Send(notify_value.toStyledString(), ID_NOTIFY_TEXT_CHAT_MSG_REQ);
+			}
+			continue;
 		}
 
-		return ;
+		// 情况 B: 目标用户在其他服务器，走 gRPC 转发
+		TextChatMsgReq text_msg_req;
+		text_msg_req.set_fromuid(uid);
+		text_msg_req.set_touid(current_touid);
+		text_msg_req.set_thread_id(thread_id);
+		for (const auto& chat_data : chat_datas) {
+			auto* text_msg = text_msg_req.add_textmsgs();
+			text_msg->set_unique_id(chat_data->unique_id);
+			text_msg->set_msgcontent(chat_data->content);
+			text_msg->set_msg_id(chat_data->message_id);
+			text_msg->set_chat_time(chat_data->chat_time);
+		}
+		ChatGrpcClient::GetInstance()->NotifyTextChatMsg(to_ip_value, text_msg_req, notify_value);
 	}
-
-
-	TextChatMsgReq text_msg_req;
-	text_msg_req.set_fromuid(uid);
-	text_msg_req.set_touid(touid);
-	text_msg_req.set_thread_id(thread_id);
-	for (const auto& chat_data : chat_datas) {
-		auto *text_msg = text_msg_req.add_textmsgs();
-		text_msg->set_unique_id(chat_data->unique_id);
-		text_msg->set_msgcontent(chat_data->content);
-		text_msg->set_msg_id(chat_data->message_id);
-		text_msg->set_chat_time(chat_data->chat_time);
-	}
-
-
-	//发送通知 todo...
-	ChatGrpcClient::GetInstance()->NotifyTextChatMsg(to_ip_value, text_msg_req, rtvalue);
 }
 
 void LogicSystem::HeartBeatHandler(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data) {

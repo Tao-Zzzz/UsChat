@@ -478,7 +478,7 @@ void TcpMgr::initHandlers()
         //收到消息后转发给页面
         auto thread_id = jsonObj["thread_id"].toInt();
         auto sender = jsonObj["fromuid"].toInt();
-
+        auto touid = jsonObj["touid"].toInt();
 
         std::vector<std::shared_ptr<TextChatData>> chat_datas;
         for (const QJsonValue& data : jsonObj["chat_datas"].toArray()) {      
@@ -487,7 +487,14 @@ void TcpMgr::initHandlers()
             auto msg_content = data["content"].toString();
             QString chat_time = data["chat_time"].toString();
             int status = data["status"].toInt();
-            auto chat_data = std::make_shared<TextChatData>(msg_id,unique_id, thread_id, ChatFormType::PRIVATE,
+
+            ChatFormType chat_type;
+            if(touid == 0){
+                chat_type = ChatFormType::GROUP;
+            }else{
+                chat_type = ChatFormType::PRIVATE;
+            }
+            auto chat_data = std::make_shared<TextChatData>(msg_id,unique_id, thread_id, chat_type,
                 ChatMsgType::TEXT, msg_content, sender, status, chat_time);
             chat_datas.push_back(chat_data);
         }
@@ -528,8 +535,13 @@ void TcpMgr::initHandlers()
         //收到消息后转发给页面
         auto thread_id = jsonObj["thread_id"].toInt();
         auto sender = jsonObj["fromuid"].toInt();
-
-
+        auto touid = jsonObj["touid"].toInt();
+        ChatFormType chat_type;
+        if(touid == 0){
+            chat_type = ChatFormType::GROUP;
+        }else{
+            chat_type = ChatFormType::PRIVATE;
+        }
         std::vector<std::shared_ptr<TextChatData>> chat_datas;
         for (const QJsonValue& data : jsonObj["chat_datas"].toArray()) {
             auto msg_id = data["message_id"].toInt();
@@ -537,7 +549,8 @@ void TcpMgr::initHandlers()
             auto msg_content = data["content"].toString();
             QString chat_time = data["chat_time"].toString();
             int status = data["status"].toInt();
-            auto chat_data = std::make_shared<TextChatData>(msg_id, unique_id, thread_id, ChatFormType::PRIVATE,
+
+            auto chat_data = std::make_shared<TextChatData>(msg_id, unique_id, thread_id, chat_type,
                 ChatMsgType::TEXT, msg_content, sender, status, chat_time);
             chat_datas.push_back(chat_data);
         }

@@ -349,6 +349,7 @@ void ChatDialog::slot_text_chat_msg(std::vector<std::shared_ptr<TextChatData>> m
 			continue;
 		}
 
+        // 如果此时聚焦在本会话, 那还要更新一下ui
 		ui->chat_page->AppendChatMsg(msg);
 	}
 
@@ -550,6 +551,7 @@ void ChatDialog::slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<Te
 	}
 
 	//将消息放入数据中管理
+    //将以确认过的消息从未收到确认的队列中移除
 	for (auto& msg : msglists) {
 		chat_data->MoveMsg(msg);
 

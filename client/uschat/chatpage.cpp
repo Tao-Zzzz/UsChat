@@ -291,7 +291,7 @@ void ChatPage::paintEvent(QPaintEvent *event)
 
 void ChatPage::on_send_btn_clicked() {
     if (_chat_data == nullptr) {
-        qDebug() << "friend_info is empty";
+        qDebug() << "thread chat info is empty";
         return;
     }
 
@@ -324,12 +324,29 @@ void ChatPage::on_send_btn_clicked() {
         QString uuidString = uuid.toString();
         if (type == MsgType::TEXT_MSG)
         {
+            int other_id = _chat_data->GetOtherId();
             pBubble = new TextBubble(role, msgList[i]->_text_or_url);
             if (txt_size + msgList[i]->_text_or_url.length() > 1024) {
                 textObj["fromuid"] = user_info->_uid;
-                textObj["touid"] = _chat_data->GetOtherId();
                 textObj["thread_id"] = thread_id;
                 textObj["text_array"] = textArray;
+
+
+                textObj["touid"] = other_id;
+                if(other_id == 0){
+                    // 群聊/多人群组
+                    QJsonArray toMembers;
+                    std::vector<int> members = _chat_data->GetGroupMemberUids(); // 获取成员列表
+
+                    for (int m_id : members) {
+                        // 注意：通常不需要发给自己，可以在这里过滤掉自己, 我好像在拿到群聊的时候就已经过滤了?
+                        if (m_id == user_info->_uid) continue;
+                        toMembers.append(m_id);
+                    }
+                    textObj["to_member_uids"] = toMembers; // 增加多人 ID 数组结构
+                }
+                // -------------------
+
                 QJsonDocument doc(textObj);
                 QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
                 //发送并清空之前累计的文本列表
@@ -349,20 +366,44 @@ void ChatPage::on_send_btn_clicked() {
             obj["content"] = content;
             obj["unique_id"] = uuidString;
             textArray.append(obj);
-            //注意，此处先按私聊处理
-            auto txt_msg = std::make_shared<TextChatData>(uuidString, thread_id, ChatFormType::PRIVATE,
+            //注意，这里私聊和群聊的处理
+
+            ChatFormType chat_type;
+            if(other_id == 0){
+                chat_type = ChatFormType::GROUP;
+            }else{
+                chat_type = ChatFormType::PRIVATE;
+            }
+
+            auto txt_msg = std::make_shared<TextChatData>(uuidString, thread_id, chat_type,
                 ChatMsgType::TEXT, content, user_info->_uid, 0);
             //将未回复的消息加入到未回复列表中，以便后续处理
             _chat_data->AppendUnRspMsg(uuidString, txt_msg);
         }
         else if (type == MsgType::IMG_MSG)
         {
+            int other_id = _chat_data->GetOtherId();
             //将之前缓存的文本发送过去
             if (txt_size) {
                 textObj["fromuid"] = user_info->_uid;
-                textObj["touid"] = _chat_data->GetOtherId();
                 textObj["thread_id"] = thread_id;
                 textObj["text_array"] = textArray;
+
+
+                textObj["touid"] = other_id;
+                if(other_id == 0){
+                    // 群聊/多人群组
+                    QJsonArray toMembers;
+                    std::vector<int> members = _chat_data->GetGroupMemberUids(); // 获取成员列表
+
+                    for (int m_id : members) {
+                        // 注意：通常不需要发给自己，可以在这里过滤掉自己, 我好像在拿到群聊的时候就已经过滤了?
+                        if (m_id == user_info->_uid) continue;
+                        toMembers.append(m_id);
+                    }
+                    textObj["to_member_uids"] = toMembers; // 增加多人 ID 数组结构
+                }
+
                 QJsonDocument doc(textObj);
                 QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
                 //发送并清空之前累计的文本列表
@@ -375,12 +416,19 @@ void ChatPage::on_send_btn_clicked() {
 
             pBubble = new PictureBubble(QPixmap(msgList[i]->_text_or_url), role, msgList[i]->_total_size);
             //需要组织成文件发送，具体参考头像上传
-            auto img_msg = std::make_shared<ImgChatData>(msgList[i],uuidString, thread_id, ChatFormType::PRIVATE,
+
+            ChatFormType chat_type;
+            if(other_id == 0){
+                chat_type = ChatFormType::GROUP;
+            }else{
+                chat_type = ChatFormType::PRIVATE;
+            }
+
+            auto img_msg = std::make_shared<ImgChatData>(msgList[i],uuidString, thread_id, chat_type,
                 ChatMsgType::TEXT, user_info->_uid, 0);
             //将未回复的消息加入到未回复列表中，以便后续处理
             _chat_data->AppendUnRspMsg(uuidString, img_msg);
             textObj["fromuid"] = user_info->_uid;
-            textObj["touid"] = _chat_data->GetOtherId();
             textObj["thread_id"] = thread_id;
             textObj["md5"] = msgList[i]->_md5;
             textObj["name"] = msgList[i]->_unique_name;
@@ -388,12 +436,29 @@ void ChatPage::on_send_btn_clicked() {
             textObj["unique_id"] = uuidString;
             textObj["text_or_url"] = msgList[i]->_text_or_url;
 
+
+            textObj["touid"] = other_id;
+            if(other_id == 0){
+                // 群聊/多人群组
+                QJsonArray toMembers;
+                std::vector<int> members = _chat_data->GetGroupMemberUids(); // 获取成员列表
+
+                for (int m_id : members) {
+                    // 注意：通常不需要发给自己，可以在这里过滤掉自己, 我好像在拿到群聊的时候就已经过滤了?
+                    if (m_id == user_info->_uid) continue;
+                    toMembers.append(m_id);
+                }
+                textObj["to_member_uids"] = toMembers; // 增加多人 ID 数组结构
+            }
+
             //文件信息加入管理
             UserMgr::GetInstance()->AddTransFile(msgList[i]->_unique_name, msgList[i]);
             QJsonDocument doc(textObj);
             QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
             //发送tcp请求给chat server
             emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_IMG_CHAT_MSG_REQ, jsonData);
+
+
             //链接暂停信号
             connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::pauseRequested,
                 this, &ChatPage::on_clicked_paused);
@@ -422,8 +487,22 @@ void ChatPage::on_send_btn_clicked() {
         //发送给服务器
         textObj["text_array"] = textArray;
         textObj["fromuid"] = user_info->_uid;
-        textObj["touid"] = _chat_data->GetOtherId();
         textObj["thread_id"] = thread_id;
+
+        textObj["touid"] = _chat_data->GetOtherId();
+        if(_chat_data->GetOtherId() == 0){
+            // 群聊/多人群组
+            QJsonArray toMembers;
+            std::vector<int> members = _chat_data->GetGroupMemberUids(); // 获取成员列表
+
+            for (int m_id : members) {
+                // 注意：通常不需要发给自己，可以在这里过滤掉自己, 我好像在拿到群聊的时候就已经过滤了?
+                if (m_id == user_info->_uid) continue;
+                toMembers.append(m_id);
+            }
+            textObj["to_member_uids"] = toMembers; // 增加多人 ID 数组结构
+        }
+
         QJsonDocument doc(textObj);
         QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
         //发送并清空之前累计的文本列表
