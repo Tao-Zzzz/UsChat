@@ -639,19 +639,57 @@ void TcpMgr::initHandlers()
 
         qDebug() << "Receive chat thread rsp Success";
 
+        // auto thread_array = jsonObj["threads"].toArray();
+        // std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads;
+        // for (const QJsonValue& value : thread_array) {
+        //     auto cti = std::make_shared<ChatThreadInfo>();
+        //     cti->_thread_id = value["thread_id"].toInt();
+        //     cti->_type = value["type"].toString();
+        //     cti->_user1_id = value["user1_id"].toInt();
+        //     cti->_user2_id = value["user2_id"].toInt();
+        //     chat_threads.push_back(cti);
+        // }
+
+        // bool load_more = jsonObj["load_more"].toBool();
+        // int next_last_id = jsonObj["next_last_id"].toInt();
+
         auto thread_array = jsonObj["threads"].toArray();
         std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads;
+
         for (const QJsonValue& value : thread_array) {
             auto cti = std::make_shared<ChatThreadInfo>();
-            cti->_thread_id = value["thread_id"].toInt();
-            cti->_type = value["type"].toString();
-            cti->_user1_id = value["user1_id"].toInt();
-            cti->_user2_id = value["user2_id"].toInt();
+
+            QJsonObject obj = value.toObject();
+
+            cti->_thread_id = obj["thread_id"].toInt();
+            cti->_type = obj["type"].toString();
+            cti->_user1_id = obj["user1_id"].toInt();
+            cti->_user2_id = obj["user2_id"].toInt();
+
+            // 统一解析 members（private 也是空数组）
+            auto members = obj["members"].toArray();
+            for (const QJsonValue& mv : members) {
+                QJsonObject mobj = mv.toObject();
+
+                int uid = mobj["uid"].toInt();
+                int role = mobj["role"].toInt();
+                QString mute_until = mobj["mute_until"].toString();
+
+                cti->_member_ids.push_back(uid);
+
+                auto gi = std::make_shared<GroupInfo>();
+                gi->_role = role;
+                gi->_mute_until = mute_until;
+
+                cti->_meber_infos[uid] = gi;
+            }
+
             chat_threads.push_back(cti);
         }
 
         bool load_more = jsonObj["load_more"].toBool();
         int next_last_id = jsonObj["next_last_id"].toInt();
+
         //发送信号通知界面
         emit sig_load_chat_thread(load_more, next_last_id, chat_threads);
     });
@@ -711,21 +749,22 @@ void TcpMgr::initHandlers()
 
         if (!jsonObj.contains("error")) {
             int err = ErrorCodes::ERR_JSON;
-            qDebug() << "parse create private chat json parse failed " << err;
+            qDebug() << "parse create chat json parse failed " << err;
             return;
         }
 
         int err = jsonObj["error"].toInt();
         if (err != ErrorCodes::SUCCESS) {
-            qDebug() << "get create private chat failed, error is " << err;
+            qDebug() << "get create chat failed, error is " << err;
             return;
         }
 
-        qDebug() << "Receive create private chat rsp Success";
+        qDebug() << "Receive create chat rsp Success";
 
         int thread_id = jsonObj["thread_id"].toInt();
         int last_msg_id = jsonObj["last_message_id"].toInt();
         bool load_more = jsonObj["load_more"].toBool();
+        QString thread_type = jsonObj["thread_type"].toString();
 
         std::vector<std::shared_ptr<TextChatData>> chat_datas;
         for (const QJsonValue& data : jsonObj["chat_datas"].toArray()) {
@@ -736,7 +775,14 @@ void TcpMgr::initHandlers()
             auto msg_content = data["msg_content"].toString();
             QString chat_time = data["chat_time"].toString();
             int status = data["status"].toInt();
-            auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, ChatFormType::PRIVATE,
+
+            ChatFormType chat_type_;
+            if(thread_type == "group"){
+                chat_type_ = ChatFormType::GROUP;
+            }else{
+                chat_type_ = ChatFormType::PRIVATE;
+            }
+            auto chat_data = std::make_shared<TextChatData>(msg_id, thread_id, chat_type_,
                 ChatMsgType::TEXT, msg_content, send_uid, status,chat_time);
             chat_datas.push_back(chat_data);
         }

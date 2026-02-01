@@ -1,5 +1,6 @@
 ﻿#include "userdata.h"
 #include <memory>
+#include "usermgr.h"
 
 SearchInfo::SearchInfo(int uid, QString name,
     QString nick, QString desc, int sex, QString icon):_uid(uid)
@@ -45,6 +46,23 @@ QString ChatDataBase::GetUniqueId()
 {
     return _unique_id;
 }
+
+
+ChatThreadData::ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id, QMap<int, std::shared_ptr<GroupInfo> > group_members_info):
+    _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
+
+    // group组员没有自己, 以后可能要改
+    for(int member_id : other_id){
+        if(member_id == UserMgr::GetInstance()->GetUid()){
+            self_role = group_members_info[member_id]->_role;
+
+        }else{
+            _group_members_info[member_id] = group_members_info[member_id];
+        }
+
+    }
+
+};
 
 void ChatThreadData::AddMsg(std::shared_ptr<ChatDataBase> msg)
 {

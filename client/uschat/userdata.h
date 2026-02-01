@@ -230,14 +230,28 @@ public:
 
 Q_DECLARE_METATYPE(std::shared_ptr<ImgChatData>)
 
+struct GroupInfo{
+    int _role;
+    QString _mute_until;
+    GroupInfo() = default;
+    GroupInfo(int role, QString mute_unitl):_role(role), _mute_until(mute_unitl){}
+};
+
+Q_DECLARE_METATYPE(std::shared_ptr<GroupInfo>)
+
 //聊天线程信息
 struct ChatThreadInfo {
     int _thread_id;
     QString _type;     // "private" or "group"
     int _user1_id;    // 私聊时对应 private_chat.user1_id；群聊时设为 0
     int _user2_id;    // 私聊时对应 private_chat.user2_id；群聊时设为 0
+
+    std::vector<int> _member_ids; // 群聊成员列表，私聊时为空
+    QMap<int, std::shared_ptr<GroupInfo>> _meber_infos;
     ChatThreadInfo() = default;
 };
+
+
 
 Q_DECLARE_METATYPE(std::vector<std::shared_ptr<ChatThreadInfo>>)
 
@@ -248,8 +262,17 @@ public:
     ChatThreadData(int other_id, int thread_id, int last_msg_id):
         _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){}
     ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id):
-        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){}
-
+        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
+        // 创建群聊, 自己是群主, 其他还都是默认, 那么信息也是默认
+        self_role = GroupRole::Owner;
+        for(int member_id : other_id){
+            _group_members_info[member_id] = std::make_shared<GroupInfo>(0,"");
+        }
+        
+    }
+    
+    
+    ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id,QMap<int, std::shared_ptr<GroupInfo>> group_members_info);
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
     void UpdateProgress(std::shared_ptr<MsgInfo> msg);
@@ -274,6 +297,9 @@ private:
     QString _last_msg;
     //群聊信息,成员列表
     std::vector<int> _group_members;
+    // todo
+    QMap<int, std::shared_ptr<GroupInfo>> _group_members_info;
+    int self_role;
     //群聊名称
     QString _group_name = "";
     //缓存消息map，抽象为基类，因为会有图片等其他类型消息

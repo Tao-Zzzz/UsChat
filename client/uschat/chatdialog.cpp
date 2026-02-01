@@ -277,6 +277,7 @@ void ChatDialog::loadChatList()
 void ChatDialog::loadChatMsg() {
 
 	//发送聊天记录请求
+    //获取当前会话的数据
 	_cur_load_chat = UserMgr::GetInstance()->GetCurLoadData();
 	if (_cur_load_chat == nullptr) {
 		return;
@@ -397,13 +398,28 @@ void ChatDialog::UpdateChatMsg(std::vector<std::shared_ptr<TextChatData> > msgda
 	}
 }
 
-
+// 就是这里处理群聊
 void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 	std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads)
 {
 	for (auto& cti : chat_threads) {
 		//先处理单聊，群聊跳过，以后添加
 		if (cti->_type == "group") {
+            
+            
+            auto chat_thread_data = std::make_shared<ChatThreadData>(cti->_member_ids, cti->_thread_id, 0, cti->_meber_infos);
+            UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
+            
+            auto* chat_user_wid = new ChatUserWid();
+            //群头像什么的设置
+            chat_user_wid->SetChatData(chat_thread_data);
+            QListWidgetItem* item = new QListWidgetItem;
+            //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+            item->setSizeHint(chat_user_wid->sizeHint());
+            ui->chat_user_list->addItem(item);
+            ui->chat_user_list->setItemWidget(item, chat_user_wid);
+            _chat_thread_items.insert(cti->_thread_id, item);
+            //左边栏的弄完了
 			continue;
 		}
 

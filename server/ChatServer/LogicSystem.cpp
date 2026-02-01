@@ -817,22 +817,59 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 	int next_last_id = 0;
 	bool res = GetUserThreads(uid, last_id, page_size, threads, load_more, next_last_id);
 	if (!res) {
-		rtvalue["error"] = ErrorCodes::UidInvalid;
+		rtvalue["error"] = ErrorCodes::UidInvalid;                                 
 		return;
 	}
 
 
+	//rtvalue["load_more"] = load_more;
+	//rtvalue["next_last_id"] = (int)next_last_id;
+	////整理threads数据写入json返回
+	//for (auto& thread : threads) {
+	//	Json::Value thread_value;
+	//	thread_value["thread_id"] = int(thread->_thread_id);
+	//	thread_value["type"] = thread->_type;
+	//	thread_value["user1_id"] = thread->_user1_id;
+	//	thread_value["user2_id"] = thread->_user2_id;
+	//	rtvalue["threads"].append(thread_value);
+	//}
+
+	rtvalue["error"] = ErrorCodes::Success;
 	rtvalue["load_more"] = load_more;
 	rtvalue["next_last_id"] = (int)next_last_id;
-	//整理threads数据写入json返回
+
+	Json::Value threads_value(Json::arrayValue);
+
 	for (auto& thread : threads) {
 		Json::Value thread_value;
-		thread_value["thread_id"] = int(thread->_thread_id);
+		thread_value["thread_id"] = (int)thread->_thread_id;
 		thread_value["type"] = thread->_type;
-		thread_value["user1_id"] = thread->_user1_id;
-		thread_value["user2_id"] = thread->_user2_id;
-		rtvalue["threads"].append(thread_value);
+		thread_value["user1_id"] = (int)thread->_user1_id;
+		thread_value["user2_id"] = (int)thread->_user2_id;
+
+		// members：统一写数组
+		Json::Value members_value(Json::arrayValue);
+
+		if (thread->_type == "group") {
+			for (auto& kv : thread->_meber_infos) {
+				int uid = kv.first;
+				auto& info = kv.second;
+
+				Json::Value mem;
+				mem["uid"] = uid;
+				mem["role"] = info->_role;
+				mem["mute_until"] = info->_mute_until;
+
+				members_value.append(mem);
+			}
+		}
+
+		thread_value["members"] = members_value;
+		threads_value.append(thread_value);
 	}
+
+	rtvalue["threads"] = threads_value;
+
 }
 
 bool LogicSystem::GetUserThreads(int64_t userId,
@@ -902,6 +939,7 @@ void LogicSystem::LoadChatMsg(std::shared_ptr<CSession> session,
 
 	rtvalue["last_message_id"] = res->next_cursor;
 	rtvalue["load_more"] = res->load_more;
+	rtvalue["thread_type"] = res->thread_type;
 	for (auto& chat : res->messages) {
 		Json::Value  chat_data;
 		chat_data["sender"] = chat.sender_id;

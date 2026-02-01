@@ -216,6 +216,13 @@ enum ListItemType{
     APPLY_FRIEND_ITEM, //好友申请
 };
 
+
+enum GroupRole{
+    Member = 0,
+    Admin = 1,
+    Owner = 2,
+};
+
 //申请好友标签输入框最低长度
 const int MIN_APPLY_LABEL_ED_LEN = 40;
 
