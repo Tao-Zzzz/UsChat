@@ -55,6 +55,7 @@ private:
     LoadingDlg* _loading_dlg;
     std::shared_ptr<ChatThreadData> _cur_load_chat;
     QMenu* _add_menu = nullptr; // 在头文件声明，避免每次点击都 new 一个
+    bool _is_load_ai = false;
  
 public slots:
     void slot_loading_chat_user();

@@ -283,6 +283,14 @@ void ChatDialog::loadChatMsg() {
 		return;
 	}
 
+    //  AI先不加载, 等切换历史聊天记录再加载
+    if (_cur_load_chat->GetThreadId() == -1){
+        //获取下一个chat_thread
+        _cur_load_chat = UserMgr::GetInstance()->GetNextLoadData();
+    }
+
+
+
 	showLoadingDlg(true);
 
 	//发送请求给服务器
@@ -399,10 +407,34 @@ void ChatDialog::UpdateChatMsg(std::vector<std::shared_ptr<TextChatData> > msgda
 	}
 }
 
-// 就是这里处理群聊
+// 加载会话
 void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 	std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads)
 {
+
+
+    if(_is_load_ai == false){
+        // 加载一次ai会话
+        auto chat_thread_data = std::make_shared<ChatThreadData>(-1, 0);
+        UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
+
+        auto* chat_user_wid = new ChatUserWid();
+        //AI头像什么的设置
+        chat_user_wid->SetChatData(chat_thread_data);
+        QListWidgetItem* item = new QListWidgetItem;
+        //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+        item->setSizeHint(chat_user_wid->sizeHint());
+        ui->chat_user_list->addItem(item);
+        ui->chat_user_list->setItemWidget(item, chat_user_wid);
+        _chat_thread_items.insert(-1, item);
+
+        _is_load_ai = true;
+    }
+
+
+
+
+
 	for (auto& cti : chat_threads) {
 		//先处理单聊，群聊跳过，以后添加
 		if (cti->_type == "group") {
@@ -520,6 +552,13 @@ void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, s
 
 	//获取下一个chat_thread
 	_cur_load_chat = UserMgr::GetInstance()->GetNextLoadData();
+
+    // 如果是AI会话
+    if (_cur_load_chat->GetThreadId() == -1){
+        //获取下一个chat_thread
+        _cur_load_chat = UserMgr::GetInstance()->GetNextLoadData();
+    }
+
 	//都加载完了
 	if(!_cur_load_chat){
 		//更新聊天界面信息

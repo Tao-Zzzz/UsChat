@@ -268,7 +268,8 @@ enum MsgStatus{
 //聊天形式，私聊和群聊
 enum class ChatFormType {
     PRIVATE = 0,
-    GROUP = 1
+    GROUP = 1,
+    AI = 2,
 };
 
 //聊天消息类型，文本，图片，文件等

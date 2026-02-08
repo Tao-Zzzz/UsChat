@@ -255,27 +255,53 @@ struct ChatThreadInfo {
 
 Q_DECLARE_METATYPE(std::vector<std::shared_ptr<ChatThreadInfo>>)
 
+struct AiContext {
+    int current_active_ai_thread_id = -1;
+    std::vector<int> _ai_thread_ids;
+    QMap<int, QString> _history_title;
+    // ...
+    AiContext() = default;
+};
+
+Q_DECLARE_METATYPE(std::unique_ptr<AiContext>)
+
 //客户端本地存储的聊天线程数据结构
 class ChatThreadData {
 public:
     ChatThreadData() = default;
     ChatThreadData(int other_id, int thread_id, int last_msg_id):
-        _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){}
+        _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){
+        _thread_type = ChatFormType::PRIVATE;
+    }
     // 创建群聊时用的,这里的构造没有自己的uid
+
     ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id):
-        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
+        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0),_thread_type(ChatFormType::PRIVATE){
         // 创建群聊, 自己是群主, 其他还都是默认, 那么信息也是默认
         self_role = GroupRole::Owner;
         for(int member_id : other_id){
             _group_members_info[member_id] = std::make_shared<GroupInfo>(0,"");
         }
 
+        _thread_type = ChatFormType::GROUP;
         // 可以加上自己的uid
         //todo...
     }
     
     //启动时加载群聊用的, 这里的构造有自己的uid
     ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id,QMap<int, std::shared_ptr<GroupInfo>> group_members_info);
+
+    ChatThreadData(int thread_id, int last_msg_id):
+        _last_msg_id(last_msg_id), _thread_id(thread_id){
+        _other_id = -1;
+        _thread_type = ChatFormType::AI;
+
+        if (!_ai_context) {
+            _ai_context = std::unique_ptr<AiContext>(new AiContext());
+        }
+
+    }
+
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
     void UpdateProgress(std::shared_ptr<MsgInfo> msg);
@@ -311,6 +337,11 @@ private:
     //缓存未回复的消息
         //已发送的消息，还未收到回应的。
     QMap<QString, std::shared_ptr<ChatDataBase>> _msg_unrsp_map;
+
+
+    ChatFormType _thread_type;
+
+    std::unique_ptr<AiContext> _ai_context = nullptr;
 };
 
 

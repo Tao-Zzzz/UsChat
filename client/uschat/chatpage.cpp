@@ -38,6 +38,27 @@ ChatPage::~ChatPage()
 void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     _chat_data = chat_data;
     auto other_id = _chat_data->GetOtherId();
+
+
+    if(other_id == -1) {
+        //说明是群聊
+        ui->title_lb->setText("AI");
+
+        ui->chat_data_list->removeAllItem();
+        _unrsp_item_map.clear();
+        _base_item_map.clear();
+
+        // 先不加载聊天信息, 先是建立新聊天
+        // for (auto& msg : chat_data->GetMsgMapRef()) {
+        //     AppendChatMsg(msg);
+        // }
+
+        // for (auto& msg : chat_data->GetMsgUnRspRef()) {
+        //     AppendChatMsg(msg);
+        // }
+        return;
+    }
+
     if(other_id == 0) {
         //说明是群聊
         ui->title_lb->setText(_chat_data->GetGroupName());

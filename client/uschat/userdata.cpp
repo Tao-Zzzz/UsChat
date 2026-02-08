@@ -61,7 +61,9 @@ ChatThreadData::ChatThreadData(std::vector<int> other_id, int thread_id, int las
         }
 
     }
-
+    
+    
+    _thread_type = ChatFormType::GROUP;
 };
 
 void ChatThreadData::AddMsg(std::shared_ptr<ChatDataBase> msg)
