@@ -255,15 +255,6 @@ struct ChatThreadInfo {
 
 Q_DECLARE_METATYPE(std::vector<std::shared_ptr<ChatThreadInfo>>)
 
-struct AiContext {
-    int current_active_ai_thread_id = -1;
-    std::vector<int> _ai_thread_ids;
-    QMap<int, QString> _history_title;
-    // ...
-    AiContext() = default;
-};
-
-Q_DECLARE_METATYPE(std::unique_ptr<AiContext>)
 
 //客户端本地存储的聊天线程数据结构
 class ChatThreadData {
@@ -296,9 +287,9 @@ public:
         _other_id = -1;
         _thread_type = ChatFormType::AI;
 
-        if (!_ai_context) {
-            _ai_context = std::unique_ptr<AiContext>(new AiContext());
-        }
+        // if (!_ai_context) {
+        //     _ai_context = std::unique_ptr<AiContext>(new AiContext());
+        // }
 
     }
 
@@ -340,8 +331,6 @@ private:
 
 
     ChatFormType _thread_type;
-
-    std::unique_ptr<AiContext> _ai_context = nullptr;
 };
 
 

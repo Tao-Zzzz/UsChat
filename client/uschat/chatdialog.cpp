@@ -23,6 +23,8 @@
 #include "FileTcpMgr.h"
 #include <QMenu>
 #include "creategroupdialog.h"
+#include "httpmgr.h"
+#include "aimgr.h"
 
 ChatDialog::ChatDialog(QWidget* parent) :
 	QDialog(parent),
@@ -414,6 +416,9 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 
 
     if(_is_load_ai == false){
+
+        AIMgr::GetInstance()->LoadAIThreads();
+
         // 加载一次ai会话
         auto chat_thread_data = std::make_shared<ChatThreadData>(-1, 0);
         UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);

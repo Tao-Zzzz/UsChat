@@ -34,6 +34,7 @@ SOURCES += \
         PictureBubble.cpp \
         TextBubble.cpp \
         adduseritem.cpp \
+        aimgr.cpp \
         applyfriend.cpp \
         applyfrienditem.cpp \
         applyfriendlist.cpp \
@@ -87,6 +88,7 @@ HEADERS += \
         PictureBubble.h \
         TextBubble.h \
         adduseritem.h \
+        aimgr.h \
         applyfriend.h \
         applyfrienditem.h \
         applyfriendlist.h \

@@ -1,4 +1,5 @@
 #include "httpmgr.h"
+#include <QUrlQuery>
 
 HttpMgr::~HttpMgr()
 {
@@ -37,6 +38,60 @@ void HttpMgr::PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod)
     });
 }
 
+
+void HttpMgr::GetHttpReq(QUrl url, ReqId req_id, Modules mod)
+{
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    auto self = shared_from_this();
+    QNetworkReply* reply = _manager.get(request);
+
+    QObject::connect(reply, &QNetworkReply::finished, [reply, self, req_id, mod]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << reply->errorString();
+            emit self->sig_http_finish(req_id, "", ErrorCodes::ERR_NETWORK, mod);
+            reply->deleteLater();
+            return;
+        }
+
+        QString res = reply->readAll();
+        emit self->sig_http_finish(req_id, res, ErrorCodes::SUCCESS, mod);
+        reply->deleteLater();
+    });
+}
+
+
+void HttpMgr::GetHttpReq(QUrl url, QJsonObject params, ReqId req_id, Modules mod)
+{
+    QUrlQuery query;
+    for (auto it = params.begin(); it != params.end(); ++it) {
+        query.addQueryItem(it.key(), it.value().toString());
+    }
+
+    url.setQuery(query);
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    auto self = shared_from_this();
+    QNetworkReply* reply = _manager.get(request);
+
+    QObject::connect(reply, &QNetworkReply::finished, [reply, self, req_id, mod]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << reply->errorString();
+            emit self->sig_http_finish(req_id, "", ErrorCodes::ERR_NETWORK, mod);
+            reply->deleteLater();
+            return;
+        }
+
+        QString res = reply->readAll();
+        emit self->sig_http_finish(req_id, res, ErrorCodes::SUCCESS, mod);
+        reply->deleteLater();
+    });
+}
+
+
 HttpMgr::HttpMgr()
 {
     //连接http请求和完成信号，信号槽机制保证队列消费
@@ -57,5 +112,9 @@ void HttpMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mo
 
     if(mod == Modules::LOGINMOD){
         emit sig_login_mod_finish(id, res, err);
+    }
+
+    if(mod == Modules::AIMOD){
+        // 给客户端的,ai好像暂时不需要
     }
 }

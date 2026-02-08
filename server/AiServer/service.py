@@ -95,3 +95,40 @@ def handle_chat(db: Session, req):
     db.commit()
 
     return ai_thread_id, reply_text, created
+
+
+def load_ai_threads(db, uid: int):
+    threads = (
+        db.query(AIThread)
+        .filter(
+            AIThread.uid == uid,
+            AIThread.is_deleted == False
+        )
+        .order_by(AIThread.updated_at.desc())
+        .all()
+    )
+
+    return threads
+
+def load_ai_messages(db, uid: int, ai_thread_id: int):
+    # 先校验这个会话是否属于该用户
+    thread = (
+        db.query(AIThread)
+        .filter(
+            AIThread.id == ai_thread_id,
+            AIThread.uid == uid,
+            AIThread.is_deleted == False
+        )
+        .first()
+    )
+    if not thread:
+        raise Exception("ai_thread not found or no permission")
+
+    messages = (
+        db.query(AIMessage)
+        .filter(AIMessage.ai_thread_id == ai_thread_id)
+        .order_by(AIMessage.id.asc())
+        .all()
+    )
+
+    return messages

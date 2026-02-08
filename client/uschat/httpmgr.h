@@ -16,10 +16,17 @@ class HttpMgr:public QObject, public Singleton<HttpMgr>,
 public:
     ~HttpMgr();
     void PostHttpReq(QUrl url, QJsonObject json, ReqId req_id, Modules mod);
+    void GetHttpReq(QUrl url, ReqId req_id, Modules mod);
+    void GetHttpReq(QUrl url, QJsonObject params, ReqId req_id, Modules mod);
+
 private:
     friend class Singleton<HttpMgr>;
     HttpMgr();
     QNetworkAccessManager _manager;
+
+    QString _ai_host;
+    int _ai_port;
+
 public slots:
     void slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mod);
 signals:

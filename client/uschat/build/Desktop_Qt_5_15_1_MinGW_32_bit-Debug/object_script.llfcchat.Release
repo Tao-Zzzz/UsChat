@@ -6,6 +6,7 @@ release/MessageTextEdit.o
 release/PictureBubble.o
 release/TextBubble.o
 release/adduseritem.o
+release/aimgr.o
 release/applyfriend.o
 release/applyfrienditem.o
 release/applyfriendlist.o
@@ -58,6 +59,7 @@ release/moc_MessageTextEdit.o
 release/moc_PictureBubble.o
 release/moc_TextBubble.o
 release/moc_adduseritem.o
+release/moc_aimgr.o
 release/moc_applyfriend.o
 release/moc_applyfrienditem.o
 release/moc_applyfriendlist.o

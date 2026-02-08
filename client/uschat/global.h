@@ -84,6 +84,8 @@ enum ReqId{
 
     ID_CREATE_GROUP_REQ = 1101,
     ID_CREATE_GROUP_RSP = 1102,
+    AI_LOAD_THREAD_REQ = 1103,
+    AI_LOAD_CHAT_REQ = 1105
 };
 Q_DECLARE_METATYPE(ReqId)
 
@@ -97,6 +99,7 @@ enum Modules{
     REGISTERMOD = 0,
     RESETMOD = 1,
     LOGINMOD = 2,
+    AIMOD = 3,
 };
 
 enum TipErr{

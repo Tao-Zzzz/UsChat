@@ -6,6 +6,7 @@ debug/MessageTextEdit.o
 debug/PictureBubble.o
 debug/TextBubble.o
 debug/adduseritem.o
+debug/aimgr.o
 debug/applyfriend.o
 debug/applyfrienditem.o
 debug/applyfriendlist.o
@@ -58,6 +59,7 @@ debug/moc_MessageTextEdit.o
 debug/moc_PictureBubble.o
 debug/moc_TextBubble.o
 debug/moc_adduseritem.o
+debug/moc_aimgr.o
 debug/moc_applyfriend.o
 debug/moc_applyfrienditem.o
 debug/moc_applyfriendlist.o
