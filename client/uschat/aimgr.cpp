@@ -6,7 +6,7 @@ AIMgr::AIMgr()
 {
     connect(
         HttpMgr::GetInstance().get(),
-        &HttpMgr::sig_http_finish,
+        &HttpMgr::sig_ai_mod_finish,
         this,
         &AIMgr::slot_http_finish
         );
@@ -18,7 +18,7 @@ void AIMgr::LoadAIThreads()
     params["uid"] = UserMgr::GetInstance()->GetUid();
 
     HttpMgr::GetInstance()->GetHttpReq(
-        QUrl("http://127.0.0.1:8000/ai/load_thread"),
+        QUrl("http://127.0.0.1:8070/ai/load_thread"),
         params,
         ReqId::AI_LOAD_THREAD_REQ,
         Modules::AIMOD
@@ -45,6 +45,22 @@ void AIMgr::SetAIThreads(QJsonArray arr)
         // 你可以在这里存到 QList、模型、数据库等
 
     }
+}
+
+
+AIMgr::~AIMgr()
+{
+
+}
+
+int AIMgr::GetCurAiThread()
+{
+    return _current_active_ai_thread_id;
+}
+
+void AIMgr::SetCurAiThread(int thread_id)
+{
+    _current_active_ai_thread_id = thread_id;
 }
 
 

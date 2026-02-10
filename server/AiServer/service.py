@@ -20,7 +20,7 @@ def handle_chat(db: Session, req):
     if req.ai_thread_id == -1:
         thread = AIThread(
             uid=req.uid,
-            title=req.content[:20]
+            title=req.content[:20].strip() or "新對話",  # 建議加個預設值，避免空標題
         )
         db.add(thread)
         db.commit()
@@ -52,6 +52,8 @@ def handle_chat(db: Session, req):
     )
     db.add(user_msg)
     db.commit()
+    db.refresh(user_msg)
+
 
     messages = [
         # 系统提示（可选，加这个让模型更像助手）
@@ -90,12 +92,22 @@ def handle_chat(db: Session, req):
         role="assistant",
         content=reply_text,
         model=req.model
+        # tokens 可以在这里填，如果后面有统计的话
     )
     db.add(ai_msg)
     db.commit()
+    db.refresh(ai_msg)           # 非常重要！确保拿到自增的 id 和默认值 created_at
 
-    return ai_thread_id, reply_text, created
-
+    return (
+        ai_thread_id,
+        reply_text,
+        created,
+        user_msg.id,    # 返回用戶消息 ID
+        ai_msg.id,      # 返回 AI 消息 ID
+        ai_msg.created_at,
+        thread.title,
+        req.unique_id
+    )
 
 def load_ai_threads(db, uid: int):
     threads = (

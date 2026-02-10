@@ -22,6 +22,10 @@ public:
     void UpdateImgChatStatus(std::shared_ptr<ImgChatData> img_msg);
     void SetSelfIcon(ChatItemBase* pChatItem, QString icon);
     void UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info);
+    void send_msg_to_ai();
+    void AppendAiChatMsg(std::shared_ptr<TextChatData> msg);
+    void UpdateAiChatStatus(QString unique_id, int msg_id);
+
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -30,19 +34,18 @@ private slots:
 
     void on_receive_btn_clicked();
 
-    //接收PictureBubble传回来的暂停信号
+    //PictureBubble
     void on_clicked_paused(QString unique_name, TransferType transfer_type);
-    //接收PictureBubble传回来的继续信号
+    //PictureBubble
     void on_clicked_resume(QString unique_name, TransferType transfer_type);
-
 private:
     void clearItems();
     Ui::ChatPage *ui;
     std::shared_ptr<ChatThreadData> _chat_data;
     QMap<QString, QWidget*>  _bubble_map;
-    //管理未回复聊天信息
+    //δ
     QHash<QString, ChatItemBase*> _unrsp_item_map;
-    //管理已经回复的消息
+    //
     QHash<qint64, ChatItemBase*> _base_item_map;
 };
 

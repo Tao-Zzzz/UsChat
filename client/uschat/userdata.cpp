@@ -88,6 +88,22 @@ void ChatThreadData::MoveMsg(std::shared_ptr<ChatDataBase> msg) {
     _msg_unrsp_map.erase(iter);
 }
 
+void ChatThreadData::UpdateAiMsg(QString unique_id, int msg_id) {
+
+    auto iter = _msg_unrsp_map.find(unique_id);
+    if (iter == _msg_unrsp_map.end()) {
+
+        // 不应该找不到才对
+        // AddMsg(msg);
+        return;
+    }
+
+    iter.value()->SetMsgId(msg_id);
+    iter.value()->SetStatus(2);
+    AddMsg(iter.value());
+    _msg_unrsp_map.erase(iter);
+}
+
 void ChatThreadData::UpdateProgress(std::shared_ptr<MsgInfo> msg) {
     auto iter = _msg_map.find(msg->_msg_id);
     if (iter == _msg_map.end()) {

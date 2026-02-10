@@ -25,10 +25,12 @@ public:
     void SetAIThreads(QJsonArray arr);
     ~ AIMgr();
     friend class Singleton<AIMgr>;
+    int GetCurAiThread();
+    void SetCurAiThread(int thread_id);
 private:
     AIMgr();
 
-    int current_active_ai_thread_id = -1;
+    int _current_active_ai_thread_id = -1;
     std::vector<int> _ai_thread_ids;
     QMap<int, std::shared_ptr<AIThreadData>> _ai_thread_datas;
     // ...

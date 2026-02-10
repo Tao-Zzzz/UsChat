@@ -30,7 +30,6 @@ protected:
     void handleGlobalMousePress(QMouseEvent *event) ;
     void CloseFindDlg();
     void UpdateChatMsg(std::vector<std::shared_ptr<TextChatData>> msgdata);
-    
 private:
     void showLoadingDlg(bool show = true);
     void AddLBGroup(StateWidget* lb); 
@@ -39,6 +38,10 @@ private:
     void loadMoreConUser();
     void SetSelectChatItem(int thread_id = 0);
     void SetSelectChatPage(int thread_id = 0);
+
+    void UpdateLastMsg();
+
+
     Ui::ChatDialog *ui;
     bool _b_loading;
     QList<StateWidget*> _lb_list;
@@ -80,7 +83,7 @@ public slots:
 
     void slot_create_private_chat(int uid, int other_id, int thread_id);
 
-    void slot_load_chat_msg(int thread_id, int msg_id, bool load_more, 
+    void slot_load_chat_msg(int thread_id, int msg_id, bool load_more,
         std::vector<std::shared_ptr<TextChatData>> msglists);
 
     void slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<TextChatData>> msglists);
@@ -89,6 +92,8 @@ public slots:
     void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info);
     void slot_start_create_group();
     void slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
+
+    void slot_ai_text_chat_msg(ReqId id, QString res, ErrorCodes err);
 private slots:
 
     void on_add_btn_clicked();

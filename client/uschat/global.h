@@ -22,8 +22,9 @@
 #define MAX_FILE_LEN (1024*32)
 //定义最大拥塞窗口的大小
 #define MAX_CWND_SIZE 5
-
-
+//定义AI会话
+#define AI_THREAD -1
+#define AI_UID -1
 /**
  * @brief repolish用来根据属性刷新qss
  */
@@ -85,7 +86,10 @@ enum ReqId{
     ID_CREATE_GROUP_REQ = 1101,
     ID_CREATE_GROUP_RSP = 1102,
     AI_LOAD_THREAD_REQ = 1103,
-    AI_LOAD_CHAT_REQ = 1105
+    AI_LOAD_CHAT_REQ = 1105,
+    ID_AI_CHAT_REQ = 1107,
+    ID_AI_CHAT_RSP = 1108,
+
 };
 Q_DECLARE_METATYPE(ReqId)
 

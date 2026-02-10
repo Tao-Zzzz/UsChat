@@ -130,4 +130,8 @@ void ChatUserWid::updateLastMsg(std::vector<std::shared_ptr<TextChatData>> msgs)
     ui->user_chat_lb->setText(last_msg);
 }
 
+void ChatUserWid::updateLastMsg() {
+
+    ui->user_chat_lb->setText(_chat_data->GetLastMsg());
+}
 

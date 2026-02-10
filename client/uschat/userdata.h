@@ -296,6 +296,7 @@ public:
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
     void UpdateProgress(std::shared_ptr<MsgInfo> msg);
+    void UpdateAiMsg(QString unique_id, int msg_id);
     void SetLastMsgId(int msg_id);
     void SetOtherId(int other_id);
     int  GetOtherId();

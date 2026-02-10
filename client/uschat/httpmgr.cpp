@@ -116,5 +116,9 @@ void HttpMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mo
 
     if(mod == Modules::AIMOD){
         // 给客户端的,ai好像暂时不需要
+        if(id == ReqId::ID_AI_CHAT_REQ)
+            emit sig_ai_chat_req_finish(id, res, err);
+        if(id == ReqId::AI_LOAD_THREAD_REQ)
+            emit sig_ai_mod_finish(id, res, err);
     }
 }

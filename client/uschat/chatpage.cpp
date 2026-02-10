@@ -13,6 +13,8 @@
 #include <QUuid>
 #include <QStandardPaths>
 #include "filetcpmgr.h"
+#include "httpmgr.h"
+#include "aimgr.h"
 
 ChatPage::ChatPage(QWidget *parent) :
     QWidget(parent),
@@ -26,6 +28,8 @@ ChatPage::ChatPage(QWidget *parent) :
     //设置图标样式
     ui->emo_lb->SetState("normal","hover","press","normal","hover","press");
     ui->file_lb->SetState("normal","hover","press","normal","hover","press");
+
+
 
 }
 
@@ -41,21 +45,34 @@ void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
 
 
     if(other_id == -1) {
-        //说明是群聊
+        //说明是ai
         ui->title_lb->setText("AI");
 
         ui->chat_data_list->removeAllItem();
         _unrsp_item_map.clear();
         _base_item_map.clear();
 
-        // 先不加载聊天信息, 先是建立新聊天
-        // for (auto& msg : chat_data->GetMsgMapRef()) {
-        //     AppendChatMsg(msg);
-        // }
+        for (auto& msg : chat_data->GetMsgMapRef()) {
+            auto text_msg = std::dynamic_pointer_cast<TextChatData>(msg);
 
-        // for (auto& msg : chat_data->GetMsgUnRspRef()) {
-        //     AppendChatMsg(msg);
-        // }
+            if (text_msg) {
+                AppendAiChatMsg(text_msg);
+            } else {
+                // 可以记录日志，或者忽略非 TextChatData 的消息
+                qDebug() << "跳过非文本消息类型";
+            }
+        }
+
+        for (auto& msg : chat_data->GetMsgUnRspRef()) {
+            auto text_msg = std::dynamic_pointer_cast<TextChatData>(msg);
+
+            if (text_msg) {
+                AppendAiChatMsg(text_msg);
+            } else {
+                // 可以记录日志，或者忽略非 TextChatData 的消息
+                qDebug() << "跳过非文本消息类型";
+            }
+        }
         return;
     }
 
@@ -201,11 +218,15 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
 
 }
 
+
+
 void ChatPage::UpdateChatStatus(std::shared_ptr<ChatDataBase> msg)
 {
     auto iter = _unrsp_item_map.find(msg->GetUniqueId());
     //没找到则直接返回
     if (iter == _unrsp_item_map.end()) {
+        iter.value()->setStatus(msg->GetStatus());
+        _base_item_map[msg->GetMsgId()] = iter.value();
         return;
     }
 
@@ -310,9 +331,136 @@ void ChatPage::paintEvent(QPaintEvent *event)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
 }
 
+
+void ChatPage::AppendAiChatMsg(std::shared_ptr<TextChatData> msg)
+{
+    ChatRole role;
+    if(msg->GetSendUid() == AI_UID){
+        role = ChatRole::Other;
+    }else{
+        role = ChatRole::Self;
+    }
+
+    ChatItemBase* pChatItem = new ChatItemBase(role);
+
+    if (msg->GetSendUid() != AI_UID) {
+        auto self_info = UserMgr::GetInstance()->GetUserInfo();
+        pChatItem->setUserName(self_info->_name);
+        SetSelfIcon(pChatItem, self_info->_icon);
+    } else {
+        pChatItem->setUserName("AI");
+        auto icon_label = pChatItem->getIconLabel();
+        QPixmap pixmap(":/res/head_2.jpg");
+        QPixmap scaledPixmap = pixmap.scaled(icon_label->size(),
+                                             Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+        icon_label->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+        icon_label->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+    }
+
+    QWidget* pBubble = new TextBubble(role, msg->GetContent());
+    pChatItem->setWidget(pBubble);
+    pChatItem->setStatus(msg->GetStatus()); // AI
+
+    ui->chat_data_list->appendChatItem(pChatItem);
+
+    _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+}
+
+
+void ChatPage::UpdateAiChatStatus(QString unique_id, int msg_id)
+{
+    auto iter = _unrsp_item_map.find(unique_id);
+    //没找到则直接返回
+    if (iter == _unrsp_item_map.end()) {
+        return;
+    }
+
+    iter.value()->setStatus(MsgStatus::READED);
+    _base_item_map[msg_id] = iter.value();
+    _unrsp_item_map.erase(iter);
+}
+
+void ChatPage::send_msg_to_ai()
+{
+    auto user_info = UserMgr::GetInstance()->GetUserInfo();
+    auto pTextEdit = ui->chatEdit;
+
+    const QVector<std::shared_ptr<MsgInfo>>& msgList = pTextEdit->getMsgList();
+    if (msgList.isEmpty()) return;
+
+    // 目前 AI 先只支持文本（这是正确的）
+    auto msg = msgList[0];
+    if (msg->_msg_type != MsgType::TEXT_MSG) {
+        qDebug() << "AI only supports text currently";
+        return;
+    }
+
+    QString content = msg->_text_or_url;
+    if (content.isEmpty()) return;
+
+
+
+
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
+
+    QUuid uuid = QUuid::createUuid();
+    //转为字符串
+    QString uuidString = uuid.toString();
+
+    auto txt_msg = std::make_shared<TextChatData>(uuidString, AI_THREAD, ChatFormType::AI,
+                                                  ChatMsgType::TEXT, content, user_info->_uid, 0);
+
+    AppendAiChatMsg(txt_msg);
+    chat_data->AppendUnRspMsg(uuidString, txt_msg);
+
+
+
+    // ---------- 1. UI 先插入“自己发的消息” ----------
+    // ChatItemBase* pChatItem = new ChatItemBase(ChatRole::Self);
+    // pChatItem->setUserName(user_info->_name);
+    // SetSelfIcon(pChatItem, user_info->_icon);
+
+    // auto bubble = new TextBubble(ChatRole::Self, content);
+    // pChatItem->setWidget(bubble);
+    // pChatItem->setStatus(0);
+
+    // ui->chat_data_list->appendChatItem(pChatItem);
+
+    // ---------- 2. 组织 HTTP 请求 ----------
+    QJsonObject req;
+    req["uid"] = user_info->_uid;
+    //req["token"] = UserMgr::GetInstance()->GetToken();
+    req["content"] = content;
+    req["model"] = "gpt-4o"; // 或客户端当前选中的模型
+    req["unique_id"] = uuidString;
+    // ai_thread_id：-1 表示新会话
+    req["ai_thread_id"] = AIMgr::GetInstance()->GetCurAiThread(); // -1 或真实 id
+
+    // ---------- 3. 发送 HTTP ----------
+    QUrl url("http://127.0.0.1:8070/ai/chat");
+    HttpMgr::GetInstance()->PostHttpReq(
+        url,
+        req,
+        ReqId::ID_AI_CHAT_REQ,
+        Modules::AIMOD
+        );
+
+    // 清空输入框
+    pTextEdit->clear();
+}
+
+
+
+
 void ChatPage::on_send_btn_clicked() {
     if (_chat_data == nullptr) {
         qDebug() << "thread chat info is empty";
+        return;
+    }
+
+    // ⭐ 新增：AI 会话分流
+    if (_chat_data->GetOtherId() == -1) {
+        send_msg_to_ai();
         return;
     }
 
