@@ -57,5 +57,8 @@
         <file>res/readed.png</file>
         <file>res/send_fail.png</file>
         <file>res/unread.png</file>
+        <file>res/ellipsis.png</file>
+        <file>res/ellipsis_hover.png</file>
+        <file>res/ellipsis_press.png</file>
     </qresource>
 </RCC>

@@ -6,6 +6,8 @@ debug/MessageTextEdit.o
 debug/PictureBubble.o
 debug/TextBubble.o
 debug/adduseritem.o
+debug/aihistorydialog.o
+debug/aihistoryitem.o
 debug/aimgr.o
 debug/applyfriend.o
 debug/applyfrienditem.o
@@ -40,6 +42,7 @@ debug/loadingdlg.o
 debug/logindialog.o
 debug/main.o
 debug/mainwindow.o
+debug/moremenu.o
 debug/registerdialog.o
 debug/resetdialog.o
 debug/searchlist.o
@@ -59,6 +62,8 @@ debug/moc_MessageTextEdit.o
 debug/moc_PictureBubble.o
 debug/moc_TextBubble.o
 debug/moc_adduseritem.o
+debug/moc_aihistorydialog.o
+debug/moc_aihistoryitem.o
 debug/moc_aimgr.o
 debug/moc_applyfriend.o
 debug/moc_applyfrienditem.o
@@ -92,6 +97,7 @@ debug/moc_listitembase.o
 debug/moc_loadingdlg.o
 debug/moc_logindialog.o
 debug/moc_mainwindow.o
+debug/moc_moremenu.o
 debug/moc_registerdialog.o
 debug/moc_resetdialog.o
 debug/moc_searchlist.o

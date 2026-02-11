@@ -34,6 +34,8 @@ SOURCES += \
         PictureBubble.cpp \
         TextBubble.cpp \
         adduseritem.cpp \
+        aihistorydialog.cpp \
+        aihistoryitem.cpp \
         aimgr.cpp \
         applyfriend.cpp \
         applyfrienditem.cpp \
@@ -68,6 +70,7 @@ SOURCES += \
         logindialog.cpp \
         main.cpp \
         mainwindow.cpp \
+        moremenu.cpp \
         registerdialog.cpp \
         resetdialog.cpp \
         searchlist.cpp \
@@ -88,6 +91,8 @@ HEADERS += \
         PictureBubble.h \
         TextBubble.h \
         adduseritem.h \
+        aihistorydialog.h \
+        aihistoryitem.h \
         aimgr.h \
         applyfriend.h \
         applyfrienditem.h \
@@ -122,6 +127,7 @@ HEADERS += \
         loadingdlg.h \
         logindialog.h \
         mainwindow.h \
+        moremenu.h \
         registerdialog.h \
         resetdialog.h \
         searchlist.h \
@@ -182,6 +188,9 @@ DISTFILES += \
     res/contact_list.png \
     res/contact_list_hover.png \
     res/contact_list_press.png \
+    res/ellipsis.png \
+    res/ellipsis_hover.png \
+    res/ellipsis_press.png \
     res/female.png \
     res/filedir.png \
     res/filedir_hover.png \

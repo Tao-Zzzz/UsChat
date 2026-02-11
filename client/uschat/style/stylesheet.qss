@@ -264,6 +264,18 @@ LoadingDlg{
     border-image: url(:/res/filedir_press.png);
 }
 
+#more_lb[state='normal']{
+    border-image: url(:/res/ellipsis.png);
+}
+
+#more_lb[state='hover']{
+    border-image: url(:/res/ellipsis_hover.png);
+}
+
+#more_lb[state='press']{
+    border-image: url(:/res/ellipsis_press.png);
+}
+
 #chat_data_list{
      background: black;
 }

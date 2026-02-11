@@ -6,6 +6,8 @@ release/MessageTextEdit.o
 release/PictureBubble.o
 release/TextBubble.o
 release/adduseritem.o
+release/aihistorydialog.o
+release/aihistoryitem.o
 release/aimgr.o
 release/applyfriend.o
 release/applyfrienditem.o
@@ -40,6 +42,7 @@ release/loadingdlg.o
 release/logindialog.o
 release/main.o
 release/mainwindow.o
+release/moremenu.o
 release/registerdialog.o
 release/resetdialog.o
 release/searchlist.o
@@ -59,6 +62,8 @@ release/moc_MessageTextEdit.o
 release/moc_PictureBubble.o
 release/moc_TextBubble.o
 release/moc_adduseritem.o
+release/moc_aihistorydialog.o
+release/moc_aihistoryitem.o
 release/moc_aimgr.o
 release/moc_applyfriend.o
 release/moc_applyfrienditem.o
@@ -92,6 +97,7 @@ release/moc_listitembase.o
 release/moc_loadingdlg.o
 release/moc_logindialog.o
 release/moc_mainwindow.o
+release/moc_moremenu.o
 release/moc_registerdialog.o
 release/moc_resetdialog.o
 release/moc_searchlist.o

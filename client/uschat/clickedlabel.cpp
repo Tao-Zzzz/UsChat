@@ -48,7 +48,7 @@ void ClickedLabel::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
     // 调用基类的mousePressEvent以保证正常的事件处理
-    QLabel::mousePressEvent(event);
+  QLabel::mouseReleaseEvent(event);
 }
 
 // 处理鼠标悬停进入事件

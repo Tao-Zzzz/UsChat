@@ -27,6 +27,8 @@ public:
     friend class Singleton<AIMgr>;
     int GetCurAiThread();
     void SetCurAiThread(int thread_id);
+    QMap<int, std::shared_ptr<AIThreadData>> GetAllAiHistoryChat();
+
 private:
     AIMgr();
 

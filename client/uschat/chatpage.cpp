@@ -15,6 +15,9 @@
 #include "filetcpmgr.h"
 #include "httpmgr.h"
 #include "aimgr.h"
+#include "aihistorydialog.h"
+#include "moremenu.h"
+
 
 ChatPage::ChatPage(QWidget *parent) :
     QWidget(parent),
@@ -28,9 +31,9 @@ ChatPage::ChatPage(QWidget *parent) :
     //设置图标样式
     ui->emo_lb->SetState("normal","hover","press","normal","hover","press");
     ui->file_lb->SetState("normal","hover","press","normal","hover","press");
+    ui->more_lb->SetState("normal","hover","press","normal","hover","press");
 
-
-
+    connect(ui->more_lb, &ClickedLabel::clicked, this, &ChatPage::slot_clicked_more_label);
 }
 
 ChatPage::~ChatPage()
@@ -739,6 +742,49 @@ void ChatPage::on_clicked_resume(QString unique_name, TransferType transfer_type
         return;
     }
 }
+
+void ChatPage::slot_clicked_more_label(QString name, ClickLbState state) {
+    // 只有在 Selected 狀態（點擊）時才彈出
+    if (state != ClickLbState::Selected) return;
+
+    // 1. 初始化菜單
+    static MoreMenu* menu = new MoreMenu(this);
+
+    // 連接菜單信號到彈出大窗口
+    connect(menu, &MoreMenu::sig_switch_history, this, [this](){
+        showAiHistoryWindow();
+        ui->more_lb->ResetNormalState(); // 重置按鈕狀態
+    });
+
+    // 2. 定位 (左上對齊)
+    menu->adjustSize(); // 確保寬高已計算
+    QPoint globalPos = ui->more_lb->mapToGlobal(QPoint(0, 0));
+
+    // 計算坐標：右邊對齊 more_lb 的右邊，底部對齊 more_lb 的頂部
+    int x = globalPos.x() + ui->more_lb->width() - menu->width();
+    int y = globalPos.y() - menu->height() - 5; // 向上偏移 5px
+
+    menu->move(x, y);
+    menu->show();
+}
+
+void ChatPage::showAiHistoryWindow()
+{
+    auto* dlg = new AiHistoryDialog(this);
+
+    connect(dlg, &AiHistoryDialog::sig_history_selected,
+            this, &ChatPage::onAiHistorySelected);
+
+    dlg->exec();
+}
+
+void ChatPage::onAiHistorySelected(const QString& name)
+{
+    qDebug() << "select ai history:" << name;
+    // TODO: 恢复对应 AI 会话
+}
+
+
 
 void ChatPage::clearItems()
 {

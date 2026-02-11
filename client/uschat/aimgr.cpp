@@ -14,8 +14,12 @@ AIMgr::AIMgr()
 
 void AIMgr::LoadAIThreads()
 {
+
+    int uid = UserMgr::GetInstance()->GetUid();
+    qDebug() << "Sending uid to AiServer:" << uid;
+
     QJsonObject params;
-    params["uid"] = UserMgr::GetInstance()->GetUid();
+    params["uid"] = uid;
 
     HttpMgr::GetInstance()->GetHttpReq(
         QUrl("http://127.0.0.1:8070/ai/load_thread"),
@@ -81,4 +85,8 @@ void AIMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err)
     if (id == ReqId::AI_LOAD_CHAT_REQ) {
         // 同理
     }
+}
+
+QMap<int, std::shared_ptr<AIThreadData>> AIMgr::GetAllAiHistoryChat(){
+    return _ai_thread_datas;
 }

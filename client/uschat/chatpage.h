@@ -25,7 +25,7 @@ public:
     void send_msg_to_ai();
     void AppendAiChatMsg(std::shared_ptr<TextChatData> msg);
     void UpdateAiChatStatus(QString unique_id, int msg_id);
-
+    void showAiHistoryWindow();
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -38,6 +38,8 @@ private slots:
     void on_clicked_paused(QString unique_name, TransferType transfer_type);
     //PictureBubble
     void on_clicked_resume(QString unique_name, TransferType transfer_type);
+    void slot_clicked_more_label(QString name, ClickLbState state);
+    void onAiHistorySelected(const QString& name);
 private:
     void clearItems();
     Ui::ChatPage *ui;
