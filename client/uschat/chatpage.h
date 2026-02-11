@@ -27,6 +27,7 @@ public:
     void AppendAiChatMsg(std::shared_ptr<TextChatData> msg);
     void UpdateAiChatStatus(QString unique_id, int msg_id);
     void showAiHistoryWindow();
+    void clearItems();
 protected:
     void paintEvent(QPaintEvent *event);
 
@@ -42,7 +43,7 @@ private slots:
     void slot_clicked_more_label(QString name, ClickLbState state);
     void slot_ai_history_selected(int ai_thread_id);
 private:
-    void clearItems();
+
     Ui::ChatPage *ui;
     std::shared_ptr<ChatThreadData> _chat_data;
     QMap<QString, QWidget*>  _bubble_map;

@@ -256,7 +256,7 @@ ChatDialog::ChatDialog(QWidget* parent) :
     connect(ui->chat_page, &ChatPage::sig_request_load_ai_history,
             this, &ChatDialog::slot_load_ai_history_requested, Qt::UniqueConnection);
 
-    connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_load_chat_req_finish, this, &ChatDialog::slot_load_ai_history_requested);
+    connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_load_chat_req_finish, this, &ChatDialog::slot_ai_load_chat);
 
 }
 
@@ -461,6 +461,7 @@ void ChatDialog::slot_load_ai_history_requested(int ai_thread_id)
     // 2. 发送服务器请求
     QJsonObject req;
     req["uid"] = UserMgr::GetInstance()->GetUid();
+    qDebug() << "[Debug]ai_thread_id 是" << ai_thread_id ;
     req["ai_thread_id"] = ai_thread_id;
 
 
@@ -484,6 +485,7 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
         auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
 
         chat_data->ClearChatMsg();
+        ui->chat_page->clearItems();
 
         QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
         if (!doc.isObject()) {
@@ -521,7 +523,7 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
 
             chat_data-> AppendMsg(msg_id, txt_msg);
 
-            ui->chat_page->AppendAiChatMsg(txt_msg);
+
         }
 
         auto find_iter = _chat_thread_items.find(AI_THREAD);

@@ -50,6 +50,7 @@ void AiHistoryDialog::loadHistoryList()
 
     for (auto it = history_datas.begin(); it != history_datas.end(); ++it) {
         int ai_thread_id = it.key();
+        qDebug() << "[Debug]ai_thread_id 是" << ai_thread_id ;
         const auto& data = it.value();
 
         auto* item = new QListWidgetItem(_listWidget);
