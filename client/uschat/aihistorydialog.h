@@ -12,7 +12,7 @@ public:
     explicit AiHistoryDialog(QWidget* parent = nullptr);
 
 signals:
-    void sig_history_selected(const QString& name);
+    void sig_history_selected(int ai_thread_id);
 
 private:
     void initUI();

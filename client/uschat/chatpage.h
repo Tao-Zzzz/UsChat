@@ -5,6 +5,7 @@
 #include "userdata.h"
 #include <QMap>
 #include "chatitembase.h"
+#include "moremenu.h"
 
 namespace Ui {
 class ChatPage;
@@ -39,7 +40,7 @@ private slots:
     //PictureBubble
     void on_clicked_resume(QString unique_name, TransferType transfer_type);
     void slot_clicked_more_label(QString name, ClickLbState state);
-    void onAiHistorySelected(const QString& name);
+    void slot_ai_history_selected(int ai_thread_id);
 private:
     void clearItems();
     Ui::ChatPage *ui;
@@ -49,6 +50,11 @@ private:
     QHash<QString, ChatItemBase*> _unrsp_item_map;
     //
     QHash<qint64, ChatItemBase*> _base_item_map;
+
+    MoreMenu* _more_menu = nullptr;
+
+signals:
+    void sig_request_load_ai_history(int ai_thread_id);
 };
 
 #endif // CHATPAGE_H

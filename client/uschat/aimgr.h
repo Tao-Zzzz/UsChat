@@ -28,6 +28,12 @@ public:
     int GetCurAiThread();
     void SetCurAiThread(int thread_id);
     QMap<int, std::shared_ptr<AIThreadData>> GetAllAiHistoryChat();
+    QString GetAIHost();
+    QString GetAIScheme();
+    int GetAiPort();
+    void SetAIHost(QString host);
+    void SetAIScheme(QString scheme);
+    void SetAIPort(int port);
 
 private:
     AIMgr();
@@ -36,6 +42,11 @@ private:
     std::vector<int> _ai_thread_ids;
     QMap<int, std::shared_ptr<AIThreadData>> _ai_thread_datas;
     // ...
+
+    QString _ai_host;
+    QString _ai_scheme;
+    int _ai_port;
+
 
 signals:
     void sig_ai_threads_loaded();

@@ -201,3 +201,15 @@ std::vector<int> ChatThreadData::GetGroupMemberUids()
 {
     return _group_members;
 }
+
+void ChatThreadData::ClearChatMsg(){
+    if(_thread_id != AI_THREAD){
+        return;
+    }
+
+    _last_msg_id = 0;
+    _last_msg = "";
+
+    _msg_map.clear();
+    _msg_unrsp_map.clear();
+}

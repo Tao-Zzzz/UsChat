@@ -94,6 +94,9 @@ public slots:
     void slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
 
     void slot_ai_text_chat_msg(ReqId id, QString res, ErrorCodes err);
+
+    void slot_load_ai_history_requested(int ai_thread_id);
+    void slot_ai_load_chat(ReqId id, QString res, ErrorCodes err);
 private slots:
 
     void on_add_btn_clicked();

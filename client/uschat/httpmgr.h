@@ -37,6 +37,7 @@ signals:
     void sig_login_mod_finish(ReqId id, QString res, ErrorCodes err);
     void sig_ai_mod_finish(ReqId id, QString res, ErrorCodes err);
     void sig_ai_chat_req_finish(ReqId id, QString res, ErrorCodes err);
+    void sig_ai_load_chat_req_finish(ReqId id, QString res, ErrorCodes err);
 
 };
 

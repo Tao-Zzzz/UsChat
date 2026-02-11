@@ -89,6 +89,8 @@ enum ReqId{
     AI_LOAD_CHAT_REQ = 1105,
     ID_AI_CHAT_REQ = 1107,
     ID_AI_CHAT_RSP = 1108,
+    ID_AI_LOAD_CHAT_REQ = 1109,
+    ID_AI_LOAD_CHAT_RESP = 1101,
 
 };
 Q_DECLARE_METATYPE(ReqId)
@@ -121,6 +123,12 @@ enum ClickLbState{
     Selected = 1
 };
 
+
+namespace ApiPath {
+    constexpr const char* Chat = "/ai/chat";
+    constexpr const char* LoadThread = "/ai/load_thread";
+    constexpr const char* LoadChatMsg = "/ai/load_chat_msg";
+}
 
 extern QString gate_url_prefix;
 

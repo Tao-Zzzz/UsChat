@@ -65,8 +65,33 @@ void HttpMgr::GetHttpReq(QUrl url, ReqId req_id, Modules mod)
 void HttpMgr::GetHttpReq(QUrl url, QJsonObject params, ReqId req_id, Modules mod)
 {
     QUrlQuery query;
+
     for (auto it = params.begin(); it != params.end(); ++it) {
-        query.addQueryItem(it.key(), it.value().toString());
+        const QJsonValue& v = it.value();
+        QString value;
+
+        switch (v.type()) {
+        case QJsonValue::String:
+            value = v.toString();
+            break;
+        case QJsonValue::Double:
+            value = QString::number(v.toInt());
+            break;
+        case QJsonValue::Bool:
+            value = v.toBool() ? "true" : "false";
+            break;
+        case QJsonValue::Null:
+        case QJsonValue::Undefined:
+            value = "";
+            break;
+        default:
+            // Object / Array 不应该出现在 GET query
+            value = "";
+            qWarning() << "Unsupported GET param type:" << v.type();
+            break;
+        }
+
+        query.addQueryItem(it.key(), value);
     }
 
     url.setQuery(query);
@@ -120,5 +145,7 @@ void HttpMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err, Modules mo
             emit sig_ai_chat_req_finish(id, res, err);
         if(id == ReqId::AI_LOAD_THREAD_REQ)
             emit sig_ai_mod_finish(id, res, err);
+        if(id == ReqId::ID_AI_LOAD_CHAT_REQ)
+            emit sig_ai_load_chat_req_finish(id, res, err);
     }
 }

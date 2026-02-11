@@ -252,6 +252,12 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_chat_req_finish, this,
             &ChatDialog::slot_ai_text_chat_msg);
+
+    connect(ui->chat_page, &ChatPage::sig_request_load_ai_history,
+            this, &ChatDialog::slot_load_ai_history_requested, Qt::UniqueConnection);
+
+    connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_load_chat_req_finish, this, &ChatDialog::slot_load_ai_history_requested);
+
 }
 
 ChatDialog::~ChatDialog()
@@ -444,6 +450,105 @@ void ChatDialog::slot_ai_text_chat_msg(ReqId id, QString res, ErrorCodes err)
     // 如果此时聚焦在本会话, 那还要更新一下ui
     ui->chat_page->AppendAiChatMsg(txt_msg);
 
+}
+
+void ChatDialog::slot_load_ai_history_requested(int ai_thread_id)
+{
+
+    // 1. 全局进入 loading 状态
+    showLoadingDlg(true);
+
+    // 2. 发送服务器请求
+    QJsonObject req;
+    req["uid"] = UserMgr::GetInstance()->GetUid();
+    req["ai_thread_id"] = ai_thread_id;
+
+
+    QUrl url;
+    url.setScheme(AIMgr::GetInstance()->GetAIScheme());
+    url.setHost(AIMgr::GetInstance()->GetAIHost());
+    url.setPort(AIMgr::GetInstance()->GetAiPort());
+    url.setPath(ApiPath::LoadChatMsg);
+
+    HttpMgr::GetInstance()->GetHttpReq(
+        url,
+        req,
+        ReqId::ID_AI_LOAD_CHAT_REQ,
+        Modules::AIMOD
+        );
+}
+
+void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
+{
+    if(_cur_chat_thread_id == AI_THREAD){
+        auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
+
+        chat_data->ClearChatMsg();
+
+        QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
+        if (!doc.isObject()) {
+            qWarning() << "load_chat_msg response is not object";
+            return;
+        }
+
+        QJsonObject root = doc.object();
+
+        // 取 ai_thread_id
+        int ai_thread_id = root["ai_thread_id"].toInt();
+        AIMgr::GetInstance()->SetCurAiThread(ai_thread_id);
+        // 取 messages 数组
+        QJsonArray msgs = root["messages"].toArray();
+
+        int sleft_uid = UserMgr::GetInstance()->GetUid();
+
+        for (const QJsonValue& v : msgs) {
+            QJsonObject obj = v.toObject();
+
+            int msg_id = obj["msg_id"].toInt();
+            QString role = obj["role"].toString();
+            QString content = obj["content"].toString();
+            QString created_at = obj["created_at"].toString();
+
+            std::shared_ptr<TextChatData> txt_msg;
+            // 构造并渲染消息
+            if(role == "assistant"){
+                txt_msg = std::make_shared<TextChatData>(msg_id, AI_THREAD, ChatFormType::AI,
+                                                              ChatMsgType::TEXT, content, AI_UID, MsgStatus::READED);
+            }else{
+                txt_msg = std::make_shared<TextChatData>(msg_id, AI_THREAD, ChatFormType::AI,
+                                                         ChatMsgType::TEXT, content, sleft_uid, MsgStatus::READED);
+            }
+
+            chat_data-> AppendMsg(msg_id, txt_msg);
+
+            ui->chat_page->AppendAiChatMsg(txt_msg);
+        }
+
+        auto find_iter = _chat_thread_items.find(AI_THREAD);
+        if (find_iter == _chat_thread_items.end()) {
+            qDebug() << "thread_id [" << AI_THREAD << "] not found, set curent row 0";
+            ui->chat_user_list->setCurrentRow(0);
+            return;
+        }
+
+        QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
+        if (!widget) {
+            return;
+        }
+
+        auto con_item = qobject_cast<ChatUserWid*>(widget);
+        if (!con_item) {
+            return;
+        }
+
+        con_item->updateLastMsg();
+
+        if (_cur_chat_thread_id != AI_THREAD) {
+            return;
+        }
+
+        showLoadingDlg(false);
+    }
 }
 
 bool ChatDialog::eventFilter(QObject* watched, QEvent* event)

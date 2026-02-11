@@ -744,28 +744,35 @@ void ChatPage::on_clicked_resume(QString unique_name, TransferType transfer_type
 }
 
 void ChatPage::slot_clicked_more_label(QString name, ClickLbState state) {
+    qDebug() << "Current State:" << state;
     // 只有在 Selected 狀態（點擊）時才彈出
     if (state != ClickLbState::Selected) return;
 
-    // 1. 初始化菜單
-    static MoreMenu* menu = new MoreMenu(this);
 
-    // 連接菜單信號到彈出大窗口
-    connect(menu, &MoreMenu::sig_switch_history, this, [this](){
-        showAiHistoryWindow();
-        ui->more_lb->ResetNormalState(); // 重置按鈕狀態
-    });
+    if(!_more_menu) {
+        _more_menu = new MoreMenu(this);
+
+
+        // 連接菜單信號到彈出大窗口
+        connect(_more_menu, &MoreMenu::sig_switch_history, this, [this](){
+            showAiHistoryWindow();
+            ui->more_lb->ResetNormalState(); // 重置按鈕狀態
+        });
+    }
+
+    // 1. 初始化菜單
+
 
     // 2. 定位 (左上對齊)
-    menu->adjustSize(); // 確保寬高已計算
+    _more_menu->adjustSize(); // 確保寬高已計算
     QPoint globalPos = ui->more_lb->mapToGlobal(QPoint(0, 0));
 
     // 計算坐標：右邊對齊 more_lb 的右邊，底部對齊 more_lb 的頂部
-    int x = globalPos.x() + ui->more_lb->width() - menu->width();
-    int y = globalPos.y() - menu->height() - 5; // 向上偏移 5px
+    int x = globalPos.x() + ui->more_lb->width() - _more_menu->width();
+    int y = globalPos.y() - _more_menu->height() - 5; // 向上偏移 5px
 
-    menu->move(x, y);
-    menu->show();
+    _more_menu->move(x, y);
+    _more_menu->show();
 }
 
 void ChatPage::showAiHistoryWindow()
@@ -773,15 +780,17 @@ void ChatPage::showAiHistoryWindow()
     auto* dlg = new AiHistoryDialog(this);
 
     connect(dlg, &AiHistoryDialog::sig_history_selected,
-            this, &ChatPage::onAiHistorySelected);
+            this, &ChatPage::slot_ai_history_selected, Qt::UniqueConnection);
 
     dlg->exec();
 }
 
-void ChatPage::onAiHistorySelected(const QString& name)
+
+// 往上级传递
+void ChatPage::slot_ai_history_selected(int ai_thread_id)
 {
-    qDebug() << "select ai history:" << name;
-    // TODO: 恢复对应 AI 会话
+    qDebug() << "[Debug] ChatPage Instance:" << this << "requested ID:" << ai_thread_id;
+    emit sig_request_load_ai_history(ai_thread_id);
 }
 
 

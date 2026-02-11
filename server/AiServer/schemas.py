@@ -24,6 +24,11 @@ class AIThreadItem(BaseModel):
     updated_at: datetime
 
 class AIChatMessage(BaseModel):
+    msg_id: int
     role: str
     content: str
     created_at: datetime
+
+class AIChatMessageResp(BaseModel):
+    ai_thread_id: int
+    messages: list[AIChatMessage]

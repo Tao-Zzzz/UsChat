@@ -21,8 +21,19 @@ void AIMgr::LoadAIThreads()
     QJsonObject params;
     params["uid"] = uid;
 
+
+    qDebug() << "[UID] After insert into params:" << params["uid"].toInt()
+             << "| isNull:" << params["uid"].isNull()
+             << "| isUndefined:" << params["uid"].isUndefined();
+
+    QUrl url;
+    url.setScheme(_ai_scheme);
+    url.setHost(_ai_host);
+    url.setPort(_ai_port);
+    url.setPath(ApiPath::LoadThread);
+
     HttpMgr::GetInstance()->GetHttpReq(
-        QUrl("http://127.0.0.1:8070/ai/load_thread"),
+        url,
         params,
         ReqId::AI_LOAD_THREAD_REQ,
         Modules::AIMOD
@@ -89,4 +100,35 @@ void AIMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err)
 
 QMap<int, std::shared_ptr<AIThreadData>> AIMgr::GetAllAiHistoryChat(){
     return _ai_thread_datas;
+}
+
+void AIMgr::SetAIHost(QString host)
+{
+    _ai_host = host;
+}
+
+void AIMgr::SetAIScheme(QString scheme)
+{
+    _ai_scheme = scheme;
+}
+
+void AIMgr::SetAIPort(int port)
+{
+    _ai_port = port;
+}
+
+
+QString AIMgr::GetAIHost()
+{
+    return _ai_host;
+}
+
+QString AIMgr::GetAIScheme()
+{
+    return _ai_scheme;
+}
+
+int AIMgr::GetAiPort()
+{
+    return _ai_port;
 }

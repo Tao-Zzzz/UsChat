@@ -8,6 +8,8 @@
 #include <QPainter>
 #include "filetcpmgr.h"
 #include <QPainterPath>
+#include "aimgr.h"
+
 
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
@@ -253,6 +255,11 @@ void LoginDialog::slot_res_con_finish(bool bsuccess)
 
           //发送tcp请求给chat server
          emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CHAT_LOGIN, jsonData);
+
+         // 获取AIServer
+        AIMgr::GetInstance()->SetAIHost("127.0.0.1");
+        AIMgr::GetInstance()->SetAIPort(8070);
+        AIMgr::GetInstance()->SetAIScheme("http");
 
        }else{
           showTip(tr("网络异常"),false);

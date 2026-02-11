@@ -311,6 +311,9 @@ public:
     void AppendUnRspMsg(QString unique_id, std::shared_ptr<ChatDataBase> base_msg);
     std::shared_ptr<ChatDataBase> GetChatDataBase(int msg_id);
     std::vector<int> GetGroupMemberUids();
+
+    void ClearChatMsg();
+
 private:
     //如果是私聊，则为对方的id；如果是群聊，则为0
     int _other_id;
