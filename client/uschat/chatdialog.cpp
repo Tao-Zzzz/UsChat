@@ -484,8 +484,10 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
     if(_cur_chat_thread_id == AI_THREAD){
         auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
 
-        chat_data->ClearChatMsg();
         ui->chat_page->clearItems();
+        qDebug() << "clear once";
+        chat_data->ClearChatMsg();
+
 
         QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
         if (!doc.isObject()) {
@@ -522,7 +524,7 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
             }
 
             chat_data-> AppendMsg(msg_id, txt_msg);
-
+            ui->chat_page->AppendChatMsg(txt_msg);
 
         }
 
