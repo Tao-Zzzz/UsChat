@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 
-from db import get_db
-from schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
-from service import handle_chat, load_ai_messages, load_ai_init_data
+from app.db import get_db
+from app.schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
+from app.service import handle_chat, load_ai_messages, load_ai_init_data
 
 app = FastAPI()
 

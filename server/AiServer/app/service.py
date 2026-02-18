@@ -1,14 +1,9 @@
 from sqlalchemy.orm import Session
-from models import AIThread, AIMessage, AIModel
+from app.models import AIThread, AIMessage, AIModel
 from openai import OpenAI
+from app.config import get_settings
 
-
-# 初始化客户端（只改这里两行）
-client = OpenAI(
-    api_key="sk-wwncxncooxrgvevddiziufxlhqoygbsetsbawdhyyfwlcjwp",          # 替换成 sk-xxx...
-    base_url="https://api.siliconflow.cn/v1"     # 固定这个
-)
-
+settings = get_settings()
 
 
 def handle_chat(db: Session, req):
@@ -54,6 +49,17 @@ def handle_chat(db: Session, req):
     db.commit()
     db.refresh(user_msg)
 
+    model_row = (
+        db.query(AIModel)
+        .filter(
+            AIModel.name == req.model,
+            AIModel.is_enabled == True
+        )
+        .first()
+    )
+
+    if not model_row:
+        raise Exception("model not found or disabled")
 
     messages = [
         # 系统提示（可选，加这个让模型更像助手）
@@ -64,10 +70,13 @@ def handle_chat(db: Session, req):
         {"role": "user", "content": req.content},  # 当前用户输入
         # 如果有更多历史，就继续加 {"role": "assistant", "content": 之前的AI回复}, {"role": "user", ...}
     ]
+    client = get_llm_client(model_row.provider)
+
 
         # 调用 API 生成回复
     response = client.chat.completions.create(
-        model="deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",          # 推荐这个，性价比高，效果好（或换成你喜欢的）
+        model=model_row.model_key,
+        # model="deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",          # 推荐这个，性价比高，效果好（或换成你喜欢的）
         # 其他常见模型示例：
         # "Qwen/Qwen2.5-72B-Instruct"   # 通义千问，很强
         # "Pro/zai-org/GLM-4.7"         # 智谱 GLM-4
@@ -108,6 +117,26 @@ def handle_chat(db: Session, req):
         thread.title,
         req.unique_id
     )
+
+def get_llm_client(provider: str):
+    if provider == "openrouter":
+        return OpenAI(
+            api_key=settings.OPENROUTER_KEY,
+            base_url="https://openrouter.ai/api/v1"
+        )
+    elif provider == "openai":
+        return OpenAI(
+            api_key=settings.OPENAI_KEY
+        )
+    elif provider == "deepseek":
+        return OpenAI(
+            api_key=settings.DEEPSEEK_KEY,
+            base_url="https://api.deepseek.com/v1"
+        )
+    else:
+        raise Exception(f"unsupported provider: {provider}")
+    
+
 
 def load_ai_threads(db, uid: int):
     threads = (
