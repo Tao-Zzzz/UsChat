@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import AIThread, AIMessage
+from models import AIThread, AIMessage, AIModel
 from openai import OpenAI
 
 
@@ -121,6 +121,23 @@ def load_ai_threads(db, uid: int):
     )
 
     return threads
+
+def load_enabled_models(db):
+    models = (
+        db.query(AIModel)
+        .filter(AIModel.is_enabled == True)
+        .order_by(AIModel.sort_order.asc())
+        .all()
+    )
+    return models
+
+def load_ai_init_data(db, uid: int):
+    threads = load_ai_threads(db, uid)
+    models = load_enabled_models(db)
+
+    return threads, models
+
+
 
 def load_ai_messages(db, uid: int, ai_thread_id: int):
     # 先校验这个会话是否属于该用户

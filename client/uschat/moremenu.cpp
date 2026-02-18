@@ -1,81 +1,79 @@
-#include "moremenu.h"
+#include "MoreMenu.h"
 #include <QGraphicsDropShadowEffect>
+#include <QFrame>
+#include <QColor>
 
-
-// MoreMenu::MoreMenu(QWidget *parent) : QWidget(parent) {
-//     setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
-//     setAttribute(Qt::WA_TranslucentBackground); // 關鍵：支持透明陰影
-
-//     auto* layout = new QVBoxLayout(this);
-//     layout->setContentsMargins(10, 10, 10, 10);
-
-//     // 容器，用於繪製陰影和圓角
-//     QWidget* container = new QWidget(this);
-//     container->setObjectName("MenuContainer");
-//     QVBoxLayout* c_layout = new QVBoxLayout(container);
-//     c_layout->setContentsMargins(0, 5, 0, 5);
-//     c_layout->setSpacing(0);
-
-//     auto* btn = new QPushButton(" 加載歷史聊天記錄", this);
-//     btn->setFixedSize(160, 35);
-//     btn->setCursor(Qt::PointingHandCursor);
-
-//     // QSS 美化
-//     container->setStyleSheet(
-//         "#MenuContainer { background: white; border: 1px solid #e0e0e0; border-radius: 6px; }"
-//         "QPushButton { border: none; background: transparent; text-align: left; padding-left: 15px; font-size: 13px; color: #333; }"
-//         "QPushButton:hover { background: #f5f5f5; color: #0078d4; }"
-//         );
-
-//     // 添加陰影效果
-//     auto* shadow = new QGraphicsDropShadowEffect(this);
-//     shadow->setBlurRadius(10);
-//     shadow->setColor(QColor(0, 0, 0, 40));
-//     shadow->setOffset(0, 2);
-//     container->setGraphicsEffect(shadow);
-
-//     c_layout->addWidget(btn);
-//     layout->addWidget(container);
-
-//     connect(btn, &QPushButton::clicked, [this](){
-//         emit sig_switch_history();
-//         this->hide();
-//     });
-// }
-
-MoreMenu::MoreMenu(QWidget *parent) : QWidget(parent) {
+MoreMenu::MoreMenu(QWidget *parent)
+    : QWidget(parent)
+{
+    // 窗口属性
     setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
-    auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(8, 8, 8, 8); // 給陰影留空間
+    // 主布局（给阴影留空间）
+    m_mainLayout = new QVBoxLayout(this);
+    m_mainLayout->setContentsMargins(8, 8, 8, 8);
+    m_mainLayout->setSpacing(0);
 
-    QWidget* container = new QWidget(this);
-    container->setStyleSheet("background: #252525; border: 1px solid #3c3c3c; border-radius: 4px;");
-
-    auto* c_layout = new QVBoxLayout(container);
-    c_layout->setContentsMargins(0, 4, 0, 4);
-
-    auto* btn = new QPushButton(" 切换历史聊天记录", this);
-    btn->setFixedSize(150, 36);
-    btn->setCursor(Qt::PointingHandCursor);
-    btn->setStyleSheet(
-        "QPushButton { border: none; color: #ccc; text-align: left; padding-left: 12px; font-size: 13px; }"
-        "QPushButton:hover { background: #3c3c3c; color: #fff; }"
+    // 容器
+    m_container = new QWidget(this);
+    m_container->setStyleSheet(
+        "background: #ffffff;"
+        "border: 1px solid #dcdcdc;"
+        "border-radius: 6px;"
         );
 
-    // 陰影
+    // 阴影
     auto* shadow = new QGraphicsDropShadowEffect(this);
-    shadow->setBlurRadius(12);
+    shadow->setBlurRadius(18);
     shadow->setColor(QColor(0, 0, 0, 80));
-    shadow->setOffset(0, 2);
-    container->setGraphicsEffect(shadow);
+    shadow->setOffset(0, 3);
+    m_container->setGraphicsEffect(shadow);
 
-    c_layout->addWidget(btn);
-    layout->addWidget(container);
+    // 容器内部布局
+    m_containerLayout = new QVBoxLayout(m_container);
+    m_containerLayout->setContentsMargins(0, 6, 0, 6);
+    m_containerLayout->setSpacing(0);
 
-    connect(btn, &QPushButton::clicked, [this](){
-        emit sig_switch_history();
+    m_mainLayout->addWidget(m_container);
+
+    // 按钮统一样式
+    m_buttonStyle =
+        "QPushButton {"
+        "border: none;"
+        "color: #333333;"
+        "text-align: left;"
+        "padding-left: 14px;"
+        "height: 36px;"
+        "font-size: 13px;"
+        "}"
+        "QPushButton:hover {"
+        "background: #f2f2f2;"
+        "color: #000000;"
+        "}";
+}
+
+QPushButton* MoreMenu::addMenuItem(const QString& text)
+{
+    auto* btn = new QPushButton(text, m_container);
+    btn->setCursor(Qt::PointingHandCursor);
+    btn->setStyleSheet(m_buttonStyle);
+
+    m_containerLayout->addWidget(btn);
+
+    // 点击后自动关闭
+    connect(btn, &QPushButton::clicked, this, [this]() {
         this->hide();
     });
+
+    return btn;
+}
+
+void MoreMenu::addSeparator()
+{
+    auto* line = new QFrame(m_container);
+    line->setFrameShape(QFrame::HLine);
+    line->setFixedHeight(1);
+    line->setStyleSheet("background: #e5e5e5;");
+    m_containerLayout->addWidget(line);
 }

@@ -17,7 +17,7 @@
 #include "aimgr.h"
 #include "aihistorydialog.h"
 #include "moremenu.h"
-
+#include "aimodeldialog.h"
 
 ChatPage::ChatPage(QWidget *parent) :
     QWidget(parent),
@@ -434,7 +434,7 @@ void ChatPage::send_msg_to_ai()
     req["uid"] = user_info->_uid;
     //req["token"] = UserMgr::GetInstance()->GetToken();
     req["content"] = content;
-    req["model"] = "gpt-4o"; // 或客户端当前选中的模型
+    req["model"] = AIMgr::GetInstance()->GetCurAiModelName(); // 或客户端当前选中的模型
     req["unique_id"] = uuidString;
     // ai_thread_id：-1 表示新会话
     req["ai_thread_id"] = AIMgr::GetInstance()->GetCurAiThread(); // -1 或真实 id
@@ -743,37 +743,63 @@ void ChatPage::on_clicked_resume(QString unique_name, TransferType transfer_type
     }
 }
 
-void ChatPage::slot_clicked_more_label(QString name, ClickLbState state) {
+void ChatPage::slot_clicked_more_label(QString name, ClickLbState state)
+{
     qDebug() << "Current State:" << state;
-    // 只有在 Selected 狀態（點擊）時才彈出
-    if (state != ClickLbState::Selected) return;
 
+    if (state != ClickLbState::Selected)
+        return;
 
-    if(!_more_menu) {
+    if (!_more_menu)
+    {
         _more_menu = new MoreMenu(this);
 
+        // 添加菜单项
+        QPushButton* switchBtn =
+            _more_menu->addMenuItem(" 切换历史聊天记录");
 
-        // 連接菜單信號到彈出大窗口
-        connect(_more_menu, &MoreMenu::sig_switch_history, this, [this](){
+        _more_menu->addSeparator();
+
+        QPushButton* switchModel =
+            _more_menu->addMenuItem(" 切换使用的模型");
+
+        // 连接信号
+        connect(switchBtn, &QPushButton::clicked, this, [this]() {
             showAiHistoryWindow();
-            ui->more_lb->ResetNormalState(); // 重置按鈕狀態
+            ui->more_lb->ResetNormalState();
+        });
+
+        connect(switchModel, &QPushButton::clicked, this, [this]() {
+            // 这里写清空逻辑
+            qDebug() << "clear history clicked";
+            showAiModelWindow();
+            ui->more_lb->ResetNormalState();
+        });
+
+        // 当菜单隐藏时，重置按钮状态
+        connect(_more_menu, &QWidget::destroyed, this, [this]() {
+            ui->more_lb->ResetNormalState();
         });
     }
 
-    // 1. 初始化菜單
+    // 每次显示前重新计算尺寸
+    _more_menu->adjustSize();
 
+    QPoint globalPos =
+        ui->more_lb->mapToGlobal(QPoint(0, 0));
 
-    // 2. 定位 (左上對齊)
-    _more_menu->adjustSize(); // 確保寬高已計算
-    QPoint globalPos = ui->more_lb->mapToGlobal(QPoint(0, 0));
+    int x = globalPos.x()
+            + ui->more_lb->width()
+            - _more_menu->width();
 
-    // 計算坐標：右邊對齊 more_lb 的右邊，底部對齊 more_lb 的頂部
-    int x = globalPos.x() + ui->more_lb->width() - _more_menu->width();
-    int y = globalPos.y() - _more_menu->height() - 5; // 向上偏移 5px
+    int y = globalPos.y()
+            - _more_menu->height()
+            - 5;
 
     _more_menu->move(x, y);
     _more_menu->show();
 }
+
 
 void ChatPage::showAiHistoryWindow()
 {
@@ -785,12 +811,37 @@ void ChatPage::showAiHistoryWindow()
     dlg->exec();
 }
 
+void ChatPage::showAiModelWindow()
+{
+    auto* dlg = new AiModelDialog(this);
+
+    connect(dlg, &AiModelDialog::sig_model_selected,
+            this, &ChatPage::slot_ai_model_selected, Qt::UniqueConnection);
+
+    dlg->exec();
+}
+
 
 // 往上级传递
 void ChatPage::slot_ai_history_selected(int ai_thread_id)
 {
     qDebug() << "[Debug] ChatPage Instance:" << this << "requested ID:" << ai_thread_id;
     emit sig_request_load_ai_history(ai_thread_id);
+}
+
+// 往上级传递
+void ChatPage::slot_ai_model_selected(int ai_model_id)
+{
+    qDebug() << "[Debug] ChatPage Instance:" << this << "requested ID:" << ai_model_id;
+
+
+    AIMgr::GetInstance()->SetCurAiModel(ai_model_id);
+
+    QString model_name = AIMgr::GetInstance()->GetCurAiModelName();
+    // 这里直接换啊
+    ui->title_lb->setText("AI " + model_name);
+
+    // emit sig_request_change_ai_model(ai_model_id);
 }
 
 

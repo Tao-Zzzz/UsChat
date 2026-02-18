@@ -9,6 +9,8 @@ debug/adduseritem.o
 debug/aihistorydialog.o
 debug/aihistoryitem.o
 debug/aimgr.o
+debug/aimodeldialog.o
+debug/aimodelitem.o
 debug/applyfriend.o
 debug/applyfrienditem.o
 debug/applyfriendlist.o
@@ -65,6 +67,8 @@ debug/moc_adduseritem.o
 debug/moc_aihistorydialog.o
 debug/moc_aihistoryitem.o
 debug/moc_aimgr.o
+debug/moc_aimodeldialog.o
+debug/moc_aimodelitem.o
 debug/moc_applyfriend.o
 debug/moc_applyfrienditem.o
 debug/moc_applyfriendlist.o

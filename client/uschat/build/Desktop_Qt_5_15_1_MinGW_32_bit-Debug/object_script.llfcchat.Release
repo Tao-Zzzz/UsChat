@@ -9,6 +9,8 @@ release/adduseritem.o
 release/aihistorydialog.o
 release/aihistoryitem.o
 release/aimgr.o
+release/aimodeldialog.o
+release/aimodelitem.o
 release/applyfriend.o
 release/applyfrienditem.o
 release/applyfriendlist.o
@@ -65,6 +67,8 @@ release/moc_adduseritem.o
 release/moc_aihistorydialog.o
 release/moc_aihistoryitem.o
 release/moc_aimgr.o
+release/moc_aimodeldialog.o
+release/moc_aimodelitem.o
 release/moc_applyfriend.o
 release/moc_applyfrienditem.o
 release/moc_applyfriendlist.o

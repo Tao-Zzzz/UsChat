@@ -2,8 +2,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 
 from db import get_db
-from schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp
-from service import handle_chat, load_ai_threads, load_ai_messages
+from schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
+from service import handle_chat, load_ai_messages, load_ai_init_data
 
 app = FastAPI()
 
@@ -31,17 +31,30 @@ def chat(req: ChatRequest, db: Session = Depends(get_db)):
         unique_id=unique_id # 回傳給前端
     )
 
-@app.get("/ai/load_thread", response_model=list[AIThreadItem])
+@app.get("/ai/load_thread", response_model=LoadThreadResp)
 def load_thread(uid: int, db: Session = Depends(get_db)):
-    threads = load_ai_threads(db, uid)
-    return [
-        AIThreadItem(
-            ai_thread_id=t.id,
-            title=t.title,
-            updated_at=t.updated_at
-        )
-        for t in threads
-    ]
+
+    threads, models = load_ai_init_data(db, uid)
+
+    return {
+        "threads": [
+            AIThreadItem(
+                ai_thread_id=t.id,
+                title=t.title,
+                updated_at=t.updated_at
+            )
+            for t in threads
+        ],
+        "models": [
+            AIModelItem(
+                id=m.id,
+                name=m.name
+            )
+            for m in models
+        ]
+    }
+
+
 
 @app.get("/ai/load_chat_msg", response_model=AIChatMessageResp)
 def load_chat_msg(

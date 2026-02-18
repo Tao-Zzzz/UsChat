@@ -5,14 +5,28 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-class MoreMenu : public QWidget {
+class MoreMenu : public QWidget
+{
     Q_OBJECT
 public:
     explicit MoreMenu(QWidget *parent = nullptr);
+
+    // 添加菜单项，返回按钮指针，外部可自行 connect
+    QPushButton* addMenuItem(const QString& text);
+
+    // 添加分割线
+    void addSeparator();
+
 signals:
-    void sig_switch_history(); // 點擊“加載歷史”信號
-protected:
-    void leaveEvent(QEvent *event) override { hide(); } // 鼠標離開自動消失
+    void sig_switch_history();
+    void sig_clear_history();
+
+private:
+    QWidget*        m_container;
+    QVBoxLayout*    m_mainLayout;
+    QVBoxLayout*    m_containerLayout;
+
+    QString m_buttonStyle;
 };
 
 #endif // MOREMENU_H

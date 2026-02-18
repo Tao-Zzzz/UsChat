@@ -37,6 +37,8 @@ SOURCES += \
         aihistorydialog.cpp \
         aihistoryitem.cpp \
         aimgr.cpp \
+        aimodeldialog.cpp \
+        aimodelitem.cpp \
         applyfriend.cpp \
         applyfrienditem.cpp \
         applyfriendlist.cpp \
@@ -94,6 +96,8 @@ HEADERS += \
         aihistorydialog.h \
         aihistoryitem.h \
         aimgr.h \
+        aimodeldialog.h \
+        aimodelitem.h \
         applyfriend.h \
         applyfrienditem.h \
         applyfriendlist.h \

@@ -27,6 +27,7 @@ public:
     void AppendAiChatMsg(std::shared_ptr<TextChatData> msg);
     void UpdateAiChatStatus(QString unique_id, int msg_id);
     void showAiHistoryWindow();
+    void showAiModelWindow();
     void clearItems();
 protected:
     void paintEvent(QPaintEvent *event);
@@ -42,6 +43,7 @@ private slots:
     void on_clicked_resume(QString unique_name, TransferType transfer_type);
     void slot_clicked_more_label(QString name, ClickLbState state);
     void slot_ai_history_selected(int ai_thread_id);
+    void slot_ai_model_selected(int ai_model_id);
 private:
 
     Ui::ChatPage *ui;
@@ -56,6 +58,7 @@ private:
 
 signals:
     void sig_request_load_ai_history(int ai_thread_id);
+    void sig_request_change_ai_model(int ai_model_id);
 };
 
 #endif // CHATPAGE_H

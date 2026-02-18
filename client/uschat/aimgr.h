@@ -13,6 +13,14 @@ struct AIThreadData{
     }
 };
 
+struct AIModelData
+{
+    int id;
+    QString name;
+};
+
+
+Q_DECLARE_METATYPE(std::shared_ptr<AIModelData>)
 Q_DECLARE_METATYPE(std::shared_ptr<AIThreadData>)
 
 
@@ -23,6 +31,7 @@ public:
     void LoadAIThreads();
     void LoadAIChatMsgs(int ai_thread_id);
     void SetAIThreads(QJsonArray arr);
+    void SetAIModels(QJsonArray arr);
     ~ AIMgr();
     friend class Singleton<AIMgr>;
     int GetCurAiThread();
@@ -35,6 +44,12 @@ public:
     void SetAIScheme(QString scheme);
     void SetAIPort(int port);
 
+    QString GetAIModelName(int model_id);
+
+    QString GetCurAiModelName();
+    void SetCurAiModel(int model_id);
+
+    QMap<int, QString> GetAllAiModel();
 private:
     AIMgr();
 
@@ -47,6 +62,9 @@ private:
     QString _ai_scheme;
     int _ai_port;
 
+    std::vector<int> _ai_model_ids;
+    QMap<int, QString> _ai_models_name;
+    int _current_active_ai_model_id = -1;
 
 signals:
     void sig_ai_threads_loaded();

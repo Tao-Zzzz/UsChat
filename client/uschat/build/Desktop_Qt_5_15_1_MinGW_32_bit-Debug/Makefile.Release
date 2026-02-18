@@ -61,6 +61,8 @@ SOURCES       = ..\..\BubbleFrame.cpp \
 		..\..\aihistorydialog.cpp \
 		..\..\aihistoryitem.cpp \
 		..\..\aimgr.cpp \
+		..\..\aimodeldialog.cpp \
+		..\..\aimodelitem.cpp \
 		..\..\applyfriend.cpp \
 		..\..\applyfrienditem.cpp \
 		..\..\applyfriendlist.cpp \
@@ -116,6 +118,8 @@ SOURCES       = ..\..\BubbleFrame.cpp \
 		release\moc_aihistorydialog.cpp \
 		release\moc_aihistoryitem.cpp \
 		release\moc_aimgr.cpp \
+		release\moc_aimodeldialog.cpp \
+		release\moc_aimodelitem.cpp \
 		release\moc_applyfriend.cpp \
 		release\moc_applyfrienditem.cpp \
 		release\moc_applyfriendlist.cpp \
@@ -168,6 +172,8 @@ OBJECTS       = release/BubbleFrame.o \
 		release/aihistorydialog.o \
 		release/aihistoryitem.o \
 		release/aimgr.o \
+		release/aimodeldialog.o \
+		release/aimodelitem.o \
 		release/applyfriend.o \
 		release/applyfrienditem.o \
 		release/applyfriendlist.o \
@@ -224,6 +230,8 @@ OBJECTS       = release/BubbleFrame.o \
 		release/moc_aihistorydialog.o \
 		release/moc_aihistoryitem.o \
 		release/moc_aimgr.o \
+		release/moc_aimodeldialog.o \
+		release/moc_aimodelitem.o \
 		release/moc_applyfriend.o \
 		release/moc_applyfrienditem.o \
 		release/moc_applyfriendlist.o \
@@ -327,6 +335,8 @@ DIST          = config.ini \
 		..\..\aihistorydialog.h \
 		..\..\aihistoryitem.h \
 		..\..\aimgr.h \
+		..\..\aimodeldialog.h \
+		..\..\aimodelitem.h \
 		..\..\applyfriend.h \
 		..\..\applyfrienditem.h \
 		..\..\applyfriendlist.h \
@@ -382,6 +392,8 @@ DIST          = config.ini \
 		..\..\aihistorydialog.cpp \
 		..\..\aihistoryitem.cpp \
 		..\..\aimgr.cpp \
+		..\..\aimodeldialog.cpp \
+		..\..\aimodelitem.cpp \
 		..\..\applyfriend.cpp \
 		..\..\applyfrienditem.cpp \
 		..\..\applyfriendlist.cpp \
@@ -449,11 +461,11 @@ qmake: FORCE
 qmake_all: FORCE
 
 dist:
-	$(ZIP) llfcchat.zip $(SOURCES) $(DIST) ..\..\..\..\llfcchat.pro E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\spec_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\qdevice.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\device_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\sanitize.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\gcc-base.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\g++-base.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\angle.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\windows_vulkan_sdk.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\windows-vulkan.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\g++-win32.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\windows-desktop.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\qconfig.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3danimation.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3danimation_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dcore.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dcore_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dinput.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dinput_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dlogic.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dlogic_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickanimation.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickanimation_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickinput.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickinput_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickrender.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickrender_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickscene2d.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickscene2d_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3drender.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3drender_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_accessibility_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axbase.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axbase_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axcontainer.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axcontainer_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axserver.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axserver_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bluetooth.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bluetooth_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bootstrap_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_concurrent.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_concurrent_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_core.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_core_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_dbus.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_dbus_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designer.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designer_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designercomponents_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_devicediscovery_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_edid_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_egl_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_fb_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_fontdatabase_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gamepad.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gamepad_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gui.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gui_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_help.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_help_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_location.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_location_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimedia.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimedia_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimediawidgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimediawidgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_network.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_network_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_nfc.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_nfc_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_opengl.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_opengl_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_openglextensions.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_openglextensions_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_packetprotocol_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_platformcompositor_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioning.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioning_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioningquick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioningquick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_printsupport.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_printsupport_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmldebug_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmldevtools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlmodels.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlmodels_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmltest.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmltest_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlworkerscript.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlworkerscript_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickcontrols2.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickcontrols2_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickparticles_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickshapes_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quicktemplates2.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quicktemplates2_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickwidgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickwidgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_remoteobjects.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_remoteobjects_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_repparser.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_repparser_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_scxml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_scxml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sensors.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sensors_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialbus.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialbus_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialport.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialport_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sql.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sql_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_svg.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_svg_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_testlib.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_testlib_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_texttospeech.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_texttospeech_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_theme_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uiplugin.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uitools.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uitools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_webchannel.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_webchannel_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_websockets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_websockets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_widgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_widgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_winextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_winextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xmlpatterns.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xmlpatterns_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_zlib_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt_functions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\win32-g++\qmake.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\spec_post.prf .qmake.stash E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exclusive_builds.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\toolchain.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\default_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\default_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resolve_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exclusive_builds_post.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\default_post.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\build_pass.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qml_debug.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\precompile_header.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\warn_on.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resources_functions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resources.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\moc.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\opengl.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\uic.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qmake_use.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\file_copies.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\windows.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\testcase_targets.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exceptions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\yacc.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\lex.prf ..\..\llfcchat.pro ..\..\rc.qrc E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Widgets.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Gui.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Network.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Core.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\qtmain.prl   ..\..\rc.qrc E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\data\dummy.cpp ..\..\BubbleFrame.h ..\..\ChatItemBase.h ..\..\ChatView.h ..\..\ClickableLabel.h ..\..\MessageTextEdit.h ..\..\PictureBubble.h ..\..\TextBubble.h ..\..\adduseritem.h ..\..\aihistorydialog.h ..\..\aihistoryitem.h ..\..\aimgr.h ..\..\applyfriend.h ..\..\applyfrienditem.h ..\..\applyfriendlist.h ..\..\applyfriendpage.h ..\..\authenfriend.h ..\..\chatdialog.h ..\..\chatpage.h ..\..\chatuserlist.h ..\..\chatuserwid.h ..\..\clickedbtn.h ..\..\clickedlabel.h ..\..\clickedoncelabel.h ..\..\contactuserlist.h ..\..\conuseritem.h ..\..\creategroupdialog.h ..\..\customizeedit.h ..\..\customizetextedit.h ..\..\filetcpmgr.h ..\..\findfaildlg.h ..\..\findsuccessdlg.h ..\..\friendinfopage.h ..\..\friendlabel.h ..\..\global.h ..\..\grouptipitem.h ..\..\httpmgr.h ..\..\imagecropperdialog.h ..\..\imagecropperlabel.h ..\..\invaliditem.h ..\..\lineitem.h ..\..\listitembase.h ..\..\loadingdlg.h ..\..\logindialog.h ..\..\mainwindow.h ..\..\moremenu.h ..\..\registerdialog.h ..\..\resetdialog.h ..\..\searchlist.h ..\..\singleton.h ..\..\statelabel.h ..\..\statewidget.h ..\..\tcpmgr.h ..\..\timerbtn.h ..\..\userdata.h ..\..\userinfopage.h ..\..\usermgr.h  ..\..\BubbleFrame.cpp ..\..\ChatItemBase.cpp ..\..\ChatView.cpp ..\..\ClickableLabel.cpp ..\..\MessageTextEdit.cpp ..\..\PictureBubble.cpp ..\..\TextBubble.cpp ..\..\adduseritem.cpp ..\..\aihistorydialog.cpp ..\..\aihistoryitem.cpp ..\..\aimgr.cpp ..\..\applyfriend.cpp ..\..\applyfrienditem.cpp ..\..\applyfriendlist.cpp ..\..\applyfriendpage.cpp ..\..\authenfriend.cpp ..\..\chatdialog.cpp ..\..\chatpage.cpp ..\..\chatuserlist.cpp ..\..\chatuserwid.cpp ..\..\clickedbtn.cpp ..\..\clickedlabel.cpp ..\..\clickedoncelabel.cpp ..\..\contactuserlist.cpp ..\..\conuseritem.cpp ..\..\creategroupdialog.cpp ..\..\customizeedit.cpp ..\..\customizetextedit.cpp ..\..\filetcpmgr.cpp ..\..\findfaildlg.cpp ..\..\findsuccessdlg.cpp ..\..\friendinfopage.cpp ..\..\friendlabel.cpp ..\..\global.cpp ..\..\grouptipitem.cpp ..\..\httpmgr.cpp ..\..\imagecropperlabel.cpp ..\..\invaliditem.cpp ..\..\lineitem.cpp ..\..\listitembase.cpp ..\..\loadingdlg.cpp ..\..\logindialog.cpp ..\..\main.cpp ..\..\mainwindow.cpp ..\..\moremenu.cpp ..\..\registerdialog.cpp ..\..\resetdialog.cpp ..\..\searchlist.cpp ..\..\statelabel.cpp ..\..\statewidget.cpp ..\..\tcpmgr.cpp ..\..\timerbtn.cpp ..\..\userdata.cpp ..\..\userinfopage.cpp ..\..\usermgr.cpp ..\..\adduseritem.ui ..\..\applyfriend.ui ..\..\applyfrienditem.ui ..\..\applyfriendpage.ui ..\..\authenfriend.ui ..\..\chatdialog.ui ..\..\chatpage.ui ..\..\chatuserwid.ui ..\..\conuseritem.ui ..\..\findfaildlg.ui ..\..\findsuccessdlg.ui ..\..\friendinfopage.ui ..\..\friendlabel.ui ..\..\grouptipitem.ui ..\..\lineitem.ui ..\..\loadingdlg.ui ..\..\logindialog.ui ..\..\mainwindow.ui ..\..\registerdialog.ui ..\..\resetdialog.ui ..\..\userinfopage.ui    
+	$(ZIP) llfcchat.zip $(SOURCES) $(DIST) ..\..\..\..\llfcchat.pro E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\spec_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\qdevice.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\device_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\sanitize.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\gcc-base.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\g++-base.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\angle.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\windows_vulkan_sdk.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\windows-vulkan.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\g++-win32.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\common\windows-desktop.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\qconfig.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3danimation.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3danimation_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dcore.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dcore_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dinput.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dinput_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dlogic.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dlogic_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickanimation.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickanimation_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickinput.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickinput_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickrender.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickrender_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickscene2d.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3dquickscene2d_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3drender.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_3drender_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_accessibility_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axbase.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axbase_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axcontainer.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axcontainer_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axserver.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_axserver_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bluetooth.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bluetooth_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_bootstrap_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_concurrent.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_concurrent_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_core.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_core_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_dbus.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_dbus_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designer.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designer_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_designercomponents_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_devicediscovery_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_edid_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_egl_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_eventdispatcher_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_fb_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_fontdatabase_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gamepad.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gamepad_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gui.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_gui_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_help.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_help_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_location.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_location_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimedia.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimedia_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimediawidgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_multimediawidgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_network.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_network_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_nfc.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_nfc_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_opengl.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_opengl_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_openglextensions.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_openglextensions_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_packetprotocol_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_platformcompositor_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioning.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioning_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioningquick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_positioningquick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_printsupport.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_printsupport_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmldebug_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmldevtools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlmodels.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlmodels_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmltest.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmltest_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlworkerscript.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qmlworkerscript_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_qtmultimediaquicktools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quick.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quick_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickcontrols2.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickcontrols2_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickparticles_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickshapes_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quicktemplates2.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quicktemplates2_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickwidgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_quickwidgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_remoteobjects.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_remoteobjects_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_repparser.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_repparser_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_scxml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_scxml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sensors.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sensors_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialbus.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialbus_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialport.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_serialport_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sql.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_sql_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_svg.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_svg_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_testlib.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_testlib_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_texttospeech.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_texttospeech_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_theme_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uiplugin.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uitools.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_uitools_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_webchannel.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_webchannel_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_websockets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_websockets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_widgets.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_widgets_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_windowsuiautomation_support_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_winextras.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_winextras_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xml.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xml_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xmlpatterns.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_xmlpatterns_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\modules\qt_lib_zlib_private.pri E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt_functions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\win32-g++\qmake.conf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\spec_post.prf .qmake.stash E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exclusive_builds.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\toolchain.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\default_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\default_pre.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resolve_config.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exclusive_builds_post.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\default_post.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\build_pass.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qml_debug.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\precompile_header.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\warn_on.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qt.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resources_functions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\resources.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\moc.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\opengl.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\uic.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\qmake_use.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\file_copies.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\win32\windows.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\testcase_targets.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\exceptions.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\yacc.prf E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\lex.prf ..\..\llfcchat.pro ..\..\rc.qrc E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Widgets.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Gui.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Network.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\Qt5Core.prl E:\Tool\Real_qt\5.15.1\mingw81_32\lib\qtmain.prl   ..\..\rc.qrc E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\data\dummy.cpp ..\..\BubbleFrame.h ..\..\ChatItemBase.h ..\..\ChatView.h ..\..\ClickableLabel.h ..\..\MessageTextEdit.h ..\..\PictureBubble.h ..\..\TextBubble.h ..\..\adduseritem.h ..\..\aihistorydialog.h ..\..\aihistoryitem.h ..\..\aimgr.h ..\..\aimodeldialog.h ..\..\aimodelitem.h ..\..\applyfriend.h ..\..\applyfrienditem.h ..\..\applyfriendlist.h ..\..\applyfriendpage.h ..\..\authenfriend.h ..\..\chatdialog.h ..\..\chatpage.h ..\..\chatuserlist.h ..\..\chatuserwid.h ..\..\clickedbtn.h ..\..\clickedlabel.h ..\..\clickedoncelabel.h ..\..\contactuserlist.h ..\..\conuseritem.h ..\..\creategroupdialog.h ..\..\customizeedit.h ..\..\customizetextedit.h ..\..\filetcpmgr.h ..\..\findfaildlg.h ..\..\findsuccessdlg.h ..\..\friendinfopage.h ..\..\friendlabel.h ..\..\global.h ..\..\grouptipitem.h ..\..\httpmgr.h ..\..\imagecropperdialog.h ..\..\imagecropperlabel.h ..\..\invaliditem.h ..\..\lineitem.h ..\..\listitembase.h ..\..\loadingdlg.h ..\..\logindialog.h ..\..\mainwindow.h ..\..\moremenu.h ..\..\registerdialog.h ..\..\resetdialog.h ..\..\searchlist.h ..\..\singleton.h ..\..\statelabel.h ..\..\statewidget.h ..\..\tcpmgr.h ..\..\timerbtn.h ..\..\userdata.h ..\..\userinfopage.h ..\..\usermgr.h  ..\..\BubbleFrame.cpp ..\..\ChatItemBase.cpp ..\..\ChatView.cpp ..\..\ClickableLabel.cpp ..\..\MessageTextEdit.cpp ..\..\PictureBubble.cpp ..\..\TextBubble.cpp ..\..\adduseritem.cpp ..\..\aihistorydialog.cpp ..\..\aihistoryitem.cpp ..\..\aimgr.cpp ..\..\aimodeldialog.cpp ..\..\aimodelitem.cpp ..\..\applyfriend.cpp ..\..\applyfrienditem.cpp ..\..\applyfriendlist.cpp ..\..\applyfriendpage.cpp ..\..\authenfriend.cpp ..\..\chatdialog.cpp ..\..\chatpage.cpp ..\..\chatuserlist.cpp ..\..\chatuserwid.cpp ..\..\clickedbtn.cpp ..\..\clickedlabel.cpp ..\..\clickedoncelabel.cpp ..\..\contactuserlist.cpp ..\..\conuseritem.cpp ..\..\creategroupdialog.cpp ..\..\customizeedit.cpp ..\..\customizetextedit.cpp ..\..\filetcpmgr.cpp ..\..\findfaildlg.cpp ..\..\findsuccessdlg.cpp ..\..\friendinfopage.cpp ..\..\friendlabel.cpp ..\..\global.cpp ..\..\grouptipitem.cpp ..\..\httpmgr.cpp ..\..\imagecropperlabel.cpp ..\..\invaliditem.cpp ..\..\lineitem.cpp ..\..\listitembase.cpp ..\..\loadingdlg.cpp ..\..\logindialog.cpp ..\..\main.cpp ..\..\mainwindow.cpp ..\..\moremenu.cpp ..\..\registerdialog.cpp ..\..\resetdialog.cpp ..\..\searchlist.cpp ..\..\statelabel.cpp ..\..\statewidget.cpp ..\..\tcpmgr.cpp ..\..\timerbtn.cpp ..\..\userdata.cpp ..\..\userinfopage.cpp ..\..\usermgr.cpp ..\..\adduseritem.ui ..\..\applyfriend.ui ..\..\applyfrienditem.ui ..\..\applyfriendpage.ui ..\..\authenfriend.ui ..\..\chatdialog.ui ..\..\chatpage.ui ..\..\chatuserwid.ui ..\..\conuseritem.ui ..\..\findfaildlg.ui ..\..\findsuccessdlg.ui ..\..\friendinfopage.ui ..\..\friendlabel.ui ..\..\grouptipitem.ui ..\..\lineitem.ui ..\..\loadingdlg.ui ..\..\logindialog.ui ..\..\mainwindow.ui ..\..\registerdialog.ui ..\..\resetdialog.ui ..\..\userinfopage.ui    
 
 clean: compiler_clean 
-	-$(DEL_FILE) release\BubbleFrame.o release\ChatItemBase.o release\ChatView.o release\ClickableLabel.o release\MessageTextEdit.o release\PictureBubble.o release\TextBubble.o release\adduseritem.o release\aihistorydialog.o release\aihistoryitem.o release\aimgr.o release\applyfriend.o release\applyfrienditem.o release\applyfriendlist.o release\applyfriendpage.o release\authenfriend.o release\chatdialog.o release\chatpage.o release\chatuserlist.o release\chatuserwid.o release\clickedbtn.o release\clickedlabel.o release\clickedoncelabel.o release\contactuserlist.o release\conuseritem.o release\creategroupdialog.o release\customizeedit.o release\customizetextedit.o release\filetcpmgr.o release\findfaildlg.o release\findsuccessdlg.o release\friendinfopage.o release\friendlabel.o release\global.o release\grouptipitem.o release\httpmgr.o release\imagecropperlabel.o release\invaliditem.o release\lineitem.o release\listitembase.o release\loadingdlg.o release\logindialog.o release\main.o release\mainwindow.o release\moremenu.o release\registerdialog.o release\resetdialog.o release\searchlist.o release\statelabel.o release\statewidget.o release\tcpmgr.o release\timerbtn.o release\userdata.o release\userinfopage.o release\usermgr.o release\qrc_rc.o release\moc_BubbleFrame.o release\moc_ChatItemBase.o release\moc_ChatView.o release\moc_ClickableLabel.o release\moc_MessageTextEdit.o release\moc_PictureBubble.o release\moc_TextBubble.o release\moc_adduseritem.o release\moc_aihistorydialog.o release\moc_aihistoryitem.o release\moc_aimgr.o release\moc_applyfriend.o release\moc_applyfrienditem.o release\moc_applyfriendlist.o release\moc_applyfriendpage.o release\moc_authenfriend.o release\moc_chatdialog.o release\moc_chatpage.o release\moc_chatuserlist.o release\moc_chatuserwid.o release\moc_clickedbtn.o release\moc_clickedlabel.o release\moc_clickedoncelabel.o release\moc_contactuserlist.o release\moc_conuseritem.o release\moc_creategroupdialog.o release\moc_customizeedit.o release\moc_customizetextedit.o release\moc_filetcpmgr.o
-	-$(DEL_FILE) release\moc_findfaildlg.o release\moc_findsuccessdlg.o release\moc_friendinfopage.o release\moc_friendlabel.o release\moc_grouptipitem.o release\moc_httpmgr.o release\moc_imagecropperdialog.o release\moc_imagecropperlabel.o release\moc_invaliditem.o release\moc_lineitem.o release\moc_listitembase.o release\moc_loadingdlg.o release\moc_logindialog.o release\moc_mainwindow.o release\moc_moremenu.o release\moc_registerdialog.o release\moc_resetdialog.o release\moc_searchlist.o release\moc_statelabel.o release\moc_statewidget.o release\moc_tcpmgr.o release\moc_userinfopage.o release\moc_usermgr.o
+	-$(DEL_FILE) release\BubbleFrame.o release\ChatItemBase.o release\ChatView.o release\ClickableLabel.o release\MessageTextEdit.o release\PictureBubble.o release\TextBubble.o release\adduseritem.o release\aihistorydialog.o release\aihistoryitem.o release\aimgr.o release\aimodeldialog.o release\aimodelitem.o release\applyfriend.o release\applyfrienditem.o release\applyfriendlist.o release\applyfriendpage.o release\authenfriend.o release\chatdialog.o release\chatpage.o release\chatuserlist.o release\chatuserwid.o release\clickedbtn.o release\clickedlabel.o release\clickedoncelabel.o release\contactuserlist.o release\conuseritem.o release\creategroupdialog.o release\customizeedit.o release\customizetextedit.o release\filetcpmgr.o release\findfaildlg.o release\findsuccessdlg.o release\friendinfopage.o release\friendlabel.o release\global.o release\grouptipitem.o release\httpmgr.o release\imagecropperlabel.o release\invaliditem.o release\lineitem.o release\listitembase.o release\loadingdlg.o release\logindialog.o release\main.o release\mainwindow.o release\moremenu.o release\registerdialog.o release\resetdialog.o release\searchlist.o release\statelabel.o release\statewidget.o release\tcpmgr.o release\timerbtn.o release\userdata.o release\userinfopage.o release\usermgr.o release\qrc_rc.o release\moc_BubbleFrame.o release\moc_ChatItemBase.o release\moc_ChatView.o release\moc_ClickableLabel.o release\moc_MessageTextEdit.o release\moc_PictureBubble.o release\moc_TextBubble.o release\moc_adduseritem.o release\moc_aihistorydialog.o release\moc_aihistoryitem.o release\moc_aimgr.o release\moc_aimodeldialog.o release\moc_aimodelitem.o release\moc_applyfriend.o release\moc_applyfrienditem.o release\moc_applyfriendlist.o release\moc_applyfriendpage.o release\moc_authenfriend.o release\moc_chatdialog.o release\moc_chatpage.o release\moc_chatuserlist.o release\moc_chatuserwid.o release\moc_clickedbtn.o release\moc_clickedlabel.o release\moc_clickedoncelabel.o release\moc_contactuserlist.o release\moc_conuseritem.o
+	-$(DEL_FILE) release\moc_creategroupdialog.o release\moc_customizeedit.o release\moc_customizetextedit.o release\moc_filetcpmgr.o release\moc_findfaildlg.o release\moc_findsuccessdlg.o release\moc_friendinfopage.o release\moc_friendlabel.o release\moc_grouptipitem.o release\moc_httpmgr.o release\moc_imagecropperdialog.o release\moc_imagecropperlabel.o release\moc_invaliditem.o release\moc_lineitem.o release\moc_listitembase.o release\moc_loadingdlg.o release\moc_logindialog.o release\moc_mainwindow.o release\moc_moremenu.o release\moc_registerdialog.o release\moc_resetdialog.o release\moc_searchlist.o release\moc_statelabel.o release\moc_statewidget.o release\moc_tcpmgr.o release\moc_userinfopage.o release\moc_usermgr.o
 	-$(DEL_FILE) release\llfcchat_resource_res.o
 
 distclean: clean 
@@ -544,9 +556,9 @@ compiler_moc_predefs_clean:
 release/moc_predefs.h: E:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/features/data/dummy.cpp
 	g++ -fno-keep-inline-dllexport -O2 -std=gnu++11 -Wall -Wextra -Wextra -dM -E -o release\moc_predefs.h E:\Tool\Real_qt\5.15.1\mingw81_32\mkspecs\features\data\dummy.cpp
 
-compiler_moc_header_make_all: release/moc_BubbleFrame.cpp release/moc_ChatItemBase.cpp release/moc_ChatView.cpp release/moc_ClickableLabel.cpp release/moc_MessageTextEdit.cpp release/moc_PictureBubble.cpp release/moc_TextBubble.cpp release/moc_adduseritem.cpp release/moc_aihistorydialog.cpp release/moc_aihistoryitem.cpp release/moc_aimgr.cpp release/moc_applyfriend.cpp release/moc_applyfrienditem.cpp release/moc_applyfriendlist.cpp release/moc_applyfriendpage.cpp release/moc_authenfriend.cpp release/moc_chatdialog.cpp release/moc_chatpage.cpp release/moc_chatuserlist.cpp release/moc_chatuserwid.cpp release/moc_clickedbtn.cpp release/moc_clickedlabel.cpp release/moc_clickedoncelabel.cpp release/moc_contactuserlist.cpp release/moc_conuseritem.cpp release/moc_creategroupdialog.cpp release/moc_customizeedit.cpp release/moc_customizetextedit.cpp release/moc_filetcpmgr.cpp release/moc_findfaildlg.cpp release/moc_findsuccessdlg.cpp release/moc_friendinfopage.cpp release/moc_friendlabel.cpp release/moc_grouptipitem.cpp release/moc_httpmgr.cpp release/moc_imagecropperdialog.cpp release/moc_imagecropperlabel.cpp release/moc_invaliditem.cpp release/moc_lineitem.cpp release/moc_listitembase.cpp release/moc_loadingdlg.cpp release/moc_logindialog.cpp release/moc_mainwindow.cpp release/moc_moremenu.cpp release/moc_registerdialog.cpp release/moc_resetdialog.cpp release/moc_searchlist.cpp release/moc_statelabel.cpp release/moc_statewidget.cpp release/moc_tcpmgr.cpp release/moc_userinfopage.cpp release/moc_usermgr.cpp
+compiler_moc_header_make_all: release/moc_BubbleFrame.cpp release/moc_ChatItemBase.cpp release/moc_ChatView.cpp release/moc_ClickableLabel.cpp release/moc_MessageTextEdit.cpp release/moc_PictureBubble.cpp release/moc_TextBubble.cpp release/moc_adduseritem.cpp release/moc_aihistorydialog.cpp release/moc_aihistoryitem.cpp release/moc_aimgr.cpp release/moc_aimodeldialog.cpp release/moc_aimodelitem.cpp release/moc_applyfriend.cpp release/moc_applyfrienditem.cpp release/moc_applyfriendlist.cpp release/moc_applyfriendpage.cpp release/moc_authenfriend.cpp release/moc_chatdialog.cpp release/moc_chatpage.cpp release/moc_chatuserlist.cpp release/moc_chatuserwid.cpp release/moc_clickedbtn.cpp release/moc_clickedlabel.cpp release/moc_clickedoncelabel.cpp release/moc_contactuserlist.cpp release/moc_conuseritem.cpp release/moc_creategroupdialog.cpp release/moc_customizeedit.cpp release/moc_customizetextedit.cpp release/moc_filetcpmgr.cpp release/moc_findfaildlg.cpp release/moc_findsuccessdlg.cpp release/moc_friendinfopage.cpp release/moc_friendlabel.cpp release/moc_grouptipitem.cpp release/moc_httpmgr.cpp release/moc_imagecropperdialog.cpp release/moc_imagecropperlabel.cpp release/moc_invaliditem.cpp release/moc_lineitem.cpp release/moc_listitembase.cpp release/moc_loadingdlg.cpp release/moc_logindialog.cpp release/moc_mainwindow.cpp release/moc_moremenu.cpp release/moc_registerdialog.cpp release/moc_resetdialog.cpp release/moc_searchlist.cpp release/moc_statelabel.cpp release/moc_statewidget.cpp release/moc_tcpmgr.cpp release/moc_userinfopage.cpp release/moc_usermgr.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) release\moc_BubbleFrame.cpp release\moc_ChatItemBase.cpp release\moc_ChatView.cpp release\moc_ClickableLabel.cpp release\moc_MessageTextEdit.cpp release\moc_PictureBubble.cpp release\moc_TextBubble.cpp release\moc_adduseritem.cpp release\moc_aihistorydialog.cpp release\moc_aihistoryitem.cpp release\moc_aimgr.cpp release\moc_applyfriend.cpp release\moc_applyfrienditem.cpp release\moc_applyfriendlist.cpp release\moc_applyfriendpage.cpp release\moc_authenfriend.cpp release\moc_chatdialog.cpp release\moc_chatpage.cpp release\moc_chatuserlist.cpp release\moc_chatuserwid.cpp release\moc_clickedbtn.cpp release\moc_clickedlabel.cpp release\moc_clickedoncelabel.cpp release\moc_contactuserlist.cpp release\moc_conuseritem.cpp release\moc_creategroupdialog.cpp release\moc_customizeedit.cpp release\moc_customizetextedit.cpp release\moc_filetcpmgr.cpp release\moc_findfaildlg.cpp release\moc_findsuccessdlg.cpp release\moc_friendinfopage.cpp release\moc_friendlabel.cpp release\moc_grouptipitem.cpp release\moc_httpmgr.cpp release\moc_imagecropperdialog.cpp release\moc_imagecropperlabel.cpp release\moc_invaliditem.cpp release\moc_lineitem.cpp release\moc_listitembase.cpp release\moc_loadingdlg.cpp release\moc_logindialog.cpp release\moc_mainwindow.cpp release\moc_moremenu.cpp release\moc_registerdialog.cpp release\moc_resetdialog.cpp release\moc_searchlist.cpp release\moc_statelabel.cpp release\moc_statewidget.cpp release\moc_tcpmgr.cpp release\moc_userinfopage.cpp release\moc_usermgr.cpp
+	-$(DEL_FILE) release\moc_BubbleFrame.cpp release\moc_ChatItemBase.cpp release\moc_ChatView.cpp release\moc_ClickableLabel.cpp release\moc_MessageTextEdit.cpp release\moc_PictureBubble.cpp release\moc_TextBubble.cpp release\moc_adduseritem.cpp release\moc_aihistorydialog.cpp release\moc_aihistoryitem.cpp release\moc_aimgr.cpp release\moc_aimodeldialog.cpp release\moc_aimodelitem.cpp release\moc_applyfriend.cpp release\moc_applyfrienditem.cpp release\moc_applyfriendlist.cpp release\moc_applyfriendpage.cpp release\moc_authenfriend.cpp release\moc_chatdialog.cpp release\moc_chatpage.cpp release\moc_chatuserlist.cpp release\moc_chatuserwid.cpp release\moc_clickedbtn.cpp release\moc_clickedlabel.cpp release\moc_clickedoncelabel.cpp release\moc_contactuserlist.cpp release\moc_conuseritem.cpp release\moc_creategroupdialog.cpp release\moc_customizeedit.cpp release\moc_customizetextedit.cpp release\moc_filetcpmgr.cpp release\moc_findfaildlg.cpp release\moc_findsuccessdlg.cpp release\moc_friendinfopage.cpp release\moc_friendlabel.cpp release\moc_grouptipitem.cpp release\moc_httpmgr.cpp release\moc_imagecropperdialog.cpp release\moc_imagecropperlabel.cpp release\moc_invaliditem.cpp release\moc_lineitem.cpp release\moc_listitembase.cpp release\moc_loadingdlg.cpp release\moc_logindialog.cpp release\moc_mainwindow.cpp release\moc_moremenu.cpp release\moc_registerdialog.cpp release\moc_resetdialog.cpp release\moc_searchlist.cpp release\moc_statelabel.cpp release\moc_statewidget.cpp release\moc_tcpmgr.cpp release\moc_userinfopage.cpp release\moc_usermgr.cpp
 release/moc_BubbleFrame.cpp: ../../BubbleFrame.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QFrame \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
@@ -2192,6 +2204,247 @@ release/moc_aimgr.cpp: ../../aimgr.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/bin/moc.exe
 	E:\Tool\Real_qt\5.15.1\mingw81_32\bin\moc.exe $(DEFINES) --include D:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat/build/Desktop_Qt_5_15_1_MinGW_32_bit-Debug/release/moc_predefs.h -IE:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/win32-g++ -ID:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat -IE:/Tool/Real_qt/5.15.1/mingw81_32/include -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtANGLE -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore -I. -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++ -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32 -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include-fixed -IE:/Tool/Real_qt/Tools/mingw810_32/i686-w64-mingw32/include ..\..\aimgr.h -o release\moc_aimgr.cpp
 
+release/moc_aimodeldialog.cpp: ../../aimodeldialog.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QDialog \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qdialog.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtguiglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig-bootstrapped.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtcore-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsystemdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qprocessordetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcompilerdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtypeinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsysinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlogging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qflags.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbasicatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_bootstrap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qgenericatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_cxx11.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_msvc.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobalstatic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmutex.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnumeric.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qversiontagging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtgui-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgets-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnamespace.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs_win.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstring.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qchar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrefcount.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qarraydata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringliteral.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringbuilder.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiterator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhashfunctions.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpair.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvector.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainertools_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpoint.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearraylist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregexp.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringmatcher.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcoreevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qscopedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmetatype.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvarlengtharray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainerfwd.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmargins.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpaintdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrect.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsize.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpalette.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcolor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgb.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgba64.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qbrush.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qmatrix.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpolygon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qregion.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdatastream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiodevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qline.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtransform.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qimage.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixelformat.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qshareddata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhash.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfont.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontmetrics.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qsizepolicy.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcursor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qkeysequence.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvariant.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdebug.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtextstream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlocale.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qset.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontiguouscache.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurlquery.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfile.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfiledevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvector2d.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtouchdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QListWidget \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlistwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlistview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractscrollarea.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qabstractitemmodel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qitemselectionmodel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemdelegate.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qstyleoption.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractspinbox.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvalidator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregularexpression.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qicon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qslider.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractslider.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qstyle.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtabbar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtabwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qrubberband.h \
+		release/moc_predefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/bin/moc.exe
+	E:\Tool\Real_qt\5.15.1\mingw81_32\bin\moc.exe $(DEFINES) --include D:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat/build/Desktop_Qt_5_15_1_MinGW_32_bit-Debug/release/moc_predefs.h -IE:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/win32-g++ -ID:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat -IE:/Tool/Real_qt/5.15.1/mingw81_32/include -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtANGLE -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore -I. -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++ -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32 -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include-fixed -IE:/Tool/Real_qt/Tools/mingw810_32/i686-w64-mingw32/include ..\..\aimodeldialog.h -o release\moc_aimodeldialog.cpp
+
+release/moc_aimodelitem.cpp: ../../aimodelitem.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtguiglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig-bootstrapped.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtcore-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsystemdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qprocessordetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcompilerdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtypeinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsysinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlogging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qflags.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbasicatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_bootstrap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qgenericatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_cxx11.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_msvc.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobalstatic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmutex.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnumeric.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qversiontagging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtgui-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgets-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnamespace.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs_win.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstring.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qchar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrefcount.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qarraydata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringliteral.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringbuilder.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiterator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhashfunctions.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpair.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvector.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainertools_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpoint.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearraylist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregexp.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringmatcher.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcoreevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qscopedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmetatype.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvarlengtharray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainerfwd.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmargins.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpaintdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrect.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsize.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpalette.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcolor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgb.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgba64.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qbrush.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qmatrix.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpolygon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qregion.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdatastream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiodevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qline.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtransform.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qimage.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixelformat.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qshareddata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhash.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfont.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontmetrics.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qsizepolicy.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcursor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qkeysequence.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvariant.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdebug.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtextstream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlocale.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qset.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontiguouscache.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurlquery.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfile.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfiledevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvector2d.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtouchdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QPixmap \
+		release/moc_predefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/bin/moc.exe
+	E:\Tool\Real_qt\5.15.1\mingw81_32\bin\moc.exe $(DEFINES) --include D:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat/build/Desktop_Qt_5_15_1_MinGW_32_bit-Debug/release/moc_predefs.h -IE:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/win32-g++ -ID:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat -IE:/Tool/Real_qt/5.15.1/mingw81_32/include -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtANGLE -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore -I. -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++ -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32 -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include-fixed -IE:/Tool/Real_qt/Tools/mingw810_32/i686-w64-mingw32/include ..\..\aimodelitem.h -o release\moc_aimodelitem.cpp
+
 release/moc_applyfriend.cpp: ../../applyfriend.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QDialog \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qdialog.h \
@@ -3324,6 +3577,11 @@ release/moc_chatpage.cpp: ../../chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		../../moremenu.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QVBoxLayout \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		release/moc_predefs.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/bin/moc.exe
 	E:\Tool\Real_qt\5.15.1\mingw81_32\bin\moc.exe $(DEFINES) --include D:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat/build/Desktop_Qt_5_15_1_MinGW_32_bit-Debug/release/moc_predefs.h -IE:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/win32-g++ -ID:/Code/Project/Cpp_/llfcchat-Season_2/client/uschat -IE:/Tool/Real_qt/5.15.1/mingw81_32/include -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtANGLE -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork -IE:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore -I. -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++ -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/i686-w64-mingw32 -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include/c++/backward -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include -IE:/Tool/Real_qt/Tools/mingw810_32/lib/gcc/i686-w64-mingw32/8.1.0/include-fixed -IE:/Tool/Real_qt/Tools/mingw810_32/i686-w64-mingw32/include ..\..\chatpage.h -o release\moc_chatpage.cpp
@@ -10274,6 +10532,11 @@ ui_chatdialog.h: ../../chatdialog.ui \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		../../moremenu.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QVBoxLayout \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
@@ -13744,7 +14007,53 @@ release/aihistorydialog.o: ../../aihistorydialog.cpp ../../AiHistoryDialog.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
 		../../AiHistoryItem.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QHBoxLayout
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QHBoxLayout \
+		../../aimgr.h \
+		../../singleton.h \
+		../../global.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QStyle \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QJsonObject \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qjsonobject.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qjsonvalue.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcborvalue.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdatetime.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcborcommon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/quuid.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QJsonDocument \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qjsondocument.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/QNetworkReply \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qnetworkreply.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qtnetworkglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qtnetwork-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QIODevice \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QString \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QVariant \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/QNetworkRequest \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qnetworkrequest.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QSharedDataPointer \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QUrl \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/QNetworkAccessManager \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qnetworkaccessmanager.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QVector \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QObject \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/QSslConfiguration \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qsslconfiguration.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qsslsocket.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qtcpsocket.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qabstractsocket.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qsslerror.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qsslcertificate.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcryptographichash.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qssl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QFlags \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtNetwork/qsslpresharedkeyauthenticator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QMetaType \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QDir \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdir.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfileinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QSettings \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsettings.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\aihistorydialog.o ..\..\aihistorydialog.cpp
 
 release/aihistoryitem.o: ../../aihistoryitem.cpp ../../aihistoryitem.h \
@@ -14024,6 +14333,259 @@ release/aimgr.o: ../../aimgr.cpp ../../aimgr.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\aimgr.o ..\..\aimgr.cpp
+
+release/aimodeldialog.o: ../../aimodeldialog.cpp ../../AiModelDialog.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QDialog \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qdialog.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtguiglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig-bootstrapped.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtcore-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsystemdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qprocessordetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcompilerdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtypeinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsysinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlogging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qflags.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbasicatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_bootstrap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qgenericatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_cxx11.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_msvc.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobalstatic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmutex.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnumeric.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qversiontagging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtgui-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgets-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnamespace.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs_win.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstring.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qchar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrefcount.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qarraydata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringliteral.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringbuilder.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiterator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhashfunctions.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpair.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvector.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainertools_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpoint.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearraylist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregexp.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringmatcher.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcoreevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qscopedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmetatype.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvarlengtharray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainerfwd.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmargins.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpaintdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrect.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsize.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpalette.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcolor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgb.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgba64.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qbrush.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qmatrix.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpolygon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qregion.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdatastream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiodevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qline.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtransform.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qimage.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixelformat.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qshareddata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhash.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfont.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontmetrics.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qsizepolicy.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcursor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qkeysequence.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvariant.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdebug.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtextstream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlocale.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qset.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontiguouscache.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurlquery.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfile.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfiledevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvector2d.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtouchdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QListWidget \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlistwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlistview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractscrollarea.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qabstractitemmodel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qitemselectionmodel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemdelegate.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qstyleoption.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractspinbox.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvalidator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregularexpression.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qicon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qslider.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractslider.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qstyle.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtabbar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtabwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qrubberband.h \
+		../../AiModelItem.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QPixmap \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QVBoxLayout \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qboxlayout.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlayout.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlayoutitem.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qgridlayout.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\aimodeldialog.o ..\..\aimodeldialog.cpp
+
+release/aimodelitem.o: ../../aimodelitem.cpp ../../AiModelItem.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtguiglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobal.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig-bootstrapped.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qconfig.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtcore-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsystemdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qprocessordetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcompilerdetection.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtypeinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsysinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlogging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qflags.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbasicatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_bootstrap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qgenericatomic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_cxx11.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qatomic_msvc.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qglobalstatic.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmutex.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnumeric.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qversiontagging.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtgui-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgets-config.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qnamespace.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobjectdefs_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qwindowdefs_win.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstring.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qchar.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrefcount.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qarraydata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringliteral.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringview.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringbuilder.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qalgorithms.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiterator.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhashfunctions.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpair.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvector.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainertools_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qpoint.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbytearraylist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringlist.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qregexp.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qstringmatcher.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcoreevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qscopedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmetatype.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvarlengtharray.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontainerfwd.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qobject_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmargins.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpaintdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qrect.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsize.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpalette.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcolor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgb.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qrgba64.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qbrush.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qmatrix.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpolygon.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qregion.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdatastream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qiodevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qline.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtransform.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qimage.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixelformat.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpixmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qshareddata.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qhash.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qsharedpointer_impl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfont.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontmetrics.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qfontinfo.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qsizepolicy.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qcursor.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qkeysequence.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qevent.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qvariant.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qmap.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qdebug.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtextstream.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qlocale.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qset.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qcontiguouscache.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurl.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qurlquery.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfile.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qfiledevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qvector2d.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qtouchdevice.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QPixmap \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QHBoxLayout \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qboxlayout.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlayout.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlayoutitem.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qgridlayout.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QMouseEvent
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\aimodelitem.o ..\..\aimodelitem.cpp
 
 release/applyfriend.o: ../../applyfriend.cpp ../../applyfriend.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QDialog \
@@ -15224,6 +15786,10 @@ release/chatdialog.o: ../../chatdialog.cpp ../../chatdialog.h \
 		../../chatpage.h \
 		../../chatitembase.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QGridLayout \
+		../../moremenu.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		../../contactuserlist.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QListWidget \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/QEvent \
@@ -15235,9 +15801,6 @@ release/chatdialog.o: ../../chatdialog.cpp ../../chatdialog.h \
 		../../userinfopage.h \
 		../../chatuserlist.h \
 		../../clickedbtn.h \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		../../customizeedit.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLineEdit \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlineedit.h \
@@ -15470,6 +16033,11 @@ release/chatpage.o: ../../chatpage.cpp ../../chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QLabel \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qlabel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		../../moremenu.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QVBoxLayout \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		ui_chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QApplication \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qapplication.h \
@@ -15480,7 +16048,6 @@ release/chatpage.o: ../../chatpage.cpp ../../chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qinputmethod.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QHBoxLayout \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QSpacerItem \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QVBoxLayout \
 		../../MessageTextEdit.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QTextEdit \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtextedit.h \
@@ -15509,9 +16076,6 @@ release/chatpage.o: ../../chatpage.cpp ../../chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qtimer.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qbasictimer.h \
 		../../clickedbtn.h \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QPushButton \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qpushbutton.h \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		../../clickedlabel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QStyleOption \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qstyleoption.h \
@@ -15560,7 +16124,7 @@ release/chatpage.o: ../../chatpage.cpp ../../chatpage.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemview.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtCore/qitemselectionmodel.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractitemdelegate.h \
-		../../moremenu.h
+		../../aimodeldialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\chatpage.o ..\..\chatpage.cpp
 
 release/chatuserlist.o: ../../chatuserlist.cpp ../../chatuserlist.h \
@@ -19448,7 +20012,8 @@ release/logindialog.o: ../../logindialog.cpp ../../logindialog.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpainter.h \
 		../../filetcpmgr.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QPainterPath \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpainterpath.h
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qpainterpath.h \
+		../../aimgr.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\logindialog.o ..\..\logindialog.cpp
 
 release/main.o: ../../main.cpp ../../mainwindow.h \
@@ -19880,7 +20445,7 @@ release/mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		../../filetcpmgr.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\mainwindow.o ..\..\mainwindow.cpp
 
-release/moremenu.o: ../../moremenu.cpp ../../moremenu.h \
+release/moremenu.o: ../../moremenu.cpp ../../MoreMenu.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QWidget \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qwidget.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qtwidgetsglobal.h \
@@ -19994,7 +20559,10 @@ release/moremenu.o: ../../moremenu.cpp ../../moremenu.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qabstractbutton.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/qicon.h \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QGraphicsDropShadowEffect \
-		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qgraphicseffect.h
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qgraphicseffect.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/QFrame \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtWidgets/qframe.h \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/include/QtGui/QColor
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\moremenu.o ..\..\moremenu.cpp
 
 release/registerdialog.o: ../../registerdialog.cpp ../../registerdialog.h \
@@ -21785,6 +22353,12 @@ release/moc_aihistoryitem.o: release/moc_aihistoryitem.cpp
 
 release/moc_aimgr.o: release/moc_aimgr.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\moc_aimgr.o release\moc_aimgr.cpp
+
+release/moc_aimodeldialog.o: release/moc_aimodeldialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\moc_aimodeldialog.o release\moc_aimodeldialog.cpp
+
+release/moc_aimodelitem.o: release/moc_aimodelitem.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\moc_aimodelitem.o release\moc_aimodelitem.cpp
 
 release/moc_applyfriend.o: release/moc_applyfriend.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o release\moc_applyfriend.o release\moc_applyfriend.cpp

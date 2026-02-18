@@ -97,6 +97,8 @@ public slots:
 
     void slot_load_ai_history_requested(int ai_thread_id);
     void slot_ai_load_chat(ReqId id, QString res, ErrorCodes err);
+
+    // void slot_change_ai_mode_requested(int ai_model_id);
 private slots:
 
     void on_add_btn_clicked();

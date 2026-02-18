@@ -258,6 +258,9 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_load_chat_req_finish, this, &ChatDialog::slot_ai_load_chat);
 
+    // connect(ui->chat_page, &ChatPage::sig_request_change_ai_model,
+    //         this, &ChatDialog::slot_change_ai_mode_requested, Qt::UniqueConnection);
+
 }
 
 ChatDialog::~ChatDialog()
@@ -479,6 +482,11 @@ void ChatDialog::slot_load_ai_history_requested(int ai_thread_id)
         );
 }
 
+// void slot_change_ai_mode_requested(int ai_model_id){
+
+//     // to do ,更新chatpage的标题就行
+
+// }
 void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
 {
     if(_cur_chat_thread_id == AI_THREAD){
@@ -524,7 +532,7 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
             }
 
             chat_data-> AppendMsg(msg_id, txt_msg);
-            ui->chat_page->AppendChatMsg(txt_msg);
+            ui->chat_page->AppendAiChatMsg(txt_msg);
 
         }
 

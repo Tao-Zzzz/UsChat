@@ -23,6 +23,16 @@ class AIThreadItem(BaseModel):
     title: str | None
     updated_at: datetime
 
+class AIModelItem(BaseModel):
+    id: int
+    name: str
+
+class LoadThreadResp(BaseModel):
+    threads: list[AIThreadItem]
+    models: list[AIModelItem]
+
+
+
 class AIChatMessage(BaseModel):
     msg_id: int
     role: str
@@ -32,3 +42,5 @@ class AIChatMessage(BaseModel):
 class AIChatMessageResp(BaseModel):
     ai_thread_id: int
     messages: list[AIChatMessage]
+
+

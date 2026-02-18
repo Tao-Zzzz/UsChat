@@ -62,6 +62,32 @@ void AIMgr::SetAIThreads(QJsonArray arr)
     }
 }
 
+void AIMgr::SetAIModels(QJsonArray arr)
+{
+    _ai_model_ids.clear();
+    _ai_models_name.clear();
+
+    for (const QJsonValue &value : arr)
+    {
+        if (!value.isObject())
+            continue;
+
+        QJsonObject obj = value.toObject();
+
+        int id = obj.value("id").toInt(-1);
+        QString name = obj.value("name").toString();
+
+        if (id < 0)
+            continue;
+
+        _ai_model_ids.push_back(id);
+        _ai_models_name[id] = name;
+
+        qDebug() << "[Model] id:" << id
+                 << "name:" << name;
+    }
+}
+
 
 AIMgr::~AIMgr()
 {
@@ -85,9 +111,13 @@ void AIMgr::slot_http_finish(ReqId id, QString res, ErrorCodes err)
 
     if (id == ReqId::AI_LOAD_THREAD_REQ) {
         QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
-        QJsonArray arr = doc.array();
+        QJsonObject rootObj = doc.object();
 
-        SetAIThreads(arr);
+        QJsonArray threadsArr = rootObj.value("threads").toArray();
+        QJsonArray modelsArr  = rootObj.value("models").toArray();
+
+        SetAIThreads(threadsArr);
+        SetAIModels(modelsArr);
 
         //设置好了然后...
         //emit sig_ai_threads_loaded();
@@ -102,6 +132,11 @@ QMap<int, std::shared_ptr<AIThreadData>> AIMgr::GetAllAiHistoryChat(){
     return _ai_thread_datas;
 }
 
+QMap<int, QString> AIMgr::GetAllAiModel(){
+    return _ai_models_name;
+}
+
+
 void AIMgr::SetAIHost(QString host)
 {
     _ai_host = host;
@@ -115,6 +150,21 @@ void AIMgr::SetAIScheme(QString scheme)
 void AIMgr::SetAIPort(int port)
 {
     _ai_port = port;
+}
+
+QString AIMgr::GetAIModelName(int model_id)
+{
+    return _ai_models_name[model_id];
+}
+
+QString AIMgr::GetCurAiModelName()
+{
+    return _ai_models_name[_current_active_ai_model_id];
+}
+
+void AIMgr::SetCurAiModel(int model_id)
+{
+    _current_active_ai_model_id = model_id;
 }
 
 
