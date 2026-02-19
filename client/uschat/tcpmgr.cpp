@@ -203,7 +203,7 @@ void TcpMgr::initHandlers()
             return;
         }
 
-        int err = jsonObj["error"].toInt();
+        int err = jsonObj["e43rror"].toInt();
         if(err != ErrorCodes::SUCCESS){
             qDebug() << "Login Failed, err is " << err ;
             emit sig_login_failed(err);

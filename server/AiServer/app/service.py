@@ -61,18 +61,24 @@ def handle_chat(db: Session, req):
     if not model_row:
         raise Exception("model not found or disabled")
 
+
+    full_content = f"【系统指令：你是一个逻辑严谨、聪明有帮助的 AI 助手。用中文回复。】\n\n用户提问：{req.content}"
     messages = [
-        # 系统提示（可选，加这个让模型更像助手）
-        {"role": "system", "content": "你是一个逻辑严谨、聪明有帮助的 AI 助手。用中文回复，思考过程清晰。"},
-        
-        # 历史消息（你可以从数据库拉 AIMessage 记录，按时间顺序加进来）
-        # 比如前面的用户消息
-        {"role": "user", "content": req.content},  # 当前用户输入
-        # 如果有更多历史，就继续加 {"role": "assistant", "content": 之前的AI回复}, {"role": "user", ...}
+        {"role": "user", "content": full_content}
     ]
+
+    # messages = [
+    #     # 系统提示（可选，加这个让模型更像助手）
+    #     {"role": "system", "content": "你是一个逻辑严谨、聪明有帮助的 AI 助手。用中文回复，思考过程清晰。"},
+        
+    #     # 历史消息（你可以从数据库拉 AIMessage 记录，按时间顺序加进来）
+    #     # 比如前面的用户消息
+    #     {"role": "user", "content": req.content},  # 当前用户输入
+    #     # 如果有更多历史，就继续加 {"role": "assistant", "content": 之前的AI回复}, {"role": "user", ...}
+    # ]
     client = get_llm_client(model_row.provider)
 
-
+    print(f"DEBUG: Requesting model with ID: '{model_row.model_key}'") # 看看控制台到底打印什么
         # 调用 API 生成回复
     response = client.chat.completions.create(
         model=model_row.model_key,
@@ -121,7 +127,7 @@ def handle_chat(db: Session, req):
 def get_llm_client(provider: str):
     if provider == "openrouter":
         return OpenAI(
-            api_key=settings.OPENROUTER_KEY,
+            api_key=settings.OPENROUTER_API_KEY,
             base_url="https://openrouter.ai/api/v1"
         )
     elif provider == "openai":

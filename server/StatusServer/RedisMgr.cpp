@@ -53,23 +53,37 @@ bool RedisMgr::Set(const std::string &key, const std::string &value){
 	}
 	auto reply = (redisReply*)redisCommand(connect, "SET %s %s", key.c_str(), value.c_str());
 
-	//如果返回NULL则说明执行失败
-	if (NULL == reply)
-	{
-		std::cout << "Execut command [ SET " << key << "  "<< value << " ] failure ! " << std::endl;
-		//freeReplyObject(reply);
+	if (NULL == reply) {
+		// 关键：打印 connect->errstr 看看是断开了还是超时了
+		std::cout << "Execut command failure! Error: " << connect->errstr << std::endl;
 		_con_pool->returnConnection(connect);
 		return false;
 	}
 
-	//如果执行失败则释放连接
-	if (!(reply->type == REDIS_REPLY_STATUS && (strcmp(reply->str, "OK") == 0 || strcmp(reply->str, "ok") == 0)))
-	{
-		std::cout << "Execut command [ SET " << key << "  " << value << " ] failure ! " << std::endl;
+	if (!(reply->type == REDIS_REPLY_STATUS && (strcmp(reply->str, "OK") == 0 || strcmp(reply->str, "ok") == 0))) {
+		// 关键：打印 reply->str 看看是密码错、内存满还是 key 被锁定
+		std::cout << "Execut command failure! Reply Error: " << reply->str << std::endl;
 		freeReplyObject(reply);
 		_con_pool->returnConnection(connect);
 		return false;
 	}
+	//如果返回NULL则说明执行失败
+	//if (NULL == reply)
+	//{
+	//	std::cout << "Execut command [ SET " << key << "  "<< value << " ] failure ! " << std::endl;
+	//	//freeReplyObject(reply);
+	//	_con_pool->returnConnection(connect);
+	//	return false;
+	//}
+
+	////如果执行失败则释放连接
+	//if (!(reply->type == REDIS_REPLY_STATUS && (strcmp(reply->str, "OK") == 0 || strcmp(reply->str, "ok") == 0)))
+	//{
+	//	std::cout << "Execut command [ SET " << key << "  " << value << " ] failure ! " << std::endl;
+	//	freeReplyObject(reply);
+	//	_con_pool->returnConnection(connect);
+	//	return false;
+	//}
 
 	//执行成功 释放redisCommand执行后返回的redisReply所占用的内存
 	freeReplyObject(reply);

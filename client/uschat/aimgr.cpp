@@ -159,6 +159,10 @@ QString AIMgr::GetAIModelName(int model_id)
 
 QString AIMgr::GetCurAiModelName()
 {
+    if(_current_active_ai_model_id == -1){
+        return "gemma-3-12b";
+    }
+
     return _ai_models_name[_current_active_ai_model_id];
 }
 
