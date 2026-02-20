@@ -531,6 +531,11 @@ bool UserMgr::TransFileIsUploading(QString name) {
 }
 
 
+void UserMgr::SetIcon(QString name) {
+    std::lock_guard<std::mutex> lock(_mtx);
+    _user_info->_icon = name;
+}
+
 std::shared_ptr<MsgInfo> UserMgr::GetFreeUploadFile() {
     std::lock_guard<std::mutex> mtx(_trans_mtx);
     if (_name_to_msg_info.isEmpty()) {

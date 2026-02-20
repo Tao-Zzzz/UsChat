@@ -37,6 +37,9 @@ using message::KickUserRsp;
 using message::GroupTextChatMsgReq;
 using message::GroupTextChatMsgRsp;
 
+using message::NotifyChatImgReq;
+using message::NotifyChatImgRsp;
+
 class ChatConPool {
 public:
 	ChatConPool(size_t poolSize, std::string host, std::string port)
@@ -113,6 +116,7 @@ public:
 	TextChatMsgRsp NotifyTextChatMsg(std::string server_ip, const TextChatMsgReq& req, const Json::Value& rtvalue);
 	GroupTextChatMsgRsp NotifyGroupTextChatMsg(std::string server_ip, const GroupTextChatMsgReq& req, const Json::Value& rtvalue);
 	KickUserRsp NotifyKickUser(std::string server_ip, const KickUserReq& req);
+	NotifyChatImgRsp NotifyChatImgMsg(int message_id, std::string chatserver);
 private:
 	ChatGrpcClient();
 	unordered_map<std::string, std::unique_ptr<ChatConPool>> _pools;	

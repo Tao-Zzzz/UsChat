@@ -10,6 +10,9 @@
 #include <memory>
 #include "const.h"
 #include "MsgNode.h"
+#include "message.grpc.pb.h"
+#include "message.pb.h"
+
 using namespace std;
 
 
@@ -45,6 +48,8 @@ public:
 	void UpdateHeartbeat();
 	//处理异常连接
 	void DealExceptionSession();
+
+	void NotifyChatImgRecv(const ::message::NotifyChatImgReq* request);
 private:
 	void asyncReadFull(std::size_t maxLength, std::function<void(const boost::system::error_code& , std::size_t)> handler);
 	void asyncReadLen(std::size_t  read_len, std::size_t total_len,

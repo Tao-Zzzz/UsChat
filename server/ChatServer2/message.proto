@@ -152,6 +152,25 @@ message GroupTextChatMsgRsp {
     repeated TextChatData textmsgs = 5;
 }
 
+message NotifyChatImgReq{
+    int32 from_uid = 1;
+    int32 to_uid = 2;
+    int32 message_id = 3;
+    string file_name = 4;
+    int64 total_size = 5;
+    int32 thread_id =6;
+}
+
+message NotifyChatImgRsp{
+    int32 error = 1;
+    int32 from_uid = 2;
+    int32 to_uid = 3;
+    int32 message_id = 4;
+    string file_name = 5;
+    int64 total_size = 6;
+    int32 thread_id =7;
+}
+
 service ChatService {
 	rpc NotifyAddFriend(AddFriendReq) returns (AddFriendRsp) {}
 	rpc RplyAddFriend(RplyFriendReq) returns (RplyFriendRsp) {}
@@ -160,4 +179,5 @@ service ChatService {
 	rpc NotifyTextChatMsg(TextChatMsgReq) returns (TextChatMsgRsp){}
 	rpc NotifyKickUser(KickUserReq) returns (KickUserRsp){}
 	rpc NotifyGroupTextChatMsg(GroupTextChatMsgReq) returns (GroupTextChatMsgRsp) {}
+	rpc NotifyChatImgMsg(NotifyChatImgReq) returns (NotifyChatImgRsp){}
 }

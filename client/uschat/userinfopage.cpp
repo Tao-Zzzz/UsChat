@@ -35,7 +35,8 @@ UserInfoPage::UserInfoPage(QWidget *parent) :
     else {
         // 如果是用户上传的头像，获取存储目录
         QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        QDir avatarsDir(storageDir + "/avatars");
+        auto uid = UserMgr::GetInstance()->GetUid();
+        QDir avatarsDir(storageDir + "/user/" + QString::number(uid) + "/avatars");
         // 确保目录存在
         if (avatarsDir.exists()) {
             auto file_name = QFileInfo(icon).fileName();
@@ -50,47 +51,21 @@ UserInfoPage::UserInfoPage(QWidget *parent) :
                     //先加载默认的
                     QPixmap pixmap(":/res/head_1.jpg");
                     QPixmap scaledPixmap = pixmap.scaled(ui->head_lb->size(),
-                        Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+                                                         Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
                     ui->head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
                     ui->head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
-                    
+
                 }
                 else {
                     QPixmap scaledPixmap = pixmap.scaled(ui->head_lb->size(),
-                        Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+                                                         Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
                     ui->head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
                     ui->head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
                 }
             }
             else {
                 qWarning() << "无法加载上传的头像：" << avatarPath;
-                UserMgr::GetInstance()->AddLabelToReset(avatarPath, ui->head_lb);
-                //先加载默认的
-                QPixmap pixmap(":/res/head_1.jpg");
-                QPixmap scaledPixmap = pixmap.scaled(ui->head_lb->size(),
-                    Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
-                ui->head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
-                ui->head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
-
-                //判断是否正在下载
-                bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
-                if (is_loading) {
-                    qWarning() << "正在下载: " << file_name;
-                }
-                else {
-                    //发送请求获取资源
-                    auto download_info = std::make_shared<DownloadInfo>();
-                    download_info->_name = file_name;
-                    download_info->_current_size = 0;
-                    download_info->_seq = 1;
-                    download_info->_total_size = 0;
-                    download_info->_client_path = avatarPath;
-                    //添加文件到管理者
-                    UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
-                    //发送消息
-                    FileTcpMgr::GetInstance()->SendDownloadInfo(download_info);
-                }
-
+                LoadHeadIcon(avatarPath, ui->head_lb, file_name,"self_icon");
             }
         }
         else {
@@ -118,6 +93,35 @@ UserInfoPage::~UserInfoPage()
     delete ui;
 }
 
+void UserInfoPage::LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name, QString req_type) {
+    UserMgr::GetInstance()->AddLabelToReset(avatarPath, ui->head_lb);
+    //先加载默认的
+    QPixmap pixmap(":/res/head_1.jpg");
+    QPixmap scaledPixmap = pixmap.scaled(ui->head_lb->size(),
+                                         Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+    ui->head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+    ui->head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+
+    //判断是否正在下载
+    bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
+    if (is_loading) {
+        qWarning() << "正在下载: " << file_name;
+    }
+    else {
+        //发送请求获取资源
+        auto download_info = std::make_shared<DownloadInfo>();
+        download_info->_name = file_name;
+        download_info->_current_size = 0;
+        download_info->_seq = 1;
+        download_info->_total_size = 0;
+        download_info->_client_path = avatarPath;
+        //添加文件到管理者
+        UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
+        //发送消息
+        FileTcpMgr::GetInstance()->SendDownloadInfo(download_info, req_type);
+    }
+
+}
 
 //上传头像
 void UserInfoPage::slot_up_load()
@@ -128,7 +132,7 @@ void UserInfoPage::slot_up_load()
         tr("选择图片"),
         QString(),
         tr("图片文件 (*.png *.jpg *.jpeg *.bmp *.webp)")
-    );
+        );
     if (filename.isEmpty())
         return;
 
@@ -140,7 +144,7 @@ void UserInfoPage::slot_up_load()
             tr("错误"),
             tr("加载图片失败！请确认已部署 WebP 插件。"),
             QMessageBox::Ok
-        );
+            );
         return;
     }
 
@@ -153,7 +157,9 @@ void UserInfoPage::slot_up_load()
     ui->head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
 
     QString storageDir = QStandardPaths::writableLocation(
-                             QStandardPaths::AppDataLocation);
+        QStandardPaths::AppDataLocation);
+    auto uid = UserMgr::GetInstance()->GetUid();
+    storageDir = storageDir + "/" + QString::number(uid);
     // 2. 在其下再建一个 avatars 子目录
     QDir dir(storageDir);
     if (!dir.exists("avatars")) {
@@ -163,14 +169,14 @@ void UserInfoPage::slot_up_load()
                 this,
                 tr("错误"),
                 tr("无法创建存储目录，请检查权限或磁盘空间。")
-            );
+                );
             return;
         }
     }
     // 3. 拼接最终的文件名 head.png
     QString file_name = generateUniqueIconName();
     QString filePath = dir.filePath("avatars" +
-                          QString(QDir::separator()) + file_name);
+                                    QString(QDir::separator()) + file_name);
 
     // 4. 保存 scaledPixmap 为 PNG（无损、最高质量）
     if (!scaledPixmap.save(filePath, "PNG")) {
@@ -178,7 +184,7 @@ void UserInfoPage::slot_up_load()
             this,
             tr("保存失败"),
             tr("头像保存失败，请检查权限或磁盘空间。")
-        );
+            );
     } else {
         qDebug() << "头像已保存到：" << filePath;
         // 以后读取直接用同一路径：storageDir/avatars/head.png
@@ -196,8 +202,8 @@ void UserInfoPage::slot_up_load()
 
     QCryptographicHash hash(QCryptographicHash::Md5);
     if (!hash.addData(&file)) {
-            qWarning() << "Failed to read data from file:" << filePath;
-            return ;
+        qWarning() << "Failed to read data from file:" << filePath;
+        return ;
     }
 
     // 5. 转化为16进制字符串
@@ -253,13 +259,15 @@ void UserInfoPage::slot_up_load()
     jsonObj["last_seq"] = last_seq;
     QJsonDocument doc(jsonObj);
     auto send_data = doc.toJson();
+    //设置Icon
+    UserMgr::GetInstance()->SetIcon(file_name);
     //将md5信息和文件信息关联存储
     UserMgr::GetInstance()->AddUploadFile(file_name, fileInfo);
     //发送消息
     FileTcpMgr::GetInstance()->SendData(ID_UPLOAD_HEAD_ICON_REQ, send_data);
     file.close();
+    emit sig_reset_head();
 }
-
 
 
 

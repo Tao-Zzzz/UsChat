@@ -57,6 +57,7 @@ struct ChatMessage {
 	std::string content;
 	std::string chat_time;
 	int status;
+	int msg_type;
 };
 
 // 查询结果结构，增加next_cursor字段

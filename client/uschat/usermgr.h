@@ -74,6 +74,7 @@ public:
     void ResumeTransFileByName(QString name);
     bool TransFileIsUploading(QString name);
 
+    void SetIcon(QString name);
 private:
     UserMgr();
     std::shared_ptr<UserInfo> _user_info;

@@ -7,6 +7,7 @@
 #include "ConfigMgr.h"
 #include "MysqlMgr.h"
 #include "RedisMgr.h"
+#include "ChatServerGrpcClient.h"
 
 FileWorker::FileWorker() :_b_stop(false)
 {
@@ -251,8 +252,29 @@ void FileWorker::RegisterHandlers()
 		outfile.close();
 		if (last) {
 			std::cout << "文件已成功保存为: " << task->_name << std::endl;
-			//todo...更新数据库聊天图像上传状态
-			//todo...通过grpc通知ChatServer
+			//更新数据库聊天图像上传状态
+			MysqlMgr::GetInstance()->UpdateUploadStatus(task->_chat_msg_id);
+
+			std::string uid_ip_value = "";
+			auto receiver_str = std::to_string(task->_receiver);
+			auto uid_ip_key = USERIPPREFIX + receiver_str;
+			bool b_ip = RedisMgr::GetInstance()->Get(uid_ip_key, uid_ip_value);
+			//如果接收者未登录，则直接返回
+			if (!b_ip) {
+				if (task->_callback) {
+					task->_callback(result);
+				}
+
+				return;
+			}
+
+			if (task->_callback) {
+				task->_callback(result);
+			}
+
+			//通过grpc通知ChatServer
+			ChatServerGrpcClient::GetInstance()->NotifyChatImgMsg(task->_chat_msg_id, uid_ip_value);
+			return;
 		}
 
 		if (task->_callback) {
@@ -318,7 +340,27 @@ void FileWorker::RegisterHandlers()
 		if (last) {
 			std::cout << "文件已成功保存为: " << task->_name << std::endl;
 			//todo...更新数据库聊天图像上传状态
-			//todo...通过grpc通知ChatServer
+			MysqlMgr::GetInstance()->UpdateUploadStatus(task->_chat_msg_id);
+			std::string uid_ip_value = "";
+			auto receiver_str = std::to_string(task->_receiver);
+			auto uid_ip_key = USERIPPREFIX + receiver_str;
+			bool b_ip = RedisMgr::GetInstance()->Get(uid_ip_key, uid_ip_value);
+			//如果接收者未登录，则直接返回
+			if (!b_ip) {
+				if (task->_callback) {
+					task->_callback(result);
+				}
+
+				return;
+			}
+
+			if (task->_callback) {
+				task->_callback(result);
+			}
+		
+			//通过grpc通知ChatServer
+			ChatServerGrpcClient::GetInstance()->NotifyChatImgMsg(task->_chat_msg_id, uid_ip_value);
+			return;
 		}
 
 		if (task->_callback) {
@@ -383,14 +425,36 @@ void FileWorker::RegisterHandlers()
 		outfile.close();
 		if (last) {
 			std::cout << "文件已成功保存为: " << task->_name << std::endl;
-			//todo...更新数据库聊天图像上传状态
-			//todo...通过grpc通知ChatServer
+			//更新数据库聊天图像上传状态
+			MysqlMgr::GetInstance()->UpdateUploadStatus(task->_chat_msg_id);
+
+			std::string uid_ip_value = "";
+			auto receiver_str = std::to_string(task->_receiver);
+			auto uid_ip_key = USERIPPREFIX + receiver_str;
+			bool b_ip = RedisMgr::GetInstance()->Get(uid_ip_key, uid_ip_value);
+			//如果接收者未登录，则直接返回
+			if (!b_ip) {
+				if (task->_callback) {
+					task->_callback(result);
+				}
+
+				return;
+			}
+
+			//通过grpc通知ChatServer
+			ChatServerGrpcClient::GetInstance()->NotifyChatImgMsg(task->_chat_msg_id, uid_ip_value);
+			if (task->_callback) {
+				task->_callback(result);
+			}
+
+			return;
 		}
 
 		if (task->_callback) {
 			task->_callback(result);
 		}
 	};
+
 }
 
 void FileWorker::PostTask(std::shared_ptr<FileTask> task)
@@ -470,8 +534,6 @@ void DownloadWorker::task_callback(std::shared_ptr<DownloadTask> task)
 
 	boost::filesystem::path file_path(file_path_str);
 
-	// 获取完整文件名（包含扩展名）
-	std::string filename = file_path.filename().string();
 	Json::Value result;
 	result["error"] = ErrorCodes::Success;
 
@@ -500,28 +562,27 @@ void DownloadWorker::task_callback(std::shared_ptr<DownloadTask> task)
 		//如果为空，则创建FileInfo 构造数据存储
 		file_info = std::make_shared<FileInfo>();
 		file_info->_file_path_str = file_path_str;
-		file_info->_name = filename;
+		file_info->_name = task->_name;
 		file_info->_seq = 1;
 
 		file_info->_total_size = file_size;
 		file_info->_trans_size = 0;
 		// 立即保存到 Redis，覆盖旧数据，设置过期时间
-		RedisMgr::GetInstance()->SetDownLoadInfo(filename, file_info);
-		std::cout << "[新下载] 文件: " << filename
+		RedisMgr::GetInstance()->SetDownLoadInfo(task->_name, file_info);
+		std::cout << "[新下载] 文件: " << task->_name
 			<< ", 大小: " << file_size << " 字节" << std::endl;
 	}
 	else {
 		//断点续传，从 Redis 获取历史信息
-		file_info = RedisMgr::GetInstance()->GetDownloadInfo(filename);
+		file_info = RedisMgr::GetInstance()->GetDownloadInfo(task->_name);
 		if (file_info == nullptr) {
 			// Redis 中没有信息（可能过期了）
-			std::cerr << "断点续传失败，Redis 中无下载信息: " << filename << std::endl;
+			std::cerr << "断点续传失败，Redis 中无下载信息: " << task->_name << std::endl;
 			result["error"] = ErrorCodes::RedisReadErr;
 			task->_callback(result);
 			infile.close();
 			return;
 		}
-
 		// 验证序列号是否匹配
 		if (task->_seq != file_info->_seq) {
 			std::cerr << "序列号不匹配，期望: " << file_info->_seq
@@ -532,7 +593,7 @@ void DownloadWorker::task_callback(std::shared_ptr<DownloadTask> task)
 			return;
 		}
 
-		std::cout << "[续传] 文件: " << filename
+		std::cout << "[续传] 文件: " << task->_name
 			<< ", seq: " << task->_seq
 			<< ", 进度: " << file_info->_trans_size
 			<< "/" << file_info->_total_size << std::endl;
@@ -584,14 +645,14 @@ void DownloadWorker::task_callback(std::shared_ptr<DownloadTask> task)
 
 	if (is_last) {
 		std::cout << "文件读取完成: " << file_path_str << std::endl;
-		RedisMgr::GetInstance()->DelDownLoadInfo(filename);
+		RedisMgr::GetInstance()->DelDownLoadInfo(task->_name);
 	}
 	else {
 		//更新信息
 		file_info->_seq++;
 		file_info->_trans_size = offset + bytes_read;
 		//更新redis
-		RedisMgr::GetInstance()->SetDownLoadInfo(filename, file_info);
+		RedisMgr::GetInstance()->SetDownLoadInfo(task->_name, file_info);
 	}
 
 	if (task->_callback) {

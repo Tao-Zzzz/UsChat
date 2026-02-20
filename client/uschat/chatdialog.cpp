@@ -73,69 +73,10 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
 	//连接加载信号和槽
 	connect(ui->chat_user_list, &ChatUserList::sig_loading_chat_user, this, &ChatDialog::slot_loading_chat_user);
-	//模拟加载自己头像
-	QString head_icon = UserMgr::GetInstance()->GetIcon();
-	//使用正则表达式检查是否使用默认头像
-	QRegularExpression regex("^:/res/head_(\\d+)\\.jpg$");
-	QRegularExpressionMatch match = regex.match(head_icon);
-	if (match.hasMatch()) {
-		// 如果是默认头像（:/res/head_X.jpg 格式）
-		QPixmap pixmap(head_icon); // 加载默认头像图片
-		QPixmap scaledPixmap = pixmap.scaled(ui->side_head_lb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-		ui->side_head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
-		ui->side_head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
-	}
-	else {
-		// 如果是用户上传的头像，获取存储目录
-		QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-		QDir avatarsDir(storageDir + "/avatars");
 
-		// 确保目录存在
-		if (avatarsDir.exists()) {
-			auto file_name = QFileInfo(head_icon).fileName();
-			QString avatarPath = avatarsDir.filePath(file_name); // 获取上传头像的完整路径
-			QPixmap pixmap(avatarPath); // 加载上传的头像图片
-			if (!pixmap.isNull()) {
-				QPixmap scaledPixmap = pixmap.scaled(ui->side_head_lb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-				ui->side_head_lb->setPixmap(scaledPixmap);
-				ui->side_head_lb->setScaledContents(true);
-			}
-			else {
-				qWarning() << "无法加载上传的头像：" << avatarPath;
-				UserMgr::GetInstance()->AddLabelToReset(avatarPath, ui->side_head_lb);
-				//先加载默认的
-				QPixmap pixmap(":/res/head_1.jpg");
-				QPixmap scaledPixmap = pixmap.scaled(ui->side_head_lb->size(),
-					Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
-				ui->side_head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
-				ui->side_head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+    connect(ui->user_info_page, &UserInfoPage::sig_reset_head, this, &ChatDialog::slot_reset_head);
 
-				//判断是否正在下载
-				bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
-				if (is_loading) {
-					qWarning() << "正在下载: " << file_name;
-					
-				}
-				else {
-					//发送请求获取资源
-					auto download_info = std::make_shared<DownloadInfo>();
-					download_info->_name = file_name;
-					download_info->_current_size = 0;
-					download_info->_seq = 1;
-					download_info->_total_size = 0;
-					download_info->_client_path = avatarPath;
-					//添加文件到管理者
-					UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
-					//发送消息
-					FileTcpMgr::GetInstance()->SendDownloadInfo(download_info);
-				}
-
-			}
-		}
-		else {
-			qWarning() << "头像存储目录不存在：" << avatarsDir.path();
-		}
-	}
+    slot_reset_head();
 
 	ui->side_chat_lb->setProperty("state", "normal");
 
@@ -261,6 +202,11 @@ ChatDialog::ChatDialog(QWidget* parent) :
     // connect(ui->chat_page, &ChatPage::sig_request_change_ai_model,
     //         this, &ChatDialog::slot_change_ai_mode_requested, Qt::UniqueConnection);
 
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_img_chat_msg,
+            this, &ChatDialog::slot_img_chat_msg);
+
+    connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_update_download_progress,
+            this, &ChatDialog::slot_update_download_progress);
 }
 
 ChatDialog::~ChatDialog()
@@ -563,6 +509,38 @@ void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
     }
 }
 
+void ChatDialog::slot_img_chat_msg(std::shared_ptr<ImgChatData> imgchat) {
+    //更新数据
+    auto thread_id = imgchat->GetThreadId();
+    auto thread_data = UserMgr::GetInstance()->GetChatThreadByThreadId(thread_id);
+    thread_data->AddMsg(imgchat);
+
+
+    if (_cur_chat_thread_id != thread_id) {
+        return;
+    }
+    ui->chat_page->AppendOtherMsg(imgchat);
+}
+
+void ChatDialog::slot_update_download_progress(std::shared_ptr<MsgInfo> msg_info) {
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(msg_info->_thread_id);
+    if (chat_data == nullptr) {
+        return;
+    }
+
+    //更新消息，其实不用更新，都是共享msg_info的一块内存，这里为了安全还是再次更新下
+
+    chat_data->UpdateProgress(msg_info);
+
+    if (_cur_chat_thread_id != msg_info->_thread_id) {
+        return;
+    }
+
+
+    //更新聊天界面信息
+    ui->chat_page->UpdateFileProgress(msg_info);
+}
+
 bool ChatDialog::eventFilter(QObject* watched, QEvent* event)
 {
 	if (event->type() == QEvent::MouseButtonPress) {
@@ -692,12 +670,13 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 
 		QJsonDocument doc(jsonObj);
 		QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
-
+        qDebug() << "need to load more";
 		//发送tcp请求给chat server
 		emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_LOAD_CHAT_THREAD_REQ, jsonData);
 		return;
 	}
 
+    qDebug() << "close LoadingDlg";
 	showLoadingDlg(false);
 	//继续加载聊天数据
 	loadChatMsg();
@@ -728,7 +707,7 @@ void ChatDialog::slot_create_private_chat(int uid, int other_id, int thread_id)
 	return;
 }
 
-void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, std::vector<std::shared_ptr<TextChatData>> msglists)
+void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, std::vector<std::shared_ptr<ChatDataBase>> msglists)
 {
 	_cur_load_chat->SetLastMsgId(msg_id);
 	//加载聊天信息
@@ -757,6 +736,7 @@ void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, s
 
 	//都加载完了
 	if(!_cur_load_chat){
+        qDebug() << "all chat msg load over";
 		//更新聊天界面信息
 		SetSelectChatItem();
 		SetSelectChatPage();
@@ -771,6 +751,8 @@ void ChatDialog::slot_load_chat_msg(int thread_id, int msg_id, bool load_more, s
         _cur_load_chat = UserMgr::GetInstance()->GetNextLoadData();
     }
 
+
+    qDebug() << "load next thead msg:" << _cur_load_chat->GetThreadId();
 	//继续加载下一个聊天
 	//发送请求给服务器
 	//发送请求逻辑
@@ -805,6 +787,7 @@ void ChatDialog::slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<Te
 	}	
 }
 
+
 void ChatDialog::slot_add_img_msg(int thread_id, std::shared_ptr<ImgChatData> img_msg) {
 	auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(thread_id);
 	if (chat_data == nullptr) {
@@ -820,6 +803,9 @@ void ChatDialog::slot_add_img_msg(int thread_id, std::shared_ptr<ImgChatData> im
 	//更新聊天界面信息
 	ui->chat_page->UpdateImgChatStatus(img_msg);
 }
+
+
+
 
 void ChatDialog::slot_reset_icon(QString path) {
 	UserMgr::GetInstance()->ResetLabelIcon(path);
@@ -1478,4 +1464,80 @@ void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int 
     SetSelectChatPage(thread_id);
     slot_side_chat();
     return;
+}
+
+
+
+void ChatDialog::slot_reset_head()
+{
+    //模拟加载自己头像
+    QString head_icon = UserMgr::GetInstance()->GetIcon();
+    //使用正则表达式检查是否使用默认头像
+    QRegularExpression regex("^:/res/head_(\\d+)\\.jpg$");
+    QRegularExpressionMatch match = regex.match(head_icon);
+    if (match.hasMatch()) {
+        // 如果是默认头像（:/res/head_X.jpg 格式）
+        QPixmap pixmap(head_icon); // 加载默认头像图片
+        QPixmap scaledPixmap = pixmap.scaled(ui->side_head_lb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        ui->side_head_lb->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+        ui->side_head_lb->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+    }
+    else {
+        // 如果是用户上传的头像，获取存储目录
+        QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        auto uid = UserMgr::GetInstance()->GetUid();
+        QDir avatarsDir(storageDir + "/user/" + QString::number(uid) + "/avatars");
+
+        // 确保目录存在
+        if (avatarsDir.exists()) {
+            auto file_name = QFileInfo(head_icon).fileName();
+            QString avatarPath = avatarsDir.filePath(file_name); // 获取上传头像的完整路径
+            QPixmap pixmap(avatarPath); // 加载上传的头像图片
+            if (!pixmap.isNull()) {
+                QPixmap scaledPixmap = pixmap.scaled(ui->side_head_lb->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                ui->side_head_lb->setPixmap(scaledPixmap);
+                ui->side_head_lb->setScaledContents(true);
+            }
+            else {
+                qWarning() << "无法加载上传的头像：" << avatarPath;
+                LoadHeadIcon(avatarPath, ui->side_head_lb, file_name,"self_icon");
+            }
+        }
+        else {
+            qWarning() << "头像存储目录不存在：" << avatarsDir.path();
+            QString avatarPath = avatarsDir.filePath(QFileInfo(head_icon).fileName());
+            avatarsDir.mkpath(".");
+            LoadHeadIcon(avatarPath, ui->side_head_lb, head_icon,"self_icon");
+        }
+    }
+}
+
+
+void ChatDialog::LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name,QString req_type) {
+    UserMgr::GetInstance()->AddLabelToReset(avatarPath, icon_label);
+    //先加载默认的
+    QPixmap pixmap(":/res/head_1.jpg");
+    QPixmap scaledPixmap = pixmap.scaled(icon_label->size(),
+                                         Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+    icon_label->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+    icon_label->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+
+    //判断是否正在下载
+    bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
+    if (is_loading) {
+        qWarning() << "正在下载: " << file_name;
+    }
+    else {
+        //发送请求获取资源
+        auto download_info = std::make_shared<DownloadInfo>();
+        download_info->_name = file_name;
+        download_info->_current_size = 0;
+        download_info->_seq = 1;
+        download_info->_total_size = 0;
+        download_info->_client_path = avatarPath;
+        //添加文件到管理者
+        UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
+        //发送消息
+        FileTcpMgr::GetInstance()->SendDownloadInfo(download_info, req_type);
+    }
 }

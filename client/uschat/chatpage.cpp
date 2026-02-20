@@ -93,7 +93,7 @@ void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
         }
 
         for (auto& msg : chat_data->GetMsgUnRspRef()) {
-            AppendChatMsg(msg);
+            AppendChatMsg(msg, false);
         }
         return;
     }
@@ -116,7 +116,7 @@ void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     }
 }
 
-void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
+void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg, bool rsp)
 {
     auto self_info = UserMgr::GetInstance()->GetUserInfo();
     ChatRole role;
@@ -131,6 +131,17 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
         // 如果是文字,则有一个文字专属的bubble
         if (msg->GetMsgType() == ChatMsgType::TEXT) {
             pBubble = new TextBubble(role, msg->GetMsgContent());
+        }else if (msg->GetMsgType() == ChatMsgType::PIC) {
+            auto img_msg = dynamic_pointer_cast<ImgChatData>(msg);
+            auto pic_bubble =  new PictureBubble(img_msg->_msg_info->_preview_pix, role, img_msg->_msg_info->_total_size);
+            pic_bubble->setMsgInfo(img_msg->_msg_info);
+            pBubble = pic_bubble;
+
+            //连接暂停和恢复信号
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::pauseRequested,
+                    this, &ChatPage::on_clicked_paused);
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::resumeRequested,
+                    this, &ChatPage::on_clicked_resume);
         }
      
         pChatItem->setWidget(pBubble);
@@ -142,8 +153,12 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
 
 
 
-        //而且是没有收到服务器确认的, 这个可能需要改一改,下面也有一个一样的
-        _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+        if (rsp) {
+            _base_item_map[msg->GetMsgId()] = pChatItem;
+        }
+        else {
+            _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+        }
     }
     else {
         role = ChatRole::Other;
@@ -163,11 +178,11 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
         else {
             // 如果是用户上传的头像，获取存储目录
             QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-            QDir avatarsDir(storageDir + "/avatars");
-            auto file_name = QFileInfo(self_info->_icon).fileName();
+            auto uid = UserMgr::GetInstance()->GetUid();
+            QDir avatarsDir(storageDir + "/user/" + QString::number(msg->GetSendUid()) + "/avatars");
             // 确保目录存在
             if (avatarsDir.exists()) {
-                QString avatarPath = avatarsDir.filePath(file_name); // 获取上传头像的完整路径
+                QString avatarPath = avatarsDir.filePath(friend_info->_icon); // 获取上传头像的完整路径
                 QPixmap pixmap(avatarPath); // 加载上传的头像图片
                 if (!pixmap.isNull()) {
                     pChatItem->setUserIcon(pixmap);
@@ -175,48 +190,45 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg)
                 else {
                     qWarning() << "无法加载上传的头像：" << avatarPath;
                     auto icon_label = pChatItem->getIconLabel();
-                    UserMgr::GetInstance()->AddLabelToReset(avatarPath, icon_label);
-                    //先加载默认的
-                    QPixmap pixmap(":/res/head_1.jpg");
-                    QPixmap scaledPixmap = pixmap.scaled(icon_label->size(),
-                        Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
-                    icon_label->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
-                    icon_label->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
-
-                    //判断是否正在下载
-                    bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
-                    if (is_loading) {
-                        qWarning() << "正在下载: " << file_name;
-                    }
-                    else {
-                        //发送请求获取资源
-                        auto download_info = std::make_shared<DownloadInfo>();
-                        download_info->_name = file_name;
-                        download_info->_current_size = 0;
-                        download_info->_seq = 1;
-                        download_info->_total_size = 0;
-                        download_info->_client_path = avatarPath;
-                        //添加文件到管理者
-                        UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
-                        //发送消息
-                        FileTcpMgr::GetInstance()->SendDownloadInfo(download_info);
-                    }
+                    LoadHeadIcon(avatarPath, icon_label, friend_info->_icon,"other_icon");
                 }
             }
             else {
                 qWarning() << "头像存储目录不存在：" << avatarsDir.path();
+                //创建目录
+                avatarsDir.mkpath(".");
+                auto icon_label = pChatItem->getIconLabel();
+                QString avatarPath = avatarsDir.filePath(friend_info->_icon);
+                LoadHeadIcon(avatarPath, icon_label, friend_info->_icon, "other_icon");
             }
         }
+
 
         QWidget* pBubble = nullptr;
         if (msg->GetMsgType() == ChatMsgType::TEXT) {
             pBubble = new TextBubble(role, msg->GetMsgContent());
+        }if(msg->GetMsgType() == ChatMsgType::PIC) {
+            auto img_msg = dynamic_pointer_cast<ImgChatData>(msg);
+            auto pic_bubble = new PictureBubble(img_msg->_msg_info->_preview_pix, role, img_msg->_msg_info->_total_size);
+            pic_bubble->setMsgInfo(img_msg->_msg_info);
+            pBubble = pic_bubble;
+
+            //连接暂停和恢复信号
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::pauseRequested,
+                    this, &ChatPage::on_clicked_paused);
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::resumeRequested,
+                    this, &ChatPage::on_clicked_resume);
         }
         pChatItem->setWidget(pBubble);
         auto status = msg->GetStatus();
         pChatItem->setStatus(status);
         ui->chat_data_list->appendChatItem(pChatItem);
-        _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+        if (rsp) {
+            _base_item_map[msg->GetMsgId()] = pChatItem;
+        }
+        else {
+            _unrsp_item_map[msg->GetUniqueId()] = pChatItem;
+        }
     }
 
 }
@@ -263,7 +275,7 @@ void ChatPage::UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info) {
     if (msg_info->_msg_type == MsgType::IMG_MSG) {
         auto bubble = iter.value()->getBubble();
         PictureBubble*  pic_bubble = dynamic_cast<PictureBubble*>(bubble);
-        pic_bubble->setProgress(msg_info->_rsp_size);
+        pic_bubble->setProgress(msg_info->_rsp_size, msg_info->_total_size);
     }
     
 }
@@ -279,7 +291,8 @@ void ChatPage::SetSelfIcon(ChatItemBase* pChatItem, QString icon)
     else {
         // 如果是用户上传的头像，获取存储目录
         QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        QDir avatarsDir(storageDir + "/avatars");
+        auto uid = UserMgr::GetInstance()->GetUid();
+        QDir avatarsDir(storageDir + "/user/" + QString::number(uid) + "/avatars");
         auto file_name = QFileInfo(icon).fileName();
         // 确保目录存在
         if (avatarsDir.exists()) {
@@ -291,36 +304,16 @@ void ChatPage::SetSelfIcon(ChatItemBase* pChatItem, QString icon)
             else {
                 qWarning() << "无法加载上传的头像：" << avatarPath;
                 auto icon_label = pChatItem->getIconLabel();
-                UserMgr::GetInstance()->AddLabelToReset(avatarPath, icon_label);
-                //先加载默认的
-                QPixmap pixmap(":/res/head_1.jpg");
-                QPixmap scaledPixmap = pixmap.scaled(icon_label->size(),
-                    Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
-                icon_label->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
-                icon_label->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
-
-                //判断是否正在下载
-                bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
-                if (is_loading) {
-                    qWarning() << "正在下载: " << file_name;
-                }
-                else {
-                    //发送请求获取资源
-                    auto download_info = std::make_shared<DownloadInfo>();
-                    download_info->_name = file_name;
-                    download_info->_current_size = 0;
-                    download_info->_seq = 1;
-                    download_info->_total_size = 0;
-                    download_info->_client_path = avatarPath;
-                    //添加文件到管理者
-                    UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
-                    //发送消息
-                    FileTcpMgr::GetInstance()->SendDownloadInfo(download_info);
-                }
+                LoadHeadIcon(avatarPath, icon_label, file_name, "self_icon");
             }
         }
         else {
             qWarning() << "头像存储目录不存在：" << avatarsDir.path();
+            //创建目录
+            avatarsDir.mkpath(".");
+            auto icon_label = pChatItem->getIconLabel();
+            QString avatarPath = avatarsDir.filePath(file_name);
+            LoadHeadIcon(avatarPath, icon_label, file_name, "self_icon");
         }
     }
 }
@@ -739,6 +732,7 @@ void ChatPage::on_clicked_resume(QString unique_name, TransferType transfer_type
     }
 
     if (transfer_type == TransferType::Download) {
+        FileTcpMgr::GetInstance()->ContinueDownloadFile(unique_name);
         return;
     }
 }
@@ -851,4 +845,133 @@ void ChatPage::clearItems()
     ui->chat_data_list->removeAllItem();
     _unrsp_item_map.clear();
     _base_item_map.clear();
+}
+
+
+void ChatPage::AppendOtherMsg(std::shared_ptr<ChatDataBase> msg) {
+    auto self_info = UserMgr::GetInstance()->GetUserInfo();
+    ChatRole role;
+    if (msg->GetSendUid() == self_info->_uid) {
+        role = ChatRole::Self;
+        ChatItemBase* pChatItem = new ChatItemBase(role);
+
+        pChatItem->setUserName(self_info->_name);
+        SetSelfIcon(pChatItem, self_info->_icon);
+        QWidget* pBubble = nullptr;
+        if (msg->GetMsgType() == ChatMsgType::TEXT) {
+            pBubble = new TextBubble(role, msg->GetMsgContent());
+        }
+        else if (msg->GetMsgType() == ChatMsgType::PIC) {
+            auto img_msg = dynamic_pointer_cast<ImgChatData>(msg);
+            auto pic_bubble = new PictureBubble(img_msg->_msg_info->_preview_pix, role, img_msg->_msg_info->_total_size);
+            pic_bubble->setMsgInfo(img_msg->_msg_info);
+            pBubble = pic_bubble;
+            //连接暂停和恢复信号
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::pauseRequested,
+                    this, &ChatPage::on_clicked_paused);
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::resumeRequested,
+                    this, &ChatPage::on_clicked_resume);
+        }
+
+        pChatItem->setWidget(pBubble);
+        auto status = msg->GetStatus();
+        pChatItem->setStatus(status);
+        ui->chat_data_list->appendChatItem(pChatItem);
+        _base_item_map[msg->GetMsgId()] = pChatItem;
+    }
+    else {
+        role = ChatRole::Other;
+        ChatItemBase* pChatItem = new ChatItemBase(role);
+        auto friend_info = UserMgr::GetInstance()->GetFriendById(msg->GetSendUid());
+        if (friend_info == nullptr) {
+            return;
+        }
+        pChatItem->setUserName(friend_info->_name);
+
+        // 使用正则表达式检查是否是默认头像
+        QRegularExpression regex("^:/res/head_(\\d+)\\.jpg$");
+        QRegularExpressionMatch match = regex.match(friend_info->_icon);
+        if (match.hasMatch()) {
+            pChatItem->setUserIcon(QPixmap(friend_info->_icon));
+        }
+        else {
+            // 如果是用户上传的头像，获取存储目录
+            QString storageDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+            auto uid = UserMgr::GetInstance()->GetUid();
+            QDir avatarsDir(storageDir + "/user/" + QString::number(uid) + "/avatars");
+            auto file_name = QFileInfo(self_info->_icon).fileName();
+            // 确保目录存在
+            if (avatarsDir.exists()) {
+                QString avatarPath = avatarsDir.filePath(file_name); // 获取上传头像的完整路径
+                QPixmap pixmap(avatarPath); // 加载上传的头像图片
+                if (!pixmap.isNull()) {
+                    pChatItem->setUserIcon(pixmap);
+                }
+                else {
+                    qWarning() << "无法加载上传的头像：" << avatarPath;
+                    auto icon_label = pChatItem->getIconLabel();
+                    LoadHeadIcon(avatarPath, icon_label, file_name, "self_icon");
+                }
+            }
+            else {
+                qWarning() << "头像存储目录不存在：" << avatarsDir.path();
+                //创建目录
+                avatarsDir.mkpath(".");
+                auto icon_label = pChatItem->getIconLabel();
+                QString avatarPath = avatarsDir.filePath(file_name);
+                LoadHeadIcon(avatarPath, icon_label, file_name, "self_icon");
+            }
+        }
+
+        QWidget* pBubble = nullptr;
+        if (msg->GetMsgType() == ChatMsgType::TEXT) {
+            pBubble = new TextBubble(role, msg->GetMsgContent());
+        }
+        else if (msg->GetMsgType() == ChatMsgType::PIC) {
+            auto img_msg = dynamic_pointer_cast<ImgChatData>(msg);
+            auto pic_bubble = new PictureBubble(img_msg->_msg_info->_preview_pix, role, img_msg->_msg_info->_total_size);
+            pic_bubble->setMsgInfo(img_msg->_msg_info);
+            pBubble = pic_bubble;
+            //连接暂停和恢复信号
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::pauseRequested,
+                    this, &ChatPage::on_clicked_paused);
+            connect(dynamic_cast<PictureBubble*>(pBubble), &PictureBubble::resumeRequested,
+                    this, &ChatPage::on_clicked_resume);
+        }
+        pChatItem->setWidget(pBubble);
+        auto status = msg->GetStatus();
+        pChatItem->setStatus(status);
+        ui->chat_data_list->appendChatItem(pChatItem);
+        _base_item_map[msg->GetMsgId()] = pChatItem;
+    }
+}
+
+
+void ChatPage::LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name, QString req_type) {
+    UserMgr::GetInstance()->AddLabelToReset(avatarPath, icon_label);
+    //先加载默认的
+    QPixmap pixmap(":/res/head_1.jpg");
+    QPixmap scaledPixmap = pixmap.scaled(icon_label->size(),
+                                         Qt::KeepAspectRatio, Qt::SmoothTransformation); // 将图片缩放到label的大小
+    icon_label->setPixmap(scaledPixmap); // 将缩放后的图片设置到QLabel上
+    icon_label->setScaledContents(true); // 设置QLabel自动缩放图片内容以适应大小
+
+    //判断是否正在下载
+    bool is_loading = UserMgr::GetInstance()->IsDownLoading(file_name);
+    if (is_loading) {
+        qWarning() << "正在下载: " << file_name;
+    }
+    else {
+        //发送请求获取资源
+        auto download_info = std::make_shared<DownloadInfo>();
+        download_info->_name = file_name;
+        download_info->_current_size = 0;
+        download_info->_seq = 1;
+        download_info->_total_size = 0;
+        download_info->_client_path = avatarPath;
+        //添加文件到管理者
+        UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
+        //发送消息
+        FileTcpMgr::GetInstance()->SendDownloadInfo(download_info, req_type);
+    }
 }

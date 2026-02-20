@@ -11,8 +11,10 @@
 #include <memory>
 #include <queue>
 #include <mutex>
-#include <chrono>
 #include "message.pb.h"
+#include "FileInfo.h"
+#include <chrono>
+
 using message::AddFriendMsg;
 using message::TextChatData;
 
@@ -261,6 +263,10 @@ public:
 	std::shared_ptr<PageResult> LoadChatMsg(int threadId, int lastId, int pageSize);
 	bool AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas);
 	bool UpdateHeadInfo(int uid, const std::string& icon);
+	bool UpdateUploadStatus(int chat_message_id);
+	std::shared_ptr<ChatImgInfo> GetImgInfoByMsgId(int message_id);
+	std::shared_ptr<ChatMessage> GetChatMsgById(int message_id);
+
 private:
 	std::unique_ptr<MySqlPool> pool_;
 };

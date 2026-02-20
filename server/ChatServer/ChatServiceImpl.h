@@ -47,6 +47,8 @@ public:
 	Status NotifyKickUser(::grpc::ServerContext* context,
 		const KickUserReq* request, KickUserRsp* response) override;
 
+	Status NotifyChatImgMsg(::grpc::ServerContext* context, const ::message::NotifyChatImgReq* request, ::message::NotifyChatImgRsp* response);
+
 	void RegisterServer(std::shared_ptr<CServer> pServer);
 private:
 	std::shared_ptr<CServer> _p_server;

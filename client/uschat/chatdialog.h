@@ -42,6 +42,7 @@ private:
     void UpdateLastMsg();
 
 
+    void LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name,QString req_type);
     Ui::ChatDialog *ui;
     bool _b_loading;
     QList<StateWidget*> _lb_list;
@@ -84,7 +85,7 @@ public slots:
     void slot_create_private_chat(int uid, int other_id, int thread_id);
 
     void slot_load_chat_msg(int thread_id, int msg_id, bool load_more,
-        std::vector<std::shared_ptr<TextChatData>> msglists);
+        std::vector<std::shared_ptr<ChatDataBase>> msglists);
 
     void slot_add_chat_msg(int thread_id, std::vector<std::shared_ptr<TextChatData>> msglists);
     void slot_add_img_msg(int thread_id, std::shared_ptr<ImgChatData> img_msg);
@@ -99,6 +100,10 @@ public slots:
     void slot_ai_load_chat(ReqId id, QString res, ErrorCodes err);
 
     // void slot_change_ai_mode_requested(int ai_model_id);
+
+    void slot_img_chat_msg(std::shared_ptr<ImgChatData> imgchat);
+    void slot_update_download_progress(std::shared_ptr<MsgInfo>);
+    void slot_reset_head();
 private slots:
 
     void on_add_btn_clicked();

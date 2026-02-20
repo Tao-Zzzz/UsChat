@@ -27,7 +27,9 @@ public:
    ~ TcpMgr();
     void CloseConnection();
     void SendData(ReqId reqId, QByteArray data);
-
+    void CreatePlaceholderImgMsgL(QString img_path_str, QString msg_content,
+                                  int msg_id, int thread_id, int send_uid, int recv_id, int status, QString chat_time,
+                                  std::vector<std::shared_ptr<ChatDataBase>> &chat_datas);
 private:
     friend class Singleton<TcpMgr>;
     TcpMgr();
@@ -76,11 +78,12 @@ signals:
         std::vector<std::shared_ptr<ChatThreadInfo>> chat_list);
     void sig_create_private_chat(int uid, int other_id, int thread_id);
     void sig_load_chat_msg(int thread_id, int message_id, bool load_more,
-        std::vector<std::shared_ptr<TextChatData>> msg_list);
+        std::vector<std::shared_ptr<ChatDataBase>> msg_list);
 
     void sig_chat_msg_rsp(int thread_id, std::vector<std::shared_ptr<TextChatData>> msg_list);
     void sig_chat_img_rsp(int thread_id, std::shared_ptr<ImgChatData> msg_list);
     void sig_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
+    void sig_img_chat_msg(std::shared_ptr<ImgChatData> img_chat_data_ptr);
 };
 
 #endif // TCPMGR_H

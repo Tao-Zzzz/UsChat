@@ -33,5 +33,11 @@ start "ChatServer" /d "ChatServer\x64\Debug" "ChatServer.exe"
 echo 启动 ChatServer2...
 start "ChatServer2" /d "ChatServer2\x64\Debug" "ChatServer.exe"
 
+:: --- 启动 AIServer (Python/FastAPI) ---
+echo 启动 AIServer...
+:: 切换到你的 Python 项目代码所在的实际目录 (请修改下方路径)
+cd /d "D:\Code\Project\Cpp_\llfcchat-Season_2\server\AiServer" 
+start "AIServer" "E:/Library/Python313/python.exe" -m uvicorn main:app --reload --port 8070
+
 echo 所有服务器已尝试启动。
 pause

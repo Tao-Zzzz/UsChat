@@ -313,5 +313,23 @@ void CSession::DealExceptionSession()
 	RedisMgr::GetInstance()->Del(USER_SESSION_PREFIX + uid_str);
 	//清除用户登录信息
 	RedisMgr::GetInstance()->Del(USERIPPREFIX + uid_str);
+	//清除用户token信息
+	std::string token_key = USERTOKENPREFIX + uid_str;
+	RedisMgr::GetInstance()->Del(token_key);
 }
 
+void CSession::NotifyChatImgRecv(const ::message::NotifyChatImgReq* request) {
+	Json::Value  rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["message_id"] = request->message_id();
+	rtvalue["sender_id"] = request->from_uid();
+	rtvalue["receiver_id"] = request->to_uid();
+	rtvalue["img_name"] = request->file_name();
+	rtvalue["total_size"] = std::to_string(request->total_size());
+	rtvalue["thread_id"] = request->thread_id();
+
+	std::string return_str = rtvalue.toStyledString();
+	//通知图片聊天信息
+	Send(return_str, ID_NOTIFY_IMG_CHAT_MSG_REQ);
+	return;
+}

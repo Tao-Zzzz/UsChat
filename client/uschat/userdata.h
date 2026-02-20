@@ -143,12 +143,13 @@ Q_DECLARE_METATYPE(std::shared_ptr<UserInfo>)
 
 class ChatDataBase {
 public:
+    ChatDataBase() = default;
     ChatDataBase(int msg_id, int thread_id, ChatFormType form_type, ChatMsgType msg_type,
-        QString content,int _send_uid, int status, QString chat_time );
+                 QString content,int _send_uid, int status, QString chat_time );
     ChatDataBase(QString unique_id, int thread_id, ChatFormType form_type, ChatMsgType msg_type,
-        QString content, int send_uid, int status, QString chat_time);
+                 QString content, int send_uid, int status, QString chat_time);
     ChatDataBase(int msg_id, QString unique_id, int thread_id, ChatFormType form_type, ChatMsgType msg_type,
-        QString content, int send_uid, int status, QString chat_time);
+                 QString content, int send_uid, int status, QString chat_time);
     int GetMsgId() { return _msg_id; }
     int GetThreadId() { return _thread_id; }
     ChatFormType GetFormType() { return _form_type; }
@@ -162,7 +163,7 @@ public:
     void SetMsgId(int msg_id) { _msg_id = msg_id; }
     void SetStatus(int status) { _status = status; }
     virtual ~ChatDataBase() {}  // 添加虚析构函数
-private:
+protected:
     //客户端本地唯一标识
     QString _unique_id;
     //消息id
@@ -181,6 +182,8 @@ private:
     //聊天时间
     QString _chat_time;
 };
+
+Q_DECLARE_METATYPE(std::vector<std::shared_ptr<ChatDataBase>>)
 
 class TextChatData : public ChatDataBase {
 public:
@@ -213,22 +216,24 @@ public:
 
 Q_DECLARE_METATYPE(std::vector<std::shared_ptr<TextChatData>>)
 
+
 class ImgChatData : public ChatDataBase {
 public:
-    ImgChatData(std::shared_ptr<MsgInfo> msg_info, QString unique_id, 
-        int thread_id, ChatFormType form_type, ChatMsgType msg_type,
-        int send_uid, int status, QString chat_time = ""): 
+    ImgChatData(std::shared_ptr<MsgInfo> msg_info, QString unique_id,
+                int thread_id, ChatFormType form_type, ChatMsgType msg_type,
+                int send_uid, int status, QString chat_time = ""):
         ChatDataBase(unique_id,thread_id, form_type, msg_type, msg_info->_text_or_url,
-            send_uid, status, chat_time), _msg_info(msg_info){
-
+                     send_uid, status, chat_time), _msg_info(msg_info){
+        _msg_id = _msg_info->_msg_id;
     }
-   
+
     ~ImgChatData() override {}
 
     std::shared_ptr<MsgInfo> _msg_info;
 };
 
 Q_DECLARE_METATYPE(std::shared_ptr<ImgChatData>)
+
 
 struct GroupInfo{
     int _role;
