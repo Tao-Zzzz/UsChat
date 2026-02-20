@@ -12,7 +12,8 @@ class AIThread(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted = Column(Boolean, default=False)
-
+    summary = Column(Text)            # 新增
+    summary_tokens = Column(Integer)  # 新增
 
 class AIMessage(Base):
     __tablename__ = "ai_message"
@@ -48,3 +49,5 @@ class AIModel(Base):
     updated_at = Column(DateTime,
                         default=datetime.utcnow,
                         onupdate=datetime.utcnow)
+    supports_system = Column(Boolean, default=True)  # 新增
+    context_length = Column(Integer, default=8192)   # 新增
