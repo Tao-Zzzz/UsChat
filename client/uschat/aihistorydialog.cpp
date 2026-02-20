@@ -41,10 +41,27 @@ static QString FormatTime(const QString& isoTime)
 
 void AiHistoryDialog::loadHistoryList()
 {
-    struct Item {
-        QString name;
-        QString date;
-    };
+
+    //创建新会话的选项
+    if(AIMgr::GetInstance()->GetCurAiThread() != -1){
+        auto* item = new QListWidgetItem(_listWidget);
+        item->setSizeHint(QSize(0, 48));
+
+        // 时间格式化（下面单独解释）
+        QString showTime = "";
+
+        auto* widget = new AiHistoryItem("新会话", showTime, this);
+        _listWidget->setItemWidget(item, widget);
+
+        connect(widget, &AiHistoryItem::sig_clicked,
+                this, [this]() {
+
+
+                    emit sig_history_selected(-1);
+                    accept();
+                });
+    }
+
 
     auto history_datas = AIMgr::GetInstance()->GetAllAiHistoryChat();
 
