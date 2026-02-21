@@ -1060,7 +1060,6 @@ void LogicSystem::LoadChatMsg(std::shared_ptr<CSession> session,
 
 	rtvalue["last_message_id"] = res->next_cursor;
 	rtvalue["load_more"] = res->load_more;
-	rtvalue["thread_type"] = res->thread_type;
 	for (auto& chat : res->messages) {
 		Json::Value  chat_data;
 		chat_data["sender"] = chat.sender_id;
@@ -1070,6 +1069,8 @@ void LogicSystem::LoadChatMsg(std::shared_ptr<CSession> session,
 		chat_data["msg_content"] = chat.content;
 		chat_data["chat_time"] = chat.chat_time;
 		chat_data["status"] = chat.status;
+		chat_data["msg_type"] = chat.msg_type;
+		chat_data["receiver"] = chat.recv_id;
 		rtvalue["chat_datas"].append(chat_data);
 	}
 

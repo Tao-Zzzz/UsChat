@@ -67,3 +67,10 @@ struct PageResult {
 	int next_cursor;  // 本页最后一条message_id，用于下次查询
 	std::string thread_type;
 };
+
+enum class ChatMsgType {
+	TEXT = 0,
+	PIC = 1,
+	VIDEO = 2,
+	FILE = 3
+};

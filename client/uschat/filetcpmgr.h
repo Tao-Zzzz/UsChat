@@ -24,7 +24,7 @@ private:
 };
 
 class FileTcpMgr : public QObject, public Singleton<FileTcpMgr>,
-        public std::enable_shared_from_this<FileTcpMgr>
+                   public std::enable_shared_from_this<FileTcpMgr>
 {
     Q_OBJECT
 public:
@@ -32,11 +32,11 @@ public:
     ~FileTcpMgr();
     void SendData(ReqId reqId, QByteArray data);
     void CloseConnection();
-    void SendDownloadInfo(std::shared_ptr<DownloadInfo> download, QString req_type);
-    void BatchSend(std::shared_ptr<MsgInfo> msg_info);
+    void SendDownloadInfo(std::shared_ptr<DownloadInfo> download,QString req_type);
+    void BatchSend(std::shared_ptr<MsgInfo> msg_info, int sender, int receiver);
     void ContinueUploadFile(QString unique_name);
     void ContinueDownloadFile(QString unique_name);
-
+    void CopyFile(QString src_path, QString dst_path, QString dst_dir);
 private:
     void initHandlers();
     explicit FileTcpMgr(QObject *parent = nullptr);
@@ -64,15 +64,15 @@ private:
     int _cwnd_size;
 signals:
     void sig_close();
-     void sig_send_data(ReqId reqId, QByteArray data);
-     void sig_con_success(bool bsuccess);
-     void sig_connection_closed();
-     void sig_reset_label_icon(QString path);
-     void sig_update_upload_progress(std::shared_ptr<MsgInfo>);
-     void sig_continue_upload_file(QString unique_name);
-     void sig_continue_download_file(QString unique_name);
-     void sig_update_download_progress(std::shared_ptr<MsgInfo>);
-     void sig_download_finish(std::shared_ptr<MsgInfo>,QString file_path);
+    void sig_send_data(ReqId reqId, QByteArray data);
+    void sig_con_success(bool bsuccess);
+    void sig_connection_closed();
+    void sig_reset_label_icon(QString path);
+    void sig_update_upload_progress(std::shared_ptr<MsgInfo>);
+    void sig_continue_upload_file(QString unique_name);
+    void sig_continue_download_file(QString unique_name);
+    void sig_update_download_progress(std::shared_ptr<MsgInfo>);
+    void sig_download_finish(std::shared_ptr<MsgInfo>,QString file_path);
 public slots:
     void slot_send_data(ReqId reqId, QByteArray data);
     void slot_tcp_connect(std::shared_ptr<ServerInfo> si);

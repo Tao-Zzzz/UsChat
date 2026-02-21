@@ -1078,11 +1078,7 @@ bool MysqlDao::CreatePrivateChat(int user1_id, int user2_id, int& thread_id)
 //	return nullptr;
 //
 //}
-
-std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(
-	int thread_id,
-	int last_message_id,
-	int page_size)
+std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_message_id, int page_size)
 {
 	auto con = pool_->getConnection();
 	if (!con) {
@@ -1093,51 +1089,33 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(
 		});
 	auto& conn = con->_con;
 
+
 	try {
 		auto page_res = std::make_shared<PageResult>();
 		page_res->load_more = false;
-		page_res->next_cursor = last_message_id;
-
+		// SQL：多取一条，用于判断是否还有更多
 		const std::string sql = R"(
-            SELECT 
-                m.message_id,
-                m.thread_id,
-                m.sender_id,
-                m.recv_id,
-                m.content,
-                m.created_at,
-                m.updated_at,
-                m.status,
-                t.type AS thread_type
-            FROM chat_message m
-            JOIN chat_thread t
-              ON m.thread_id = t.id
-            WHERE m.thread_id = ?
-              AND m.message_id > ?
-            ORDER BY m.message_id ASC
-            LIMIT ?
-        )";
+        SELECT message_id, thread_id, sender_id, recv_id, content,
+               created_at, updated_at, status,msg_type
+        FROM chat_message
+        WHERE thread_id = ?
+          AND message_id > ?
+        ORDER BY message_id ASC
+        LIMIT ?
+		)";
 
 		uint32_t fetch_limit = page_size + 1;
 		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
 			conn->prepareStatement(sql)
 		);
-
 		pstmt->setInt(1, thread_id);
 		pstmt->setInt(2, last_message_id);
 		pstmt->setInt(3, fetch_limit);
 
 		auto rs = std::unique_ptr<sql::ResultSet>(pstmt->executeQuery());
 
-		bool first_row = true;
-
+		// 读取 fetch_limit 条记录
 		while (rs->next()) {
-			// thread_type 只需要读一次
-			if (first_row) {
-				page_res->thread_type = rs->getString("thread_type");
-				first_row = false;
-			}
-
 			ChatMessage msg;
 			msg.message_id = rs->getUInt64("message_id");
 			msg.thread_id = rs->getUInt64("thread_id");
@@ -1146,21 +1124,22 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(
 			msg.content = rs->getString("content");
 			msg.chat_time = rs->getString("created_at");
 			msg.status = rs->getInt("status");
-
+			msg.msg_type = rs->getInt("msg_type");
 			page_res->messages.push_back(std::move(msg));
 		}
-
-		// 多取一条，用于判断是否还有更多
-		if ((int)page_res->messages.size() > page_size) {
-			page_res->load_more = true;
+		if (page_res->messages.size() > page_size) {
 			page_res->messages.pop_back();
+			page_res->load_more = true;
 		}
 
+		// 【关键修复】增加空检查
 		if (!page_res->messages.empty()) {
-			page_res->next_cursor =
-				page_res->messages.back().message_id;
+			page_res->next_cursor = page_res->messages.back().message_id;
 		}
-
+		else {
+			// 如果没有消息，next_cursor 保持原样或设为传入的 last_message_id
+			page_res->next_cursor = last_message_id;
+		}
 		return page_res;
 	}
 	catch (sql::SQLException& e) {
@@ -1168,6 +1147,8 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(
 		conn->rollback();
 		return nullptr;
 	}
+	return nullptr;
+
 }
 
 
