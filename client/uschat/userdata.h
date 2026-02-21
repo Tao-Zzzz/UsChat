@@ -318,6 +318,7 @@ public:
     std::vector<int> GetGroupMemberUids();
 
     void ClearChatMsg();
+    void UpdateImgChatStatusByMsgId(int msg_id);
 
 private:
     //如果是私聊，则为对方的id；如果是群聊，则为0

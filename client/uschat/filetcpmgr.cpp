@@ -985,7 +985,7 @@ void FileTcpMgr::BatchSend(std::shared_ptr<MsgInfo> msg_info, int sender, int re
         auto send_data = doc.toJson();
         //直接发送，其实是放入tcpmgr发送队列
 
-        qDebug() << "file handle seq is " << msg_info->_seq << " data is " << sendObj;
+        // qDebug() << "file handle seq is " << msg_info->_seq << " data is " << sendObj;
 
         SendData(ID_IMG_CHAT_UPLOAD_REQ, send_data);
         _cwnd_size++;

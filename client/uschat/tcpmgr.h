@@ -84,6 +84,7 @@ signals:
     void sig_chat_img_rsp(int thread_id, std::shared_ptr<ImgChatData> msg_list);
     void sig_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
     void sig_img_chat_msg(std::shared_ptr<ImgChatData> img_chat_data_ptr);
+    void sig_chat_img_upload_finish_rsp(int thread_id, int msg_id);
 };
 
 #endif // TCPMGR_H

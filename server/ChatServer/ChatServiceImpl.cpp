@@ -290,6 +290,20 @@ Status ChatServiceImpl::NotifyChatImgMsg(::grpc::ServerContext* context, const :
 
 	//在内存中则直接发送通知对方
 	session->NotifyChatImgRecv(request);
+
+
+	//查找用户是否在本服务器
+	auto from_uid = request->from_uid();
+	auto from_session = UserMgr::GetInstance()->GetSession(from_uid);
+
+	//用户不在内存中则直接返回
+	if (from_session == nullptr) {
+		//这里只是返回1个状态
+		return Status::OK;
+	}
+
+	//在内存中则直接发送通知对方
+	session->NotifySendClientChatImgRecv(request);
 	//这里只是返回1个状态
 	return Status::OK;
 }

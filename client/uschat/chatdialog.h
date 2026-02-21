@@ -104,6 +104,9 @@ public slots:
     void slot_img_chat_msg(std::shared_ptr<ImgChatData> imgchat);
     void slot_update_download_progress(std::shared_ptr<MsgInfo>);
     void slot_reset_head();
+
+    void slot_download_finish(std::shared_ptr<MsgInfo> msg_info, QString file_path);
+    void slot_chat_img_upload_finish(int thread_id, int msg_id);
 private slots:
 
     void on_add_btn_clicked();

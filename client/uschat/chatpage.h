@@ -31,6 +31,8 @@ public:
     void clearItems();
     void AppendOtherMsg(std::shared_ptr<ChatDataBase> msg);
     void LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name, QString req_type);
+    void DownloadFileFinished(std::shared_ptr<MsgInfo> msg_info, QString file_path);
+    void UpdateImgChatFinshStatusById(int msg_id);
 protected:
     void paintEvent(QPaintEvent *event);
 

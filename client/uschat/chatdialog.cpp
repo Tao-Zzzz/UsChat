@@ -205,8 +205,16 @@ ChatDialog::ChatDialog(QWidget* parent) :
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_img_chat_msg,
             this, &ChatDialog::slot_img_chat_msg);
 
+    // 下载进度
     connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_update_download_progress,
             this, &ChatDialog::slot_update_download_progress);
+
+    // 接收端下载完成
+    connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_download_finish,
+            this, &ChatDialog::slot_download_finish);
+
+    // 发送端上传完成
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_chat_img_upload_finish_rsp, this, &ChatDialog::slot_chat_img_upload_finish);
 }
 
 ChatDialog::~ChatDialog()
@@ -1540,4 +1548,41 @@ void ChatDialog::LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString fi
         //发送消息
         FileTcpMgr::GetInstance()->SendDownloadInfo(download_info, req_type);
     }
+}
+
+
+void ChatDialog::slot_download_finish(std::shared_ptr<MsgInfo> msg_info, QString file_path) {
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(msg_info->_thread_id);
+    if (chat_data == nullptr) {
+        return;
+    }
+
+    //更新消息，其实不用更新，都是共享msg_info的一块内存，这里为了安全还是再次更新下
+
+    chat_data->UpdateProgress(msg_info);
+
+    if (_cur_chat_thread_id != msg_info->_thread_id) {
+        return;
+    }
+
+
+    //更新聊天界面信息
+    ui->chat_page->DownloadFileFinished(msg_info, file_path);
+}
+
+void ChatDialog::slot_chat_img_upload_finish(int thread_id, int msg_id){
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(thread_id);
+    if (chat_data == nullptr) {
+        return;
+    }
+
+    auto msg_data = chat_data->GetChatDataBase(msg_id);
+    msg_data->SetStatus(MsgStatus::READED);
+
+    if (_cur_chat_thread_id != thread_id) {
+        return;
+    }
+
+    //更新聊天界面信息
+    ui->chat_page->UpdateImgChatFinshStatusById(msg_id);
 }

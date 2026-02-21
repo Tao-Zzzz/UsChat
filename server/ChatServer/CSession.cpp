@@ -333,3 +333,15 @@ void CSession::NotifyChatImgRecv(const ::message::NotifyChatImgReq* request) {
 	Send(return_str, ID_NOTIFY_IMG_CHAT_MSG_REQ);
 	return;
 }
+
+void CSession::NotifySendClientChatImgRecv(const ::message::NotifyChatImgReq* request) {
+	Json::Value  rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["message_id"] = request->message_id();
+	rtvalue["thread_id"] = request->thread_id();
+
+	std::string return_str = rtvalue.toStyledString();
+	//通知图片聊天信息
+	Send(return_str, ID_NOTIFY_IMG_CHAT_MSG_REQ);
+	return;
+}

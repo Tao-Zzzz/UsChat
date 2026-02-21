@@ -266,6 +266,18 @@ void ChatPage::UpdateImgChatStatus(std::shared_ptr<ImgChatData> msg) {
     pic_bubble->setMsgInfo(msg->_msg_info);
 }
 
+void ChatPage::UpdateImgChatFinshStatusById(int msg_id) {
+    auto iter = _base_item_map.find(msg_id);
+    //没找到则直接返回
+    if (iter == _base_item_map.end()) {
+        return;
+    }
+
+    iter.value()->setStatus(MsgStatus::READED);
+    _base_item_map[msg_id] = iter.value();
+
+}
+
 void ChatPage::UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info) {
     auto iter = _base_item_map.find(msg_info->_msg_id);
     if (iter == _base_item_map.end()) {
@@ -973,5 +985,26 @@ void ChatPage::LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file
         UserMgr::GetInstance()->AddDownloadFile(file_name, download_info);
         //发送消息
         FileTcpMgr::GetInstance()->SendDownloadInfo(download_info, req_type);
+    }
+}
+
+void ChatPage::DownloadFileFinished(std::shared_ptr<MsgInfo> msg_info, QString file_path) {
+    auto iter = _base_item_map.find(msg_info->_msg_id);
+    if (iter == _base_item_map.end()) {
+        return;
+    }
+
+    if (msg_info->_msg_type == MsgType::IMG_MSG) {
+        auto bubble = iter.value()->getBubble();
+        PictureBubble* pic_bubble = dynamic_cast<PictureBubble*>(bubble);
+        pic_bubble->setDownloadFinish(msg_info, file_path);
+        auto chat_data_base = _chat_data->GetChatDataBase(msg_info->_msg_id);
+        if (chat_data_base == nullptr) {
+            return;
+        }
+        auto img_data = dynamic_pointer_cast<ImgChatData>(chat_data_base);
+        img_data->_msg_info->_preview_pix =  QPixmap(file_path);
+        img_data->_msg_info->_transfer_state = TransferState::Completed;
+        img_data->_msg_info->_current_size = img_data->_msg_info->_total_size;
     }
 }

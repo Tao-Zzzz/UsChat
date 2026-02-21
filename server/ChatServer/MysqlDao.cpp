@@ -1152,6 +1152,7 @@ std::shared_ptr<PageResult> MysqlDao::LoadChatMsg(int thread_id, int last_messag
 }
 
 
+
 bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas) {
 	auto con = pool_->getConnection();
 	if (!con) {
@@ -1169,8 +1170,8 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
 			conn->prepareStatement(
 				"INSERT INTO chat_message "
-				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
-				"VALUES (?, ?, ?, ?, ?, ?, ?)"
+				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status,msg_type) "
+				"VALUES (?, ?, ?, ?, ?, ?, ?,?)"
 			)
 		);
 
@@ -1185,6 +1186,7 @@ bool MysqlDao::AddChatMsg(std::vector<std::shared_ptr<ChatMessage>>& chat_datas)
 			pstmt->setString(6, msg->chat_time);  // updated_at
 
 			pstmt->setInt(7, msg->status);
+			pstmt->setInt(8, msg->msg_type);
 			pstmt->executeUpdate();
 
 			// 2. 取 LAST_INSERT_ID()
@@ -1230,10 +1232,10 @@ bool MysqlDao::AddChatMsg(std::shared_ptr<ChatMessage> chat_data) {
 		auto pstmt = std::unique_ptr<sql::PreparedStatement>(
 			conn->prepareStatement(
 				"INSERT INTO chat_message "
-				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status) "
-				"VALUES (?, ?, ?, ?, ?, ?, ?)"
+				"(thread_id, sender_id, recv_id, content, created_at, updated_at, status,msg_type) "
+				"VALUES (?, ?, ?, ?, ?, ?, ?,?)"
 			)
-			);
+		);
 
 		// 绑定参数
 		pstmt->setUInt64(1, chat_data->thread_id);
@@ -1243,6 +1245,7 @@ bool MysqlDao::AddChatMsg(std::shared_ptr<ChatMessage> chat_data) {
 		pstmt->setString(5, chat_data->chat_time);  // created_at
 		pstmt->setString(6, chat_data->chat_time);  // updated_at
 		pstmt->setInt(7, chat_data->status);
+		pstmt->setInt(8, chat_data->msg_type);
 
 		pstmt->executeUpdate();
 
