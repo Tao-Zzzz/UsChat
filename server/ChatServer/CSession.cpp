@@ -342,6 +342,6 @@ void CSession::NotifySendClientChatImgRecv(const ::message::NotifyChatImgReq* re
 
 	std::string return_str = rtvalue.toStyledString();
 	//通知图片聊天信息
-	Send(return_str, ID_NOTIFY_IMG_CHAT_MSG_REQ);
+	Send(return_str, ID_NOTIFY_SEND_CLIENT_IMG_UPLOAD_FINISH_RSP);
 	return;
 }

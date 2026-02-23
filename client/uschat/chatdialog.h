@@ -91,6 +91,7 @@ public slots:
     void slot_add_img_msg(int thread_id, std::shared_ptr<ImgChatData> img_msg);
     void slot_reset_icon(QString path);
     void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info);
+    void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info, QString file_path);
     void slot_start_create_group();
     void slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
 
@@ -102,7 +103,7 @@ public slots:
     // void slot_change_ai_mode_requested(int ai_model_id);
 
     void slot_img_chat_msg(std::shared_ptr<ImgChatData> imgchat);
-    void slot_update_download_progress(std::shared_ptr<MsgInfo>);
+    void slot_update_download_progress(std::shared_ptr<MsgInfo> msg_info);
     void slot_reset_head();
 
     void slot_download_finish(std::shared_ptr<MsgInfo> msg_info, QString file_path);

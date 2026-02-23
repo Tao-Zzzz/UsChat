@@ -69,6 +69,7 @@ signals:
     void sig_connection_closed();
     void sig_reset_label_icon(QString path);
     void sig_update_upload_progress(std::shared_ptr<MsgInfo>);
+    void sig_update_upload_progress(std::shared_ptr<MsgInfo>, QString file_path);
     void sig_continue_upload_file(QString unique_name);
     void sig_continue_download_file(QString unique_name);
     void sig_update_download_progress(std::shared_ptr<MsgInfo>);

@@ -303,7 +303,7 @@ Status ChatServiceImpl::NotifyChatImgMsg(::grpc::ServerContext* context, const :
 	}
 
 	//在内存中则直接发送通知对方
-	session->NotifySendClientChatImgRecv(request);
+	from_session->NotifySendClientChatImgRecv(request);
 	//这里只是返回1个状态
 	return Status::OK;
 }

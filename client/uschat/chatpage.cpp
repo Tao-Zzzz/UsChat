@@ -112,12 +112,14 @@ void ChatPage::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
     }
 
     for (auto& msg : chat_data->GetMsgUnRspRef()) {
-        AppendChatMsg(msg);
+        AppendChatMsg(msg,false);
     }
 }
 
 void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg, bool rsp)
 {
+    // qDebug() << msg;
+
     auto self_info = UserMgr::GetInstance()->GetUserInfo();
     ChatRole role;
     if (msg->GetSendUid() == self_info->_uid) {
@@ -128,11 +130,13 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg, bool rsp)
         pChatItem->setUserName(self_info->_name);
         SetSelfIcon(pChatItem, self_info->_icon);
         QWidget* pBubble = nullptr;
-        // 如果是文字,则有一个文字专属的bubble
+        // 如果是文字,则有一个文字专属的bubbl
+        qDebug() << "msg type:" << (int)msg->GetMsgType();
         if (msg->GetMsgType() == ChatMsgType::TEXT) {
             pBubble = new TextBubble(role, msg->GetMsgContent());
         }else if (msg->GetMsgType() == ChatMsgType::PIC) {
             auto img_msg = dynamic_pointer_cast<ImgChatData>(msg);
+            qDebug() << "构造气泡时的路径:" << img_msg->_msg_info->_preview_pix;
             auto pic_bubble =  new PictureBubble(img_msg->_msg_info->_preview_pix, role, img_msg->_msg_info->_total_size);
             pic_bubble->setMsgInfo(img_msg->_msg_info);
             pBubble = pic_bubble;
@@ -273,10 +277,13 @@ void ChatPage::UpdateImgChatFinshStatusById(int msg_id) {
         return;
     }
 
+    qDebug() << "修改图片状态为2";
     iter.value()->setStatus(MsgStatus::READED);
     _base_item_map[msg_id] = iter.value();
 
 }
+
+
 
 void ChatPage::UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info) {
     auto iter = _base_item_map.find(msg_info->_msg_id);
@@ -288,6 +295,27 @@ void ChatPage::UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info) {
         auto bubble = iter.value()->getBubble();
         PictureBubble*  pic_bubble = dynamic_cast<PictureBubble*>(bubble);
         pic_bubble->setProgress(msg_info->_rsp_size, msg_info->_total_size);
+    }
+
+}
+
+void ChatPage::UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info, QString file_path) {
+    auto iter = _base_item_map.find(msg_info->_msg_id);
+    if (iter == _base_item_map.end()) {
+        return;
+    }
+
+    if (msg_info->_msg_type == MsgType::IMG_MSG) {
+        auto bubble = iter.value()->getBubble();
+        PictureBubble*  pic_bubble = dynamic_cast<PictureBubble*>(bubble);
+        pic_bubble->setProgress(msg_info->_rsp_size, msg_info->_total_size);
+        pic_bubble->setUploadFinish(file_path);
+        auto chat_data_base = _chat_data->GetChatDataBase(msg_info->_msg_id);
+        if (chat_data_base == nullptr) {
+            return;
+        }
+        auto img_data = dynamic_pointer_cast<ImgChatData>(chat_data_base);
+        img_data->_msg_info->_preview_pix =  QPixmap(file_path);
     }
     
 }
@@ -602,7 +630,7 @@ void ChatPage::on_send_btn_clicked() {
             }
 
             auto img_msg = std::make_shared<ImgChatData>(msgList[i],uuidString, thread_id, chat_type,
-                ChatMsgType::TEXT, user_info->_uid, 0);
+                ChatMsgType::PIC, user_info->_uid, 0);
             //将未回复的消息加入到未回复列表中，以便后续处理
             _chat_data->AppendUnRspMsg(uuidString, img_msg);
             textObj["fromuid"] = user_info->_uid;

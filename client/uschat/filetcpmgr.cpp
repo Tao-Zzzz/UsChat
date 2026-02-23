@@ -497,8 +497,12 @@ void FileTcpMgr::initHandlers()
 
             CopyFile(file_info->_text_or_url,destPath, img_path_str);
             //通知界面显示
-            emit sig_update_upload_progress(file_info);
+
             UserMgr::GetInstance()->RmvTransFileByName(name);
+
+            auto SaveLocalPath = file_info->_text_or_url;
+            emit sig_update_upload_progress(file_info, SaveLocalPath);
+            qDebug() << "文件路径 :" << SaveLocalPath;
             //todo 此处添加发送其他待发送的文件
             auto free_file = UserMgr::GetInstance()->GetFreeUploadFile();
             if (free_file == nullptr) {
@@ -585,7 +589,9 @@ void FileTcpMgr::initHandlers()
             //更新已经传输的文件大小
             file_info->_rsp_size = file_info->_total_size;
             //通知界面显示
-            emit sig_update_upload_progress(file_info);
+            auto SaveLocalPath = file_info->_text_or_url;
+            emit sig_update_upload_progress(file_info, SaveLocalPath);
+            qDebug() << "文件路径 :" << SaveLocalPath;
             UserMgr::GetInstance()->RmvTransFileByName(name);
             //todo 此处添加发送其他待发送的文件
             auto free_file = UserMgr::GetInstance()->GetFreeUploadFile();
@@ -600,6 +606,7 @@ void FileTcpMgr::initHandlers()
         file_info->_rsp_size = (file_info->_last_confirmed_seq) * MAX_FILE_LEN;
 
         //发送信号，更新图片上传进度
+
         emit sig_update_upload_progress(file_info);
         //如果传输状态不为上传，则直接返回。
         if (!UserMgr::GetInstance()->TransFileIsUploading(name)) {
@@ -670,7 +677,9 @@ void FileTcpMgr::initHandlers()
             //更新已经传输的文件大小
             file_info->_rsp_size = file_info->_total_size;
             //通知界面显示
-            emit sig_update_upload_progress(file_info);
+            auto SaveLocalPath = file_info->_text_or_url;
+            emit sig_update_upload_progress(file_info, SaveLocalPath);
+            qDebug() << "文件路径 :" << SaveLocalPath;
             UserMgr::GetInstance()->RmvTransFileByName(name);
             //todo 此处添加发送其他待发送的文件
             auto free_file = UserMgr::GetInstance()->GetFreeUploadFile();
@@ -685,6 +694,7 @@ void FileTcpMgr::initHandlers()
         file_info->_rsp_size = (file_info->_last_confirmed_seq) * MAX_FILE_LEN;
 
         //发送信号，更新图片上传进度
+
         emit sig_update_upload_progress(file_info);
         //如果传输状态不为上传，则直接返回。
         if (!UserMgr::GetInstance()->TransFileIsUploading(name)) {

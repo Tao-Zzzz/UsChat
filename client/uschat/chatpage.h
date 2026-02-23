@@ -23,6 +23,7 @@ public:
     void UpdateImgChatStatus(std::shared_ptr<ImgChatData> img_msg);
     void SetSelfIcon(ChatItemBase* pChatItem, QString icon);
     void UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info);
+    void UpdateFileProgress(std::shared_ptr<MsgInfo> msg_info , QString file_path);
     void send_msg_to_ai();
     void AppendAiChatMsg(std::shared_ptr<TextChatData> msg);
     void UpdateAiChatStatus(QString unique_id, int msg_id);

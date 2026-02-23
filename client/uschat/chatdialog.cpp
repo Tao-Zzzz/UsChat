@@ -25,6 +25,9 @@
 #include "creategroupdialog.h"
 #include "httpmgr.h"
 #include "aimgr.h"
+// 或者
+#include <QtGlobal>
+#include <QObject>
 
 ChatDialog::ChatDialog(QWidget* parent) :
 	QDialog(parent),
@@ -185,8 +188,18 @@ ChatDialog::ChatDialog(QWidget* parent) :
 	//重置label icon
 	connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_reset_label_icon, this, &ChatDialog::slot_reset_icon);
 	//接收tcp返回的上传进度信息
-	connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_update_upload_progress, 
-		this, &ChatDialog::slot_update_upload_progress);
+    connect(FileTcpMgr::GetInstance().get(),
+            QOverload<std::shared_ptr<MsgInfo>>::of(&FileTcpMgr::sig_update_upload_progress),
+            this,
+            QOverload<std::shared_ptr<MsgInfo>>::of(&ChatDialog::slot_update_upload_progress));
+
+    connect(FileTcpMgr::GetInstance().get(),
+            QOverload<std::shared_ptr<MsgInfo>, QString>::of(&FileTcpMgr::sig_update_upload_progress),
+            this,
+            QOverload<std::shared_ptr<MsgInfo>, QString>::of(&ChatDialog::slot_update_upload_progress));
+
+    // connect(FileTcpMgr::GetInstance().get(), &FileTcpMgr::sig_update_upload_progress,
+    //         this, &ChatDialog::slot_update_upload_progress);
 
     //创建群聊
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_create_group_chat, this, &ChatDialog::slot_create_group_chat);
@@ -1394,6 +1407,25 @@ void ChatDialog::slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> use
 
 
 void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info) {
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(msg_info->_thread_id);
+    if (chat_data == nullptr) {
+        return;
+    }
+
+    //更新消息，其实不用更新，都是共享msg_info的一块内存，这里为了安全还是再次更新下
+
+    chat_data->UpdateProgress(msg_info);
+
+    if (_cur_chat_thread_id != msg_info->_thread_id) {
+        return;
+    }
+
+
+    //更新聊天界面信息
+    ui->chat_page->UpdateFileProgress(msg_info);
+}
+
+void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info, QString file_path) {
 	auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(msg_info->_thread_id);
 	if (chat_data == nullptr) {
 		return;
@@ -1401,7 +1433,7 @@ void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info) 
 	
 	//更新消息，其实不用更新，都是共享msg_info的一块内存，这里为了安全还是再次更新下
 
-	chat_data->UpdateProgress(msg_info);
+    chat_data->UpdateProgress(msg_info);
 
 	if (_cur_chat_thread_id != msg_info->_thread_id) {
 		return;
@@ -1409,7 +1441,7 @@ void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info) 
 	
 
 	//更新聊天界面信息
-	ui->chat_page->UpdateFileProgress(msg_info);
+    ui->chat_page->UpdateFileProgress(msg_info, file_path);
 }
 
 void ChatDialog::on_add_btn_clicked()

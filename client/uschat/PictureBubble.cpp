@@ -186,6 +186,17 @@ void PictureBubble::setDownloadFinish(std::shared_ptr<MsgInfo> msg,QString file_
     updateIconOverlay();
 }
 
+void PictureBubble::setUploadFinish(QString file_path) {
+    auto picture = QPixmap(file_path);
+    QPixmap pix = picture.scaled(QSize(PIC_MAX_WIDTH, PIC_MAX_HEIGHT),
+                                 Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    m_pixmapSize = pix.size();
+    m_picLabel->setPixmap(pix);
+    m_picLabel->setFixedSize(pix.size());
+    adjustSize();
+    updateIconOverlay();
+}
+
 void PictureBubble::onPictureClicked()
 {
     if (_msg_info == nullptr) {

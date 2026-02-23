@@ -1076,7 +1076,8 @@ void LogicSystem::LoadChatMsg(std::shared_ptr<CSession> session,
 
 }
 
-void LogicSystem::DealChatImgMsg(std::shared_ptr<CSession> session, 
+
+void LogicSystem::DealChatImgMsg(std::shared_ptr<CSession> session,
 	const short& msg_id, const string& msg_data) {
 	Json::Reader reader;
 	Json::Value root;
@@ -1114,11 +1115,12 @@ void LogicSystem::DealChatImgMsg(std::shared_ptr<CSession> session,
 	chat_msg->thread_id = thread_id;
 	chat_msg->content = unique_name;
 	chat_msg->status = MsgStatus::UN_UPLOAD;
-
+	chat_msg->msg_type = int(ChatMsgType::PIC);
 
 	//²åÈëÊý¾Ý¿â
 	MysqlMgr::GetInstance()->AddChatMsg(chat_msg);
 
+	rtvalue["message_id"] = chat_msg->message_id;
 	Defer defer([this, &rtvalue, session]() {
 		std::string return_str = rtvalue.toStyledString();
 		session->Send(return_str, ID_IMG_CHAT_MSG_RSP);

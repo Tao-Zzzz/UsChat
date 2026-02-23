@@ -162,6 +162,29 @@ public:
     int GetStatus() { return _status; }
     void SetMsgId(int msg_id) { _msg_id = msg_id; }
     void SetStatus(int status) { _status = status; }
+    virtual void dump(QDebug dbg) const {
+        dbg.nospace() << "ChatDataBase("
+                      << "ID:" << _msg_id
+                      << ", UniqueID:" << _unique_id
+                      << ", ThreadID:" << _thread_id
+                      << ", Type:" << (int)_msg_type
+                      << ", Content:" << _content
+                      << ", Status:" << _status << ")";
+    }
+
+    // 重载运算符
+    friend QDebug operator<<(QDebug dbg, const ChatDataBase &data) {
+        data.dump(dbg);
+        return dbg;
+    }
+
+    // 为了支持 shared_ptr 的直接打印，也可以重载指针版本
+    friend QDebug operator<<(QDebug dbg, const std::shared_ptr<ChatDataBase> &data) {
+        if (!data) return dbg << "ChatDataBase(nullptr)";
+        data->dump(dbg);
+        return dbg;
+    }
+
     virtual ~ChatDataBase() {}  // 添加虚析构函数
 protected:
     //客户端本地唯一标识
@@ -227,6 +250,12 @@ public:
         _msg_id = _msg_info->_msg_id;
     }
 
+    void dump(QDebug dbg) const override {
+        dbg.nospace() << "ImgChatData("
+                      << "ID:" << _msg_id
+                      << ", Content:" << _content
+                      << ", HasMsgInfo:" << (_msg_info != nullptr) << ")";
+    }
     ~ImgChatData() override {}
 
     std::shared_ptr<MsgInfo> _msg_info;
