@@ -15,7 +15,7 @@ print(f"DEBUG: Root dir is {root_dir}")
 
 try:
     from app.db import SessionLocal
-    from app.models import AIModel
+    from app.models.models import AIModel
     print("DEBUG: Import successful!")
 except ImportError as e:
     print(f"DEBUG: Import failed! Error: {e}")
@@ -24,7 +24,7 @@ except ImportError as e:
 # ... 后面接你的 insert_gemma 函数
 from sqlalchemy.orm import Session
 from app.db import SessionLocal
-from app.models import AIModel
+from app.models.models import AIModel
 
 def insert_gemma():
     db: Session = SessionLocal()

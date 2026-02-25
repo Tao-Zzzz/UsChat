@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, BigInteger, ForeignKey, Boolean
 from datetime import datetime
-from app.db import Base
+from app.core.db import Base
 
 
 class AIThread(Base):
