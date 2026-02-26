@@ -193,8 +193,18 @@ def handle_chat_v2(db, req):
         model=req.model,
         tokens=estimate_tokens(req.content),
     )
+    if created: 
+        try: 
+            title = generate_title( client, model_row.model_key, req.content, reply_text ) 
+            thread.title = title[:50] 
+            db.commit() 
+        except Exception as e: 
+            print("title generation failed:", e)
+    
     db.add(user_msg)
     db.flush()
+
+
 
     model_row = (
         db.query(AIModel)
@@ -265,6 +275,19 @@ def handle_chat_v2(db, req):
             fid = friend_info["friend_id"]
             store_chat_vector_v2(db, req.uid, fid, user_msg.id, req.content, commit=False)
             store_chat_vector_v2(db, req.uid, fid, ai_msg.id, reply, commit=False)
+            
+    if created:
+        try:
+            title = generate_title(
+                client,
+                model_row.model_key,
+                req.content,
+                reply
+            )
+            thread.title = title[:50]
+        except Exception as e:
+            print("title generation failed:", e)
+
 
     # 4. 最后统一提交所有更改（包括 AIMessage 和向量数据）
     db.commit()
