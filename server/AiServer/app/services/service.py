@@ -4,137 +4,124 @@ from openai import OpenAI
 from app.core.config import get_settings
 from app.services.chat_service.message_builder import build_messages
 from app.services.chat_service.ai_decision import need_vector_search
-from app.vector.vector_context import build_vector_context
-from app.vector.vector_store_service import store_chat_vector
+from app.vector.vector_context import build_vector_context, build_vector_context_v2, build_friend_context_by_vector
+from app.vector.vector_store_service import store_chat_vector, store_chat_vector_v2
+from app.services.chat_service.chat_service import insert_reference_context
+from app.services.chat_service.friend_service import need_friend_context, detect_friend_from_text, get_recent_chat_with_friend
 
 
 settings = get_settings()
 
 def handle_chat(db, req):
-
     created = False
 
-    # 新会话
-    if req.ai_thread_id == -1:
+    # ========== 1) 先创建/查找 thread + 保存 user_msg（短事务） ==========
+    with db.begin():
+        if req.ai_thread_id == -1:
+            thread = AIThread(uid=req.uid, title=(req.content[:20].strip() or "新對話"))
+            db.add(thread)
+            db.flush()  # 拿到 thread.id
+            created = True
+            ai_thread_id = thread.id
+        else:
+            thread = (
+                db.query(AIThread)
+                .filter(
+                    AIThread.id == req.ai_thread_id,
+                    AIThread.uid == req.uid,
+                    AIThread.is_deleted == False,
+                )
+                .first()
+            )
+            if not thread:
+                raise Exception("thread not found")
+            ai_thread_id = thread.id
 
-        thread = AIThread(
-            uid=req.uid,
-            title=req.content[:20] or "新對話"
+        user_msg = AIMessage(
+            ai_thread_id=ai_thread_id,
+            role="user",
+            content=req.content,
+            model=req.model,
+            tokens=estimate_tokens(req.content),  # 如果你后面要拆 tokens 字段，可先保留
         )
+        db.add(user_msg)
+        db.flush()  # 拿到 user_msg.id
 
-        db.add(thread)
-        db.commit()
-        db.refresh(thread)
+        # 找模型（放事务里也行，反正是读）
+        model_row = (
+            db.query(AIModel)
+            .filter(AIModel.name == req.model, AIModel.is_enabled == True)
+            .first()
+        )
+        if not model_row:
+            raise Exception("model not found")
 
-        created = True
-        ai_thread_id = thread.id
-
-    else:
-
-        thread = db.query(AIThread).filter(
-            AIThread.id == req.ai_thread_id,
-            AIThread.uid == req.uid,
-            AIThread.is_deleted == False
-        ).first()
-
-        if not thread:
-            raise Exception("thread not found")
-
-        ai_thread_id = thread.id
-
-    # 存用户消息
-    user_msg = AIMessage(
-        ai_thread_id=ai_thread_id,
-        role="user",
-        content=req.content,
-        model=req.model,
-        tokens=estimate_tokens(req.content)
-    )
-
-    db.add(user_msg)
-    db.commit()
-    db.refresh(user_msg)
-
-    # 找模型
-    model_row = db.query(AIModel).filter(
-        AIModel.name == req.model,
-        AIModel.is_enabled == True
-    ).first()
-
-    if not model_row:
-        raise Exception("model not found")
-
+    # ========== 2) 构建上下文 messages（事务外，不锁 DB） ==========
     client = get_llm_client(model_row.provider)
 
-    # 构建历史
-    history_msgs = build_context(
-        db,
-        thread.id,
-        model_row.context_length - 2000
-    )
+    history_msgs = build_context(db, ai_thread_id, model_row.context_length - 2000)
 
-    system_prompt = """
-你是一个逻辑严谨的AI助手
-用中文回答
-"""
+    system_prompt = "你是一个逻辑严谨的AI助手\n用中文回答"
 
-    messages = build_messages(
-        model_row,
-        system_prompt,
-        history_msgs
-    )
+    messages = build_messages(model_row, system_prompt, history_msgs)
 
-    # ===== VECTOR SEARCH =====
-    if need_vector_search(
-        client,
-        model_row.model_key,
-        req.content
-    ):
+    # ----- 2.1 好友聊天上下文（按需注入） -----
+    if need_friend_context(req.content):
+        friend_info = detect_friend_from_text(db, req.uid, req.content)
+        if friend_info:
+            chat_text = get_recent_chat_with_friend(
+                db,
+                req.uid,
+                friend_info["friend_id"],
+                friend_info["display_name"],
+                limit=10,
+            )
+            if chat_text:
+                insert_reference_context(
+                    messages,
+                    f"与你好友【{friend_info['display_name']}】最近聊天记录：\n\n{chat_text}",
+                    title="好友聊天记录",
+                )
 
-        vector_context = build_vector_context(
-            req.uid,
-            req.content
-        )
-
+    # ----- 2.2 向量检索（按需注入） -----
+    if need_vector_search(client, model_row.model_key, req.content):
+        vector_context = build_vector_context(req.uid, req.content)
         if vector_context:
+            insert_reference_context(messages, vector_context, title="向量检索结果")
 
-            messages.insert(0,{
-                "role":"system",
-                "content":vector_context
-            })
-
-    # ===== 调用模型 =====
-
+    # ========== 3) 调用模型 ==========
     response = client.chat.completions.create(
         model=model_row.model_key,
         messages=messages,
         temperature=0.6,
-        max_tokens=2048
+        max_tokens=2048,
     )
 
-    reply = response.choices[0].message.content.strip()
+    reply = (response.choices[0].message.content or "").strip()
 
-    # 保存 AI
-    ai_msg = AIMessage(
-        ai_thread_id=ai_thread_id,
-        role="assistant",
-        content=reply,
-        model=req.model,
-        tokens=response.usage.total_tokens
-    )
+    # tokens：尽量拆开；如果你表暂时没字段，就先用 total_tokens 写回 tokens
+    usage = getattr(response, "usage", None)
+    prompt_tokens = getattr(usage, "prompt_tokens", None) if usage else None
+    completion_tokens = getattr(usage, "completion_tokens", None) if usage else None
+    total_tokens = getattr(usage, "total_tokens", None) if usage else None
 
-    db.add(ai_msg)
-    db.commit()
-    db.refresh(ai_msg)
+    # ========== 4) 保存 AI 回复 + 向量（短事务） ==========
+    with db.begin():
+        ai_msg = AIMessage(
+            ai_thread_id=ai_thread_id,
+            role="assistant",
+            content=reply,
+            model=req.model,
+            tokens=completion_tokens or total_tokens or estimate_tokens(reply),
+        )
+        db.add(ai_msg)
+        db.flush()  # 拿到 ai_msg.id
 
-    # ===== 存向量 =====
-    store_chat_vector(
-        db,
-        req.uid,
-        0,
-        ai_msg.id,
-        req.content
-    )
+        # ===== 存向量：建议分别存 user 与 assistant =====
+        # 你原来是 store_chat_vector(db, uid, 0, ai_msg.id, req.content)
+        # 我建议改成：分别存两次
+        store_chat_vector(db, req.uid, 0, user_msg.id, req.content)  # 用户消息向量
+        store_chat_vector(db, req.uid, 0, ai_msg.id, reply)          # AI 消息向量
 
     return (
         ai_thread_id,
@@ -144,7 +131,7 @@ def handle_chat(db, req):
         ai_msg.id,
         ai_msg.created_at,
         thread.title,
-        req.unique_id
+        req.unique_id,
     )
 
 
@@ -174,57 +161,150 @@ def get_llm_client(provider: str):
         raise Exception(f"unsupported provider: {provider}")
     
 
-#得到历史记录
-# def build_messages(model_row, system_prompt, history_msgs):
-#     messages = []
+def handle_chat_v2(db, req):
+    created = False
 
-#     if model_row.supports_system:
+    # ========== A) 创建/查找 thread + 保存 user_msg（短事务） ==========
+    # 去掉 with db.begin(): 后的逻辑
+    if req.ai_thread_id == -1:
+        thread = AIThread(uid=req.uid, title=(req.content[:20].strip() or "新對話"))
+        db.add(thread)
+        db.flush()  # 确保 thread.id 被生成
+        created = True
+        ai_thread_id = thread.id
+    else:
+        thread = (
+            db.query(AIThread)
+            .filter(
+                AIThread.id == req.ai_thread_id,
+                AIThread.uid == req.uid,
+                AIThread.is_deleted == False,
+            )
+            .first()
+        )
+        if not thread:
+            raise Exception("thread not found")
+        ai_thread_id = thread.id
 
-#         messages.append({
-#             "role": "system",
-#             "content": system_prompt
-#         })
+    user_msg = AIMessage(
+        ai_thread_id=ai_thread_id,
+        role="user",
+        content=req.content,
+        model=req.model,
+        tokens=estimate_tokens(req.content),
+    )
+    db.add(user_msg)
+    db.flush()
 
-#         for msg in history_msgs:
-#             messages.append({
-#                 "role": msg.role,
-#                 "content": msg.content
-#             })
+    model_row = (
+        db.query(AIModel)
+        .filter(AIModel.name == req.model, AIModel.is_enabled == True)
+        .first()
+    )
+    if not model_row:
+        raise Exception("model not found")
 
-#     else:
-#         # 不支持system
-#         if history_msgs:
+    # 在函数最后建议手动 commit 一次，确保所有 flush 的内容持久化到数据库
+    db.commit()
+    db.flush()
+    # ========== B) 组装 messages（事务外） ==========
+    client = get_llm_client(model_row.provider)
+    history_msgs = build_context(db, ai_thread_id, model_row.context_length - 2000)
 
-#             first = history_msgs[0]
+    system_prompt = "你是一个逻辑严谨的AI助手\n用中文回答"
+    messages = build_messages(model_row, system_prompt, history_msgs)
 
-#             messages.append({
-#                 "role": "user",
-#                 "content":
-#                 f"{system_prompt}\n\n"
-#                 f"用户问题：\n{first.content}"
-#             })
+    # B1 好友上下文（需要时：先识别好友，再用向量召回）
+    if need_friend_context(req.content):
+        friend_info = detect_friend_from_text(db, req.uid, req.content)
+        if friend_info:
+            friend_ctx = build_friend_context_by_vector(db, req.uid, friend_info, req.content)
+            if friend_ctx:
+                insert_reference_context(messages, friend_ctx, title="好友相关上下文")
 
-#             for msg in history_msgs[1:]:
-#                 messages.append({
-#                     "role": msg.role,
-#                     "content": msg.content
-#                 })
+    # B2 通用向量检索（friend_id=0）
+    if need_vector_search(client, model_row.model_key, req.content):
+        vc = build_vector_context_v2(req.uid, req.content, friend_id=0, k=4)
+        if vc:
+            insert_reference_context(messages, vc, title="向量检索结果")
 
-#     return messages
+    # ========== C) 调模型 ==========
+    response = client.chat.completions.create(
+        model=model_row.model_key,
+        messages=messages,
+        temperature=0.6,
+        max_tokens=2048,
+    )
 
-#估计token
-def estimate_tokens(text):
-    return int(len(text))
+    reply = (response.choices[0].message.content or "").strip()
+    usage = getattr(response, "usage", None)
+    completion_tokens = getattr(usage, "completion_tokens", None) if usage else None
+    total_tokens = getattr(usage, "total_tokens", None) if usage else None
+
+    # ========== D) 保存 AI + 写向量（短事务；向量写不 commit） ==========
+    # 1. 移除 with db.begin(): 并调整缩进
+    ai_msg = AIMessage(
+        ai_thread_id=ai_thread_id,
+        role="assistant",
+        content=reply,
+        model=req.model,
+        tokens=completion_tokens or total_tokens or estimate_tokens(reply),
+    )
+    db.add(ai_msg)
+    db.flush()  # 确保 ai_msg.id 被生成，供后续向量存储使用
+
+    # 2. 向量存储：把 user/assistant 都存入 “通用记忆 friend_id=0”
+    # 注意：这里 commit=False 是正确的，因为我们要统一在最后提交
+    store_chat_vector_v2(db, req.uid, 0, user_msg.id, req.content, commit=False)
+    store_chat_vector_v2(db, req.uid, 0, ai_msg.id, reply, commit=False)
+
+    # 3. 针对特定好友的上下文处理
+    if need_friend_context(req.content):
+        friend_info = detect_friend_from_text(db, req.uid, req.content)
+        if friend_info:
+            fid = friend_info["friend_id"]
+            store_chat_vector_v2(db, req.uid, fid, user_msg.id, req.content, commit=False)
+            store_chat_vector_v2(db, req.uid, fid, ai_msg.id, reply, commit=False)
+
+    # 4. 最后统一提交所有更改（包括 AIMessage 和向量数据）
+    db.commit()
+
+    return (
+        ai_thread_id,
+        reply,
+        created,
+        user_msg.id,
+        ai_msg.id,
+        ai_msg.created_at,
+        thread.title,
+        req.unique_id,
+    )
+
+import re
+
+def estimate_tokens(text: str) -> int:
+    if not text:
+        return 0
+    text = text.strip()
+    if not text:
+        return 0
+
+    # 粗略估算：中文/日文/韩文字符按 1 token，其他按 4 chars/token
+    cjk = len(re.findall(r"[\u4e00-\u9fff\u3040-\u30ff\uac00-\ud7af]", text))
+    other = len(text) - cjk
+    approx = cjk + (other // 4) + 1
+    return int(approx)
+
 
 
 
 #裁剪
-def build_context(db, thread_id, max_tokens):
-
+def build_context(db, thread_id, max_tokens, max_msgs=200):
     msgs = (
         db.query(AIMessage)
         .filter(AIMessage.ai_thread_id == thread_id)
         .order_by(AIMessage.id.desc())
+        .limit(max_msgs)
         .all()
     )
 
@@ -232,18 +312,15 @@ def build_context(db, thread_id, max_tokens):
     selected = []
 
     for msg in msgs:
-
-        t = msg.tokens or estimate_tokens(msg.content)
-
+        t = msg.tokens if msg.tokens is not None else estimate_tokens(msg.content)
         if total + t > max_tokens:
             break
-
         selected.append(msg)
         total += t
 
     selected.reverse()
-
     return selected
+
 
 
 #生成总结

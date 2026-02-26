@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.schemas.schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
-from app.services.service import handle_chat, load_ai_messages, load_ai_init_data
+from app.services.service import handle_chat, load_ai_messages, load_ai_init_data,handle_chat_v2
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ def chat(req: ChatRequest, db: Session = Depends(get_db)):
         created_at,
         title,
         unique_id # 接收 handle_chat 傳回的 ID
-    ) = handle_chat(db, req)
+    ) = handle_chat_v2(db, req)
 
     return ChatResponse(
         ai_thread_id=ai_thread_id,

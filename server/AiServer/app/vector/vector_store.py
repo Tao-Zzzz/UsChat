@@ -12,5 +12,6 @@ collection = chroma_client.get_or_create_collection(
 
 embed_client = OpenAI(
 
-    api_key=get_settings().SILLICONFLOW_API_KEY
+    api_key=get_settings().SILLICONFLOW_API_KEY,
+    base_url="https://api.siliconflow.cn/v1"
 )

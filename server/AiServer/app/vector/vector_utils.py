@@ -6,7 +6,7 @@ def embed_text(text: str):
     """
 
     resp = embed_client.embeddings.create(
-        model="text-embedding-3-small",
+        model="BAAI/bge-large-zh-v1.5",
         input=text
     )
 
