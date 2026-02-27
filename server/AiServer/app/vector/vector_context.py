@@ -29,7 +29,12 @@ def build_vector_context_v2(uid: int, query: str, *, friend_id: int = 0, k: int 
         res = collection.query(
             query_embeddings=[qemb],
             n_results=k,
-            where={"uid": uid, "friend_id": friend_id},
+            where={
+                "$and": [
+                    {"uid": uid},
+                    {"friend_id": friend_id}
+                ]
+            },
             include=["documents", "metadatas", "distances"],
         )
 

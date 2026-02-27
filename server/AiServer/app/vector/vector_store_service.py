@@ -1,7 +1,6 @@
 from app.vector.vector_store import collection
 from app.vector.vector_utils import embed_text
 from app.models.models import VectorMemory
-from datetime import datetime
 
 def store_chat_vector(
     db,
@@ -47,13 +46,53 @@ from app.vector.vector_store import collection
 from app.vector.vector_utils import embed_text
 from app.models.models import VectorMemory
 from datetime import datetime
-from datetime import datetime
 import hashlib
+import time
 
 def _vector_id(uid: int, friend_id: int, message_id: int) -> str:
     # 避免不同来源 message_id 冲突（AIMessage/ChatMessage 都可能从 1 开始）
     raw = f"{uid}:{friend_id}:{message_id}"
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()
+
+
+def init_vectors(db):
+    msgs = db.query(VectorMemory).all()
+
+    inserted = 0
+    skipped = 0
+    failed = 0
+
+    for msg in msgs:
+        vid = _vector_id(msg.uid, msg.friend_id, msg.message_id)
+
+        try:
+            existing = collection.get(ids=[vid])
+
+            if existing["ids"]:
+                skipped += 1
+                continue
+
+            store_chat_vector_v2(
+                db,
+                msg.uid,
+                msg.friend_id,
+                msg.message_id,
+                msg.content,
+            )
+
+            inserted += 1
+            print(f"inserted {inserted}")
+
+            time.sleep(1)
+
+        except Exception as e:
+            failed += 1
+            print("failed:", e)
+
+    print("done")
+    print("inserted:", inserted)
+    print("skipped:", skipped)
+    print("failed:", failed)
 
 def store_chat_vector_v2(
     db,
@@ -86,6 +125,7 @@ def store_chat_vector_v2(
             documents=[content],
             metadatas=[{"uid": uid, "friend_id": friend_id, "message_id": message_id}],
         )
+        print("[vector inserted]", vid, content[:30])
     except Exception as e:
         # 这里建议接入 logger；先 print 也行
         print(f"[vector] add failed: {e}")

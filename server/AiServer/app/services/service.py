@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
-from app.models.models import AIThread, AIMessage, AIModel
+from app.models.models import AIThread, AIMessage, AIModel, ChatMessage
 from openai import OpenAI
 from app.core.config import get_settings
 from app.services.chat_service.message_builder import build_messages
 from app.services.chat_service.ai_decision import need_vector_search
 from app.vector.vector_context import build_vector_context, build_vector_context_v2, build_friend_context_by_vector
-from app.vector.vector_store_service import store_chat_vector, store_chat_vector_v2
+from app.vector.vector_store_service import store_chat_vector, store_chat_vector_v2,init_vectors
+from app.vector.vector_utils import debug_dump_vectors
 from app.services.chat_service.chat_service import insert_reference_context
 from app.services.chat_service.friend_service import need_friend_context, detect_friend_from_text, get_recent_chat_with_friend
 
@@ -137,28 +138,7 @@ def handle_chat(db, req):
 
 
 
-def get_llm_client(provider: str):
-    if provider == "openrouter":
-        return OpenAI(
-            api_key=settings.OPENROUTER_API_KEY,
-            base_url="https://openrouter.ai/api/v1"
-        )
-    elif provider == "openai":
-        return OpenAI(
-            api_key=settings.OPENAI_KEY
-        )
-    elif provider == "deepseek":
-        return OpenAI(
-            api_key=settings.DEEPSEEK_KEY,
-            base_url="https://api.deepseek.com/v1"
-        )
-    elif provider == "siliconflow":
-        return OpenAI(
-            api_key=settings.SILLICONFLOW_API_KEY,
-            base_url="https://api.siliconflow.cn/v1"
-        )
-    else:
-        raise Exception(f"unsupported provider: {provider}")
+
     
 def handle_chat_v2(db, req):
     created = False
@@ -222,10 +202,13 @@ def handle_chat_v2(db, req):
             print(f"Summary generation failed: {e}")
 
     # ========== C) 组装最终 Messages ==========
-    system_prompt = "你是一个逻辑严谨的AI助手\n用中文回答"
+    system_prompt = "你是一个逻辑严谨的AI助手\n用中文回答,并且回答精炼,不要超过300个字"
     # 注意：确保 build_messages 内部会处理 thread.summary
-    messages = build_messages(model_row, system_prompt, history_msgs, messages = build_messages(model_row, system_prompt, history_msgs, summary=thread.summary))
+    messages = build_messages(model_row, system_prompt, history_msgs, summary=thread.summary)
 
+    # debug看看向量数据库
+    #init_vectors(db)
+    debug_dump_vectors(100)
     # B1 好友上下文召回
     if need_friend_context(req.content):
         friend_info = detect_friend_from_text(db, req.uid, req.content)
@@ -234,12 +217,12 @@ def handle_chat_v2(db, req):
             if friend_ctx:
                 insert_reference_context(messages, friend_ctx, title="好友相关上下文")
 
-    # B2 通用向量检索
-    if need_vector_search(client, model_row.model_key, req.content):
-        vc = build_vector_context_v2(req.uid, req.content, friend_id=0, k=4)
-        if vc:
-            insert_reference_context(messages, vc, title="向量检索结果")
 
+    vc = build_vector_context_v2(req.uid, req.content, friend_id=0, k=4)
+    if vc:
+        insert_reference_context(messages, vc, title="向量检索结果")
+
+    print(messages)
     # ========== D) 调模型 ==========
     response = client.chat.completions.create(
         model=model_row.model_key,
@@ -295,6 +278,31 @@ def handle_chat_v2(db, req):
         thread.title,
         req.unique_id,
     )
+
+
+
+def get_llm_client(provider: str):
+    if provider == "openrouter":
+        return OpenAI(
+            api_key=settings.OPENROUTER_API_KEY,
+            base_url="https://openrouter.ai/api/v1"
+        )
+    elif provider == "openai":
+        return OpenAI(
+            api_key=settings.OPENAI_KEY
+        )
+    elif provider == "deepseek":
+        return OpenAI(
+            api_key=settings.DEEPSEEK_KEY,
+            base_url="https://api.deepseek.com/v1"
+        )
+    elif provider == "siliconflow":
+        return OpenAI(
+            api_key=settings.SILLICONFLOW_API_KEY,
+            base_url="https://api.siliconflow.cn/v1"
+        )
+    else:
+        raise Exception(f"unsupported provider: {provider}")
 
 
 import re
