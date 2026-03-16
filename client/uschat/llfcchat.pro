@@ -77,6 +77,7 @@ SOURCES += \
         moremenu.cpp \
         registerdialog.cpp \
         resetdialog.cpp \
+        rtcengine.cpp \
         searchlist.cpp \
         statelabel.cpp \
         statewidget.cpp \
@@ -87,7 +88,8 @@ SOURCES += \
         usermgr.cpp \
         videocallmanager.cpp \
         videocallwidget.cpp \
-        webrtcmanager.cpp
+        webrtcmanager.cpp \
+        webrtcsdpobserver.cpp
 
 HEADERS += \
         BubbleFrame.h \
@@ -140,6 +142,7 @@ HEADERS += \
         moremenu.h \
         registerdialog.h \
         resetdialog.h \
+        rtcengine.h \
         searchlist.h \
         singleton.h \
         statelabel.h \
@@ -151,7 +154,8 @@ HEADERS += \
         usermgr.h \
         videocallmanager.h \
         videocallwidget.h \
-        webrtcmanager.h
+        webrtcmanager.h \
+        webrtcsdpobserver.h
 
 FORMS += \
         adduseritem.ui \
@@ -283,3 +287,18 @@ CONFIG(debug, debug|release) {
 }
 
 win32-msvc*:QMAKE_CXXFLAGS += /wd"4819" /utf-8
+
+# --- WebRTC SDK 配置 ---
+
+# 1. 设置头文件包含路径 (根据你实际创建的文件夹名)
+INCLUDEPATH += $$PWD/3rdparty/libwebrtc/include
+
+# 2. 设置库文件链接路径
+LIBS += -L$$PWD/3rdparty/libwebrtc/lib -llibwebrtc
+
+# 3. 必须添加的 Windows 平台预处理宏
+# 你的头文件 rtc_types.h 中使用了 LIB_WEBRTC_API_DLL 等宏
+DEFINES += WIN32 _WINDOWS
+
+# 4. 链接 Windows 必要的系统支撑库 (WebRTC 底层依赖)
+LIBS += -lUser32 -lOle32 -lOleAut32 -lAdvapi32 -lWinmm -lWs2_32 -lSecur32

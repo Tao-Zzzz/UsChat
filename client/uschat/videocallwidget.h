@@ -25,6 +25,10 @@ public:
 
     void SetPeerName(const QString& name);
     void SetStatusText(const QString& text);
+    void UpdateInCallLocalPreviewGeometry();
+
+    QWidget* GetLocalPreviewWidget() const;
+    QWidget* GetRemoteVideoWidget() const;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -49,6 +53,8 @@ private:
 
     void StartCallTimer();
     void StopCallTimer();
+
+
 
 private:
     enum PageIndex
@@ -79,6 +85,8 @@ private:
 
     QTimer* _callTimer = nullptr;
     int _callSeconds = 0;
+
+    LocalCameraPreview* _callingPreview = nullptr;
 };
 
 #endif // VIDEOCALLWIDGET_H

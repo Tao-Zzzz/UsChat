@@ -75,12 +75,14 @@ signals:
 private:
     explicit VideoCallManager(QObject *parent = nullptr);
     void Reset();
-
+    void StartRtcAsCallerIfNeeded();
+    void StartRtcAsCalleeIfNeeded();
 private:
     CallState _state = CallState::Idle;
     int _selfUid = 0;
     int _peerUid = 0;
     QString _callId;
+    bool _rtcStarted = false;
 };
 
 #endif // VIDEOCALLMANAGER_H

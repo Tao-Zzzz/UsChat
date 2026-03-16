@@ -90,6 +90,43 @@ public:
         _call_sessions.erase(it);
     }
 
+    bool EndCallByUid(int uid)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+
+        for (auto it = _call_sessions.begin(); it != _call_sessions.end(); ++it) {
+            const auto& session = it->second;
+            if (session.caller_uid == uid || session.callee_uid == uid) {
+                _user_state[session.caller_uid] = USER_IDLE;
+                _user_state[session.callee_uid] = USER_IDLE;
+                _call_sessions.erase(it);
+                return true;
+            }
+        }
+
+        _user_state[uid] = USER_IDLE;
+        return false;
+    }
+
+    bool GetPeerUidByUid(int uid, int& peer_uid)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+
+        for (auto& kv : _call_sessions) {
+            const auto& session = kv.second;
+            if (session.caller_uid == uid) {
+                peer_uid = session.callee_uid;
+                return true;
+            }
+            if (session.callee_uid == uid) {
+                peer_uid = session.caller_uid;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 private:
     std::mutex _mutex;
     std::unordered_map<std::string, CallSession> _call_sessions;

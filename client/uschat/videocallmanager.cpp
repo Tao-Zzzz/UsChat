@@ -3,6 +3,8 @@
 #include "usermgr.h"
 #include <QJsonDocument>
 #include <QTimer>
+#include "RtcEngine.h"
+#include "VideoCallWidget.h"
 
 VideoCallManager* VideoCallManager::GetInstance()
 {
@@ -13,6 +15,36 @@ VideoCallManager* VideoCallManager::GetInstance()
 VideoCallManager::VideoCallManager(QObject *parent)
     : QObject(parent)
 {
+    auto rtc = RtcEngine::GetInstance();
+
+    connect(this, &VideoCallManager::sig_recv_offer,
+            rtc, &RtcEngine::OnRecvOffer);
+
+    connect(this, &VideoCallManager::sig_recv_answer,
+            rtc, &RtcEngine::OnRecvAnswer);
+
+    connect(this, &VideoCallManager::sig_recv_ice_candidate,
+            rtc, &RtcEngine::OnRecvIceCandidate);
+
+    connect(rtc, &RtcEngine::sig_send_offer,
+            this, &VideoCallManager::SendOffer);
+
+    connect(rtc, &RtcEngine::sig_send_answer,
+            this, &VideoCallManager::SendAnswer);
+
+    connect(rtc, &RtcEngine::sig_connected, this, [this]() {
+        MarkCallConnected();
+    });
+
+    connect(rtc, &RtcEngine::sig_disconnected, this, [this]() {
+        emit sig_call_hangup();
+        Reset();
+    });
+
+    connect(rtc, &RtcEngine::sig_error, this, [this](const QString& err) {
+        emit sig_call_error(err);
+        Reset();
+    });
 }
 
 void VideoCallManager::StartCall(int selfUid, int otherUid)
@@ -94,7 +126,6 @@ void VideoCallManager::CancelCall()
     emit sig_call_cancelled();
     Reset();
 }
-
 void VideoCallManager::Hangup()
 {
     if ((_state != CallState::Connecting && _state != CallState::InCall) || _callId.isEmpty()) {
@@ -102,13 +133,21 @@ void VideoCallManager::Hangup()
         return;
     }
 
+    const int selfUid = _selfUid;
+    const int peerUid = _peerUid;
+    const QString callId = _callId;
+
+    // 先关本地 RTC，但不要在这里触发 Reset
+    RtcEngine::GetInstance()->Hangup();
+
     QJsonObject jsonObj;
-    jsonObj["uid"] = _selfUid;
-    jsonObj["other_id"] = _peerUid;
-    jsonObj["call_id"] = _callId;
+    jsonObj["uid"] = selfUid;
+    jsonObj["other_id"] = peerUid;
+    jsonObj["call_id"] = callId;
 
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_HANGUP_REQ, doc.toJson(QJsonDocument::Compact));
+
     emit sig_call_local_hangup();
     Reset();
 }
@@ -125,7 +164,6 @@ void VideoCallManager::HandleVideoInviteRsp(const QJsonObject& obj)
     _callId = obj.value("call_id").toString();
     emit sig_call_can_cancel(true);
 }
-
 void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
 {
     int err = obj.value("error").toInt();
@@ -135,15 +173,17 @@ void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
         return;
     }
 
+    CallState oldState = _state;
+
     _state = CallState::Connecting;
     emit sig_call_accepted();
 
-    // 现在先临时模拟“已接通”
-    QTimer::singleShot(800, this, [this]() {
-        if (_state == CallState::Connecting) {
-            MarkCallConnected();
-        }
-    });
+    // 按当前状态判断自己身份，更稳
+    if (oldState == CallState::Calling) {
+        StartRtcAsCallerIfNeeded();
+    } else {
+        StartRtcAsCalleeIfNeeded();
+    }
 }
 
 void VideoCallManager::HandleVideoRejectRsp(const QJsonObject& obj)
@@ -174,15 +214,17 @@ void VideoCallManager::HandleNotifyVideoAccept(const QJsonObject& obj)
 {
     Q_UNUSED(obj);
 
+    CallState oldState = _state;
+
     _state = CallState::Connecting;
     emit sig_call_accepted();
 
-    // 现在先临时模拟“已接通”
-    QTimer::singleShot(800, this, [this]() {
-        if (_state == CallState::Connecting) {
-            MarkCallConnected();
-        }
-    });
+    // 不死依赖 notify/rsp 名字，按当前状态判断
+    if (oldState == CallState::Calling) {
+        StartRtcAsCallerIfNeeded();
+    } else {
+        StartRtcAsCalleeIfNeeded();
+    }
 }
 
 void VideoCallManager::HandleNotifyVideoReject(const QJsonObject& obj)
@@ -281,8 +323,46 @@ void VideoCallManager::MarkCallConnected()
     emit sig_call_connected();
 }
 
+void VideoCallManager::StartRtcAsCallerIfNeeded()
+{
+    if (_rtcStarted) {
+        return;
+    }
+
+    auto rtc = RtcEngine::GetInstance();
+    auto view = VideoCallWidget::GetInstance();
+
+    rtc->Init();
+    rtc->SetLocalRenderWidget(view->GetLocalPreviewWidget());
+    rtc->SetRemoteRenderWidget(view->GetRemoteVideoWidget());
+    rtc->StartPreview();
+    rtc->StartCallAsCaller();
+
+    _rtcStarted = true;
+}
+
+void VideoCallManager::StartRtcAsCalleeIfNeeded()
+{
+    if (_rtcStarted) {
+        return;
+    }
+
+    auto rtc = RtcEngine::GetInstance();
+    auto view = VideoCallWidget::GetInstance();
+
+    rtc->Init();
+    rtc->SetLocalRenderWidget(view->GetLocalPreviewWidget());
+    rtc->SetRemoteRenderWidget(view->GetRemoteVideoWidget());
+    rtc->StartPreview();
+    rtc->StartCallAsCallee();
+
+    _rtcStarted = true;
+}
+
 void VideoCallManager::Reset()
 {
+    RtcEngine::GetInstance()->Reset();
+    _rtcStarted = false;
     _state = CallState::Idle;
     _peerUid = 0;
     _callId.clear();

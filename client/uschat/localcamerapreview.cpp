@@ -43,6 +43,9 @@ void LocalCameraPreview::InitUi()
 
 bool LocalCameraPreview::StartPreview()
 {
+
+
+
     if (_started) {
         return true;
     }
@@ -53,6 +56,7 @@ bool LocalCameraPreview::StartPreview()
         return false;
     }
 
+    qDebug() << "启动摄像头";
     _camera = new QCamera(cameras.first(), this);
     _camera->setViewfinder(_viewfinder);
     _camera->start();

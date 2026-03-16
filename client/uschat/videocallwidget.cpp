@@ -1,6 +1,7 @@
 #include "VideoCallWidget.h"
 #include "VideoCallManager.h"
 #include "LocalCameraPreview.h"
+#include "rtcengine.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -25,15 +26,12 @@ VideoCallWidget::VideoCallWidget(QWidget *parent)
 
     auto mgr = VideoCallManager::GetInstance();
 
-    // 1. 对于成员函数绑定，直接使用 mgr.get()
     connect(mgr, &VideoCallManager::sig_show_calling_ui,
             this, &VideoCallWidget::ShowCalling);
 
     connect(mgr, &VideoCallManager::sig_show_incoming_ui,
             this, &VideoCallWidget::ShowIncoming);
 
-    // 2. 对于 Lambda 表达式，务必指定 context 参数（即这里的 this）
-    // 这样当 VideoCallWidget (this) 被销毁时，连接会自动断开，防止空指针崩溃
     connect(mgr, &VideoCallManager::sig_call_accepted, this, [this]() {
         ShowConnecting();
     });
@@ -124,9 +122,9 @@ QWidget* VideoCallWidget::CreateCallingPage()
     preview->setStyleSheet("background-color: #333333; border-radius: 12px;");
     auto previewLayout = new QVBoxLayout(preview);
 
-    auto localPreview = new LocalCameraPreview(preview);
-    localPreview->setStyleSheet("background-color: #2d2d2d; border-radius: 12px;");
-    previewLayout->addWidget(localPreview);
+    _callingPreview = new LocalCameraPreview(preview);
+    _callingPreview->setStyleSheet("background-color: #2d2d2d; border-radius: 12px;");
+    previewLayout->addWidget(_callingPreview);
 
     _btnCancel = new QPushButton(QStringLiteral("取消"), page);
     _btnCancel->setFixedHeight(46);
@@ -137,7 +135,7 @@ QWidget* VideoCallWidget::CreateCallingPage()
         );
 
     connect(_btnCancel, &QPushButton::clicked, this, &VideoCallWidget::slot_cancel);
-    connect(this, &VideoCallWidget::destroyed, localPreview, &QObject::deleteLater);
+    // connect(this, &VideoCallWidget::destroyed, localPreview, &QObject::deleteLater);
 
     layout->addWidget(title);
     layout->addSpacing(16);
@@ -280,8 +278,8 @@ void VideoCallWidget::ShowCalling()
     _labCallingStatus->setText(QStringLiteral("正在呼叫对方..."));
     _btnCancel->setEnabled(false);
     StopCallTimer();
-    StartLocalPreview();
     SwitchToPage(PAGE_CALLING);
+    StartLocalPreview();
     show();
     raise();
     activateWindow();
@@ -318,6 +316,14 @@ void VideoCallWidget::ShowConnecting()
     show();
     raise();
     activateWindow();
+
+    QTimer::singleShot(0, this, [this]() {
+        UpdateInCallLocalPreviewGeometry();
+    });
+
+    auto rtc = RtcEngine::GetInstance();
+    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
+    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
 }
 
 void VideoCallWidget::ShowInCall()
@@ -331,6 +337,14 @@ void VideoCallWidget::ShowInCall()
     show();
     raise();
     activateWindow();
+
+    QTimer::singleShot(0, this, [this]() {
+        UpdateInCallLocalPreviewGeometry();
+    });
+
+    auto rtc = RtcEngine::GetInstance();
+    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
+    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
 }
 
 void VideoCallWidget::ShowEnd(const QString& text)
@@ -404,15 +418,7 @@ void VideoCallWidget::closeEvent(QCloseEvent *event)
 void VideoCallWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-
-    if (_localPreview && _remoteVideoView) {
-        int w = 130;
-        int h = 180;
-        int x = _remoteVideoView->width() - w - 16;
-        int y = 16;
-        _localPreview->setGeometry(x, y, w, h);
-        _localPreview->raise();
-    }
+    UpdateInCallLocalPreviewGeometry();
 }
 
 void VideoCallWidget::slot_accept()
@@ -456,13 +462,22 @@ void VideoCallWidget::SwitchToPage(int index)
 
 void VideoCallWidget::StartLocalPreview()
 {
-    if (_localPreview) {
+    if (_callingPreview && _stack->currentIndex() == PAGE_CALLING) {
+        _callingPreview->StartPreview();
+    }
+
+    if (_localPreview && _stack->currentIndex() == PAGE_INCALL) {
         _localPreview->StartPreview();
     }
 }
 
 void VideoCallWidget::StopLocalPreview()
 {
+
+    if (_callingPreview) {
+        _callingPreview->StopPreview();
+    }
+
     if (_localPreview) {
         _localPreview->StopPreview();
     }
@@ -484,4 +499,37 @@ void VideoCallWidget::StopCallTimer()
     if (_labCallTime) {
         _labCallTime->setText(QStringLiteral("00:00"));
     }
+}
+
+void VideoCallWidget::UpdateInCallLocalPreviewGeometry()
+{
+    if (!_localPreview || !_remoteVideoView) {
+        return;
+    }
+
+    int w = 130;
+    int h = 180;
+    int x = _remoteVideoView->width() - w - 16;
+    int y = 16;
+
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+
+    _localPreview->setGeometry(x, y, w, h);
+    _localPreview->raise();
+    _localPreview->show();
+
+    auto rtc = RtcEngine::GetInstance();
+    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
+    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
+}
+
+QWidget* VideoCallWidget::GetLocalPreviewWidget() const
+{
+    return _localPreview;
+}
+
+QWidget* VideoCallWidget::GetRemoteVideoWidget() const
+{
+    return _remoteVideoView;
 }
