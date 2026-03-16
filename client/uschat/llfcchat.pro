@@ -5,10 +5,11 @@
 #-------------------------------------------------
 
 QT       += core gui network
+QT += core gui widgets multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = llfcchat
+TARGET = uschat
 TEMPLATE = app
 RC_ICONS = icon.ico
 DESTDIR = ./bin
@@ -69,6 +70,7 @@ SOURCES += \
         lineitem.cpp \
         listitembase.cpp \
         loadingdlg.cpp \
+        localcamerapreview.cpp \
         logindialog.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -82,7 +84,10 @@ SOURCES += \
         timerbtn.cpp \
         userdata.cpp \
         userinfopage.cpp \
-        usermgr.cpp
+        usermgr.cpp \
+        videocallmanager.cpp \
+        videocallwidget.cpp \
+        webrtcmanager.cpp
 
 HEADERS += \
         BubbleFrame.h \
@@ -129,6 +134,7 @@ HEADERS += \
         lineitem.h \
         listitembase.h \
         loadingdlg.h \
+        localcamerapreview.h \
         logindialog.h \
         mainwindow.h \
         moremenu.h \
@@ -142,7 +148,10 @@ HEADERS += \
         timerbtn.h \
         userdata.h \
         userinfopage.h \
-        usermgr.h
+        usermgr.h \
+        videocallmanager.h \
+        videocallwidget.h \
+        webrtcmanager.h
 
 FORMS += \
         adduseritem.ui \
@@ -173,7 +182,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    rc.qrc
+    rc.qrc \
+    resources.qrc
 
 DISTFILES += \
     config.ini \

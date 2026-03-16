@@ -5,6 +5,7 @@
 #include <QFile>
 #include <filetcpmgr.h>
 #include <QStandardPaths>
+#include "videocallmanager.h"
 
 TcpMgr::TcpMgr():_host(""),_port(0),_b_recv_pending(false),_message_id(0),_message_len(0),_bytes_sent(0),_pending(false)
 {
@@ -705,6 +706,10 @@ void TcpMgr::initHandlers()
         bool load_more = jsonObj["load_more"].toBool();
         int next_last_id = jsonObj["next_last_id"].toInt();
 
+        if(chat_threads.size() == 0){
+            qDebug() << "没有加载会话,应该是第一次启动";
+        }
+
         //发送信号通知界面
         emit sig_load_chat_thread(load_more, next_last_id, chat_threads);
     });
@@ -1114,6 +1119,135 @@ void TcpMgr::initHandlers()
         //发送信号通知界面
         emit sig_chat_img_upload_finish_rsp(thread_id, msg_id);
 
+    });
+
+
+
+
+    //接下来是视频通话
+    _handlers.insert(ID_VIDEO_INVITE_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            return;
+        }
+
+        VideoCallManager::GetInstance()->HandleVideoInviteRsp(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_VIDEO_ACCEPT_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleVideoAcceptRsp(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_VIDEO_REJECT_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleVideoRejectRsp(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_VIDEO_CANCEL_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleVideoCancelRsp(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_VIDEO_HANGUP_RSP, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleVideoHangupRsp(jsonDoc.object());
+    });
+
+
+
+    _handlers.insert(ID_NOTIFY_VIDEO_INVITE_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            return;
+        }
+
+        VideoCallManager::GetInstance()->HandleNotifyVideoInvite(jsonDoc.object());
+    });
+    _handlers.insert(ID_NOTIFY_VIDEO_ACCEPT_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleNotifyVideoAccept(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_VIDEO_REJECT_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleNotifyVideoReject(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_VIDEO_CANCEL_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleNotifyVideoCancel(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_VIDEO_HANGUP_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) return;
+        VideoCallManager::GetInstance()->HandleNotifyVideoHangup(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_WEBRTC_OFFER_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            return;
+        }
+
+        VideoCallManager::GetInstance()->HandleNotifyOffer(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_WEBRTC_ANSWER_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            return;
+        }
+
+        VideoCallManager::GetInstance()->HandleNotifyAnswer(jsonDoc.object());
+    });
+
+    _handlers.insert(ID_NOTIFY_WEBRTC_ICE_CANDIDATE_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(id);
+        Q_UNUSED(len);
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            return;
+        }
+
+        VideoCallManager::GetInstance()->HandleNotifyIceCandidate(jsonDoc.object());
     });
 
 }

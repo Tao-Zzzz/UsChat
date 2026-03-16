@@ -60,7 +60,8 @@ private:
     std::shared_ptr<ChatThreadData> _cur_load_chat;
     QMenu* _add_menu = nullptr; // 在头文件声明，避免每次点击都 new 一个
     bool _is_load_ai = false;
- 
+
+    bool _is_frist_load = false;
 public slots:
     void slot_loading_chat_user();
     void slot_side_chat();
@@ -108,6 +109,8 @@ public slots:
 
     void slot_download_finish(std::shared_ptr<MsgInfo> msg_info, QString file_path);
     void slot_chat_img_upload_finish(int thread_id, int msg_id);
+
+    void slot_video_invite(std::shared_ptr<UserInfo> user_info);
 private slots:
 
     void on_add_btn_clicked();

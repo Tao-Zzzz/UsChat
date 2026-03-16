@@ -37,3 +37,10 @@ void FriendInfoPage::on_msg_chat_clicked()
     qDebug() << "msg chat btn clicked";
     emit sig_jump_chat_item(_user_info);
 }
+
+void FriendInfoPage::on_video_chat_clicked()
+{
+    qDebug() << "vedio btn clicked";
+    emit sig_video_invite(_user_info);
+}
+

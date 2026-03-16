@@ -12,6 +12,8 @@
 #include <set>
 #include <queue>
 
+//测试用 jinmz0101@outlook.com
+
 //TCP文件上传包头长度
 #define FILE_UPLOAD_HEAD_LEN 6
 //TCP ID长度
@@ -25,6 +27,8 @@
 //定义AI会话
 #define AI_THREAD -1
 #define AI_UID -1
+
+#define FRIST_LOAD -10
 /**
  * @brief repolish用来根据属性刷新qss
  */
@@ -97,6 +101,35 @@ enum ReqId{
     ID_AI_LOAD_CHAT_RSP = 1110,
     ID_NOTIFY_SEND_CLIENT_IMG_UPLOAD_FINISH_RSP = 1112,
 
+    // 视频id
+    ID_VIDEO_INVITE_REQ = 2001,
+    ID_VIDEO_INVITE_RSP = 2002,
+    ID_NOTIFY_VIDEO_INVITE_REQ = 2003,
+
+    ID_VIDEO_ACCEPT_REQ = 2004,
+    ID_VIDEO_ACCEPT_RSP = 2005,
+    ID_NOTIFY_VIDEO_ACCEPT_REQ = 2006,
+
+    ID_VIDEO_REJECT_REQ = 2007,
+    ID_VIDEO_REJECT_RSP = 2008,
+    ID_NOTIFY_VIDEO_REJECT_REQ = 2009,
+
+    ID_VIDEO_CANCEL_REQ = 2010,
+    ID_VIDEO_CANCEL_RSP = 2011,
+    ID_NOTIFY_VIDEO_CANCEL_REQ = 2012,
+
+    ID_VIDEO_HANGUP_REQ = 2013,
+    ID_VIDEO_HANGUP_RSP = 2014,
+    ID_NOTIFY_VIDEO_HANGUP_REQ = 2015,
+
+    ID_WEBRTC_OFFER_REQ = 2016,
+    ID_NOTIFY_WEBRTC_OFFER_REQ = 2017,
+
+    ID_WEBRTC_ANSWER_REQ = 2018,
+    ID_NOTIFY_WEBRTC_ANSWER_REQ = 2019,
+
+    ID_WEBRTC_ICE_CANDIDATE_REQ = 2020,
+    ID_NOTIFY_WEBRTC_ICE_CANDIDATE_REQ = 2021,
 };
 Q_DECLARE_METATYPE(ReqId)
 
@@ -104,6 +137,14 @@ enum ErrorCodes{
     SUCCESS = 0,
     ERR_JSON = 1, //Json解析失败
     ERR_NETWORK = 2,
+
+
+    ERR_VIDEO_USER_OFFLINE = 2001,
+    ERR_VIDEO_USER_BUSY = 2002,
+    ERR_VIDEO_CALL_NOT_FOUND = 2003,
+    ERR_VIDEO_CALL_STATE = 2004,
+    ERR_VIDEO_SELF_CALL = 2005,
+    ERR_VIDEO_ALREADY_IN_CALL = 2006,
 };
 
 enum Modules{
@@ -243,6 +284,7 @@ enum GroupRole{
     Admin = 1,
     Owner = 2,
 };
+
 
 //申请好友标签输入框最低长度
 const int MIN_APPLY_LABEL_ED_LEN = 40;

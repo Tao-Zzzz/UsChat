@@ -50,7 +50,16 @@ private:
 	void LoadChatMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 	void DealChatImgMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 	void CreateGroupChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
-	
+
+	void VideoInvite(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
+	void VideoAccept(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
+	void VideoReject(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
+	void VideoCancel(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
+	void VideoHangup(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+	void WebrtcOffer(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+	void WebrtcAnswer(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data); 
+	void WebrtcIceCandidate(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
+
 	std::thread _worker_thread;
 	std::queue<shared_ptr<LogicNode>> _msg_que;
 	std::mutex _mutex;

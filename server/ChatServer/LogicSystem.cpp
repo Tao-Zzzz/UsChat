@@ -10,6 +10,7 @@
 #include "CServer.h"
 #include "utils.h"
 #include <vector>
+#include "callmgr.h"
 
 using namespace std;
 
@@ -113,6 +114,33 @@ void LogicSystem::RegisterCallBacks() {
 
 	_fun_callbacks[ID_CREATE_GROUP_REQ] = std::bind(&LogicSystem::CreateGroupChat, this,
 		placeholders::_1, placeholders::_2, placeholders::_3);
+
+
+
+	_fun_callbacks[ID_VIDEO_INVITE_REQ] = std::bind(&LogicSystem::VideoInvite, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_VIDEO_ACCEPT_REQ] = std::bind(&LogicSystem::VideoAccept, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_VIDEO_REJECT_REQ] = std::bind(&LogicSystem::VideoReject, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_VIDEO_CANCEL_REQ] = std::bind(&LogicSystem::VideoCancel, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_VIDEO_HANGUP_REQ] = std::bind(&LogicSystem::VideoHangup, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_WEBRTC_OFFER_REQ] = std::bind(&LogicSystem::WebrtcOffer, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_WEBRTC_ANSWER_REQ] = std::bind(&LogicSystem::WebrtcAnswer, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+
+	_fun_callbacks[ID_WEBRTC_ICE_CANDIDATE_REQ] = std::bind(&LogicSystem::WebrtcIceCandidate, this,
+		placeholders::_1, placeholders::_2, placeholders::_3);
+	
 }
 
 void LogicSystem::LoginHandler(shared_ptr<CSession> session, const short &msg_id, const string &msg_data) {
@@ -1176,4 +1204,402 @@ void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session, const short
 	rtvalue["thread_id"] = thread_id;
 
 	// todo... 这里可能要通知所有人群聊已经创建完毕
+}
+
+void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+
+	Defer defer([session, &rtvalue]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_VIDEO_INVITE_RSP);
+		});
+
+	if (!root.isMember("uid") || !root.isMember("other_id")) {
+		rtvalue["error"] = ErrorCodes::Error_Json;
+		return;
+	}
+
+	int uid = root["uid"].asInt();
+	int other_id = root["other_id"].asInt();
+
+	if (uid == other_id) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_SELF_CALL;
+		return;
+	}
+
+	if (CallMgr::GetInstance().IsUserBusy(uid) || CallMgr::GetInstance().IsUserBusy(other_id)) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_USER_BUSY;
+		return;
+	}
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+	if (!b_ip) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_USER_OFFLINE;
+		return;
+	}
+
+	auto call_id = CallMgr::GetInstance().CreateCallSession(uid, other_id);
+	rtvalue["call_id"] = call_id;
+	rtvalue["other_id"] = other_id;
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	std::string base_key = USER_BASE_INFO + std::to_string(uid);
+	auto apply_info = std::make_shared<UserInfo>();
+	bool b_info = GetBaseInfo(base_key, uid, apply_info);
+
+	Json::Value notify;
+	notify["error"] = ErrorCodes::Success;
+	notify["call_id"] = call_id;
+	notify["from_uid"] = uid;
+	notify["call_type"] = "video";
+	if (b_info) {
+		notify["name"] = apply_info->name;
+		notify["icon"] = apply_info->icon;
+		notify["nick"] = apply_info->nick;
+	}
+
+	if (to_ip_value == self_name) {
+		auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+		if (to_session) {
+			to_session->Send(notify.toStyledString(), ID_NOTIFY_VIDEO_INVITE_REQ);
+		}
+		return;
+	}
+
+	// 跨服时你继续走 gRPC
+	// ChatGrpcClient::GetInstance()->NotifyVideoInvite(to_ip_value, xxx);
+}
+
+void LogicSystem::VideoAccept(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+
+	Defer defer([session, &rtvalue]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_VIDEO_ACCEPT_RSP);
+		});
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id")) {
+		rtvalue["error"] = ErrorCodes::Error_Json;
+		return;
+	}
+
+	int uid = root["uid"].asInt();
+	int other_id = root["other_id"].asInt();
+	std::string call_id = root["call_id"].asString();
+
+	CallSession call_session;
+	if (!CallMgr::GetInstance().GetCallSession(call_id, call_session)) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_CALL_NOT_FOUND;
+		return;
+	}
+
+	CallMgr::GetInstance().AcceptCall(call_id);
+
+	Json::Value notify;
+	notify["error"] = ErrorCodes::Success;
+	notify["call_id"] = call_id;
+	notify["uid"] = uid;
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+	if (!b_ip) {
+		return;
+	}
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	if (to_ip_value == self_name) {
+		auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+		if (to_session) {
+			to_session->Send(notify.toStyledString(), ID_NOTIFY_VIDEO_ACCEPT_REQ);
+		}
+		return;
+	}
+
+	// 跨服 gRPC
+}
+
+void LogicSystem::VideoReject(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+
+	Defer defer([session, &rtvalue]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_VIDEO_REJECT_RSP);
+		});
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id")) {
+		rtvalue["error"] = ErrorCodes::Error_Json;
+		return;
+	}
+
+	int uid = root["uid"].asInt();
+	int other_id = root["other_id"].asInt();
+	std::string call_id = root["call_id"].asString();
+
+	CallSession call_session;
+	if (!CallMgr::GetInstance().GetCallSession(call_id, call_session)) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_CALL_NOT_FOUND;
+		return;
+	}
+
+	Json::Value notify;
+	notify["error"] = ErrorCodes::Success;
+	notify["call_id"] = call_id;
+	notify["uid"] = uid;
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (b_ip) {
+		auto& cfg = ConfigMgr::Inst();
+		auto self_name = cfg["SelfServer"]["Name"];
+		if (to_ip_value == self_name) {
+			auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+			if (to_session) {
+				to_session->Send(notify.toStyledString(), ID_NOTIFY_VIDEO_REJECT_REQ);
+			}
+		}
+		else {
+			// 跨服 gRPC
+		}
+	}
+
+	CallMgr::GetInstance().EndCall(call_id);
+}
+
+void LogicSystem::VideoCancel(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+
+	Defer defer([session, &rtvalue]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_VIDEO_CANCEL_RSP);
+		});
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id")) {
+		rtvalue["error"] = ErrorCodes::Error_Json;
+		return;
+	}
+
+	int uid = root["uid"].asInt();
+	int other_id = root["other_id"].asInt();
+	std::string call_id = root["call_id"].asString();
+
+	CallSession call_session;
+	if (!CallMgr::GetInstance().GetCallSession(call_id, call_session)) {
+		rtvalue["error"] = ErrorCodes::ERR_VIDEO_CALL_NOT_FOUND;
+		return;
+	}
+
+	Json::Value notify;
+	notify["error"] = ErrorCodes::Success;
+	notify["call_id"] = call_id;
+	notify["uid"] = uid;
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (b_ip) {
+		auto& cfg = ConfigMgr::Inst();
+		auto self_name = cfg["SelfServer"]["Name"];
+		if (to_ip_value == self_name) {
+			auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+			if (to_session) {
+				to_session->Send(notify.toStyledString(), ID_NOTIFY_VIDEO_CANCEL_REQ);
+			}
+		}
+		else {
+			// 跨服 gRPC，后面你按现有模式补
+		}
+	}
+
+	CallMgr::GetInstance().EndCall(call_id);
+}
+
+void LogicSystem::VideoHangup(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+
+	Defer defer([session, &rtvalue]() {
+		std::string return_str = rtvalue.toStyledString();
+		session->Send(return_str, ID_VIDEO_HANGUP_RSP);
+		});
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id")) {
+		rtvalue["error"] = ErrorCodes::Error_Json;
+		return;
+	}
+
+	int uid = root["uid"].asInt();
+	int other_id = root["other_id"].asInt();
+	std::string call_id = root["call_id"].asString();
+
+	Json::Value notify;
+	notify["error"] = ErrorCodes::Success;
+	notify["call_id"] = call_id;
+	notify["uid"] = uid;
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (b_ip) {
+		auto& cfg = ConfigMgr::Inst();
+		auto self_name = cfg["SelfServer"]["Name"];
+		if (to_ip_value == self_name) {
+			auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+			if (to_session) {
+				to_session->Send(notify.toStyledString(), ID_NOTIFY_VIDEO_HANGUP_REQ);
+			}
+		}
+		else {
+			// 跨服 gRPC
+		}
+	}
+
+	CallMgr::GetInstance().EndCall(call_id);
+}
+
+void LogicSystem::WebrtcOffer(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id") || !root.isMember("sdp")) {
+		return;
+	}
+
+	int other_id = root["other_id"].asInt();
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+	if (!b_ip) {
+		return;
+	}
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	if (to_ip_value == self_name) {
+		auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+		if (to_session) {
+			to_session->Send(root.toStyledString(), ID_NOTIFY_WEBRTC_OFFER_REQ);
+		}
+		return;
+	}
+
+	// 跨服 gRPC
+}
+
+void LogicSystem::WebrtcAnswer(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id") || !root.isMember("sdp")) {
+		return;
+	}
+
+	int other_id = root["other_id"].asInt();
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+	if (!b_ip) {
+		return;
+	}
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	if (to_ip_value == self_name) {
+		auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+		if (to_session) {
+			to_session->Send(root.toStyledString(), ID_NOTIFY_WEBRTC_ANSWER_REQ);
+		}
+		return;
+	}
+
+	// 跨服 gRPC
+}
+
+void LogicSystem::WebrtcIceCandidate(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
+{
+	Json::Reader reader;
+	Json::Value root;
+	reader.parse(msg_data, root);
+
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_id") ||
+		!root.isMember("candidate") || !root.isMember("sdpMid") || !root.isMember("sdpMLineIndex")) {
+		return;
+	}
+
+	int other_id = root["other_id"].asInt();
+
+	std::string to_str = std::to_string(other_id);
+	std::string to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+	if (!b_ip) {
+		return;
+	}
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	if (to_ip_value == self_name) {
+		auto to_session = UserMgr::GetInstance()->GetSession(other_id);
+		if (to_session) {
+			to_session->Send(root.toStyledString(), ID_NOTIFY_WEBRTC_ICE_CANDIDATE_REQ);
+		}
+		return;
+	}
+
+	// 跨服 gRPC
 }

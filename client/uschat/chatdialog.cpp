@@ -28,6 +28,9 @@
 // 或者
 #include <QtGlobal>
 #include <QObject>
+#include "videocallmanager.h"
+#include "videocallwidget.h"
+
 
 ChatDialog::ChatDialog(QWidget* parent) :
 	QDialog(parent),
@@ -228,6 +231,15 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
     // 发送端上传完成
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_chat_img_upload_finish_rsp, this, &ChatDialog::slot_chat_img_upload_finish);
+
+
+
+    //连接好友信息界面发送的点击事件
+    connect(ui->friend_info_page, &FriendInfoPage::sig_video_invite, this,
+            &ChatDialog::slot_video_invite);
+
+
+    VideoCallWidget::GetInstance();
 }
 
 ChatDialog::~ChatDialog()
@@ -256,6 +268,11 @@ void ChatDialog::loadChatList()
 
 
 void ChatDialog::loadChatMsg() {
+
+    //无聊天信息,直接返回
+    if(_is_frist_load == true){
+        return;
+    }
 
 	//发送聊天记录请求
     //获取当前会话的数据
@@ -630,6 +647,7 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
         _chat_thread_items.insert(-1, item);
 
         _is_load_ai = true;
+        qDebug()<<"AI左侧会话框加载完成";
     }
 
 
@@ -658,7 +676,7 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 		}
 
 		auto uid = UserMgr::GetInstance()->GetUid();
-		auto other_uid = 0;
+        auto other_uid = 0;
 		if (uid == cti->_user1_id) {
 			other_uid = cti->_user2_id;
 		}
@@ -700,6 +718,12 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
     qDebug() << "close LoadingDlg";
 	showLoadingDlg(false);
 	//继续加载聊天数据
+
+    if(load_more == false && chat_threads.size() == 0){
+        _is_frist_load = true;
+        qDebug() << "没有会话信息,不加载消息";
+    }
+
 	loadChatMsg();
 }
 
@@ -1157,6 +1181,7 @@ void ChatDialog::slot_side_chat()
 void ChatDialog::slot_side_contact() {
 	qDebug() << "receive side contact clicked";
 	ClearLabelState(ui->side_contact_lb);
+    ui->side_contact_lb->ShowRedPoint(false);
 	//设置
 	if (_last_widget == nullptr) {
 		ui->stackedWidget->setCurrentWidget(ui->friend_apply_page);
@@ -1218,6 +1243,7 @@ void ChatDialog::slot_switch_apply_friend_page()
 	qDebug() << "receive switch apply friend page sig";
 	_last_widget = ui->friend_apply_page;
 	ui->stackedWidget->setCurrentWidget(ui->friend_apply_page);
+    ui->con_user_list->ShowRedPoint(false);
 }
 
 void ChatDialog::slot_friend_info_page(std::shared_ptr<UserInfo> user_info)
@@ -1405,6 +1431,18 @@ void ChatDialog::slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> use
 	emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_CREATE_PRIVATE_CHAT_REQ, jsonData);
 }
 
+
+
+void ChatDialog::slot_video_invite(std::shared_ptr<UserInfo> user_info)
+{
+    slot_jump_chat_item_from_infopage(user_info);
+
+    // 先确保窗口实例已创建
+    VideoCallWidget::GetInstance();
+
+    auto uid = UserMgr::GetInstance()->GetUid();
+    VideoCallManager::GetInstance()->StartCall(uid, user_info->_uid);
+}
 
 void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info) {
     auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(msg_info->_thread_id);

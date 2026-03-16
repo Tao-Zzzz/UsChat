@@ -60,5 +60,6 @@
         <file>res/ellipsis.png</file>
         <file>res/ellipsis_hover.png</file>
         <file>res/ellipsis_press.png</file>
+        <file>html/rtc_call.html</file>
     </qresource>
 </RCC>

@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>llfcchat</string>
+   <string>uschat</string>
   </property>
   <widget class="QWidget" name="centralWidget"/>
  </widget>
