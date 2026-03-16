@@ -19,7 +19,7 @@ void ClickableLabel::mousePressEvent(QMouseEvent* event)
     QLabel::mousePressEvent(event);
 }
 
-void ClickableLabel::enterEvent(QEvent* event)
+void ClickableLabel::enterEvent(QEnterEvent* event)
 {
     m_hovered = true;
     update();

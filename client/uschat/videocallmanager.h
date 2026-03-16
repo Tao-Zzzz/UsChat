@@ -54,6 +54,8 @@ public:
     // WebRTC 真正接通后可主动调用这个
     void MarkCallConnected();
 
+    void StartBrowserRtcAsCallerIfNeeded();
+    void StartBrowserRtcAsCalleeIfNeeded();
 signals:
     void sig_show_calling_ui();
     void sig_show_incoming_ui(const QJsonObject& obj);
@@ -83,6 +85,7 @@ private:
     int _peerUid = 0;
     QString _callId;
     bool _rtcStarted = false;
+    bool _browserRtcStarted = false;
 };
 
 #endif // VIDEOCALLMANAGER_H

@@ -15,7 +15,7 @@ StateWidget::StateWidget(QWidget *parent) : QWidget(parent),_curstate(ClickLbSta
 void StateWidget::paintEvent(QPaintEvent *event)
 {
     QStyleOption opt;
-    opt.init(this);
+    opt.initFrom(this);
     QPainter p(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, this);
     return;
@@ -70,7 +70,7 @@ void StateWidget::mouseReleaseEvent(QMouseEvent *event)
 }
 
 // 处理鼠标悬停进入事件
-void StateWidget::enterEvent(QEvent* event) {
+void StateWidget::enterEvent(QEnterEvent* event) {
     // 在这里处理鼠标悬停进入的逻辑
     if(_curstate == ClickLbState::Normal){
          //qDebug()<<"enter , change to normal hover: "<< _normal_hover;
@@ -159,7 +159,7 @@ void StateWidget::AddRedPoint()
     QVBoxLayout* layout2 = new QVBoxLayout;
     _red_point->setAlignment(Qt::AlignCenter);
     layout2->addWidget(_red_point);
-    layout2->setMargin(0);
+    layout2->setContentsMargins(0, 0, 0, 0);
     this->setLayout(layout2);
     _red_point->setVisible(false);
 }

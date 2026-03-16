@@ -8,6 +8,8 @@ class QPushButton;
 class QStackedWidget;
 class QTimer;
 class LocalCameraPreview;
+class QWebEngineView;
+class QWebChannel;
 
 class VideoCallWidget : public QWidget
 {
@@ -29,6 +31,8 @@ public:
 
     QWidget* GetLocalPreviewWidget() const;
     QWidget* GetRemoteVideoWidget() const;
+    void InitWebRtcPage();
+
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -87,6 +91,9 @@ private:
     int _callSeconds = 0;
 
     LocalCameraPreview* _callingPreview = nullptr;
+
+    QWebEngineView* _webView = nullptr;
+    QWebChannel* _webChannel = nullptr;
 };
 
 #endif // VIDEOCALLWIDGET_H

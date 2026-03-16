@@ -173,7 +173,7 @@ QPixmap ImageCropperLabel::getCroppedImage(OutputShape shape) {
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
         painter.fillRect(0, 0, size.width(), size.height(), Qt::white);
         painter.setBrush(QColor(0, 0, 0));
-        painter.drawRoundRect(0, 0, size.width(), size.height(), 99, 99);
+        painter.drawRoundedRect(0, 0, size.width(), size.height(), 99, 99, Qt::RelativeSize);
         resultImage.setMask(mask);
     }
 

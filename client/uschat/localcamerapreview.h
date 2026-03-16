@@ -5,8 +5,10 @@
 
 QT_BEGIN_NAMESPACE
 class QCamera;
-class QCameraViewfinder;
+class QVideoWidget;
 class QLabel;
+class QMediaCaptureSession;
+class QResizeEvent;
 QT_END_NAMESPACE
 
 class LocalCameraPreview : public QWidget
@@ -19,7 +21,10 @@ public:
     bool StartPreview();
     void StopPreview();
     bool IsStarted() const;
+
+protected:
     void resizeEvent(QResizeEvent *event) override;
+
 private:
     void InitUi();
     void ShowText(const QString& text);
@@ -27,7 +32,8 @@ private:
 
 private:
     QCamera* _camera = nullptr;
-    QCameraViewfinder* _viewfinder = nullptr;
+    QMediaCaptureSession* _captureSession = nullptr;
+    QVideoWidget* _videoWidget = nullptr;
     QLabel* _overlayText = nullptr;
     bool _started = false;
 };

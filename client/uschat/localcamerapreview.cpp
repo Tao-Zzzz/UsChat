@@ -1,10 +1,13 @@
-
 #include "localcamerapreview.h"
+
 #include <QCamera>
-#include <QCameraInfo>
-#include <QCameraViewfinder>
+#include <QMediaCaptureSession>
+#include <QMediaDevices>
+#include <QVideoWidget>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QResizeEvent>
+#include <QDebug>
 
 LocalCameraPreview::LocalCameraPreview(QWidget *parent)
     : QWidget(parent)
@@ -25,9 +28,9 @@ void LocalCameraPreview::InitUi()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    _viewfinder = new QCameraViewfinder(this);
-    _viewfinder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    layout->addWidget(_viewfinder);
+    _videoWidget = new QVideoWidget(this);
+    _videoWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    layout->addWidget(_videoWidget);
 
     _overlayText = new QLabel(QStringLiteral("本地预览"), this);
     _overlayText->setAlignment(Qt::AlignCenter);
@@ -43,22 +46,24 @@ void LocalCameraPreview::InitUi()
 
 bool LocalCameraPreview::StartPreview()
 {
-
-
-
     if (_started) {
         return true;
     }
 
-    auto cameras = QCameraInfo::availableCameras();
+    const auto cameras = QMediaDevices::videoInputs();
     if (cameras.isEmpty()) {
         ShowText(QStringLiteral("未检测到摄像头"));
         return false;
     }
 
     qDebug() << "启动摄像头";
+
     _camera = new QCamera(cameras.first(), this);
-    _camera->setViewfinder(_viewfinder);
+    _captureSession = new QMediaCaptureSession(this);
+
+    _captureSession->setCamera(_camera);
+    _captureSession->setVideoOutput(_videoWidget);
+
     _camera->start();
 
     _started = true;
@@ -72,6 +77,11 @@ void LocalCameraPreview::StopPreview()
         _camera->stop();
         _camera->deleteLater();
         _camera = nullptr;
+    }
+
+    if (_captureSession) {
+        _captureSession->deleteLater();
+        _captureSession = nullptr;
     }
 
     _started = false;
@@ -104,6 +114,7 @@ void LocalCameraPreview::HideText()
 void LocalCameraPreview::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
+
     if (_overlayText) {
         _overlayText->setGeometry(10, 10, width() - 20, 36);
     }

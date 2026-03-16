@@ -251,6 +251,7 @@ Makefile: ../../llfcchat.pro E:/Tool/Real_qt/5.15.1/mingw81_32/mkspecs/win32-g++
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Widgets.prl \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Multimedia.prl \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Gui.prl \
+		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5WebSockets.prl \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Network.prl \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Core.prl \
 		E:/Tool/Real_qt/5.15.1/mingw81_32/lib/qtmain.prl \
@@ -439,6 +440,7 @@ E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5MultimediaWidgets.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Widgets.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Multimedia.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Gui.prl:
+E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5WebSockets.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Network.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/Qt5Core.prl:
 E:/Tool/Real_qt/5.15.1/mingw81_32/lib/qtmain.prl:

@@ -53,7 +53,7 @@ void StateLabel::mouseReleaseEvent(QMouseEvent *event)
 }
 
 // 处理鼠标悬停进入事件
-void StateLabel::enterEvent(QEvent* event) {
+void StateLabel::enterEvent(QEnterEvent* event) {
     // 在这里处理鼠标悬停进入的逻辑
     if(_curstate == ClickLbState::Normal){
          //qDebug()<<"enter , change to normal hover: "<< _normal_hover;

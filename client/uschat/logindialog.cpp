@@ -3,7 +3,7 @@
 #include <QDebug>
 #include "httpmgr.h"
 #include "tcpmgr.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QRegularExpression>
 #include <QPainter>
 #include "filetcpmgr.h"

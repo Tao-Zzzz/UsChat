@@ -1,7 +1,6 @@
 #include "VideoCallWidget.h"
 #include "VideoCallManager.h"
 #include "LocalCameraPreview.h"
-#include "rtcengine.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -13,6 +12,11 @@
 #include <QTimer>
 #include <QApplication>
 #include <QScreen>
+#include <QWebEngineView>
+#include <QWebChannel>
+#include <QUrl>
+#include "WebRtcJsBridge.h"
+
 
 VideoCallWidget* VideoCallWidget::GetInstance()
 {
@@ -94,6 +98,8 @@ void VideoCallWidget::InitUi()
         QRect rect = screen->availableGeometry();
         move(rect.center() - QPoint(width() / 2, height() / 2));
     }
+
+    InitWebRtcPage();
 }
 
 QWidget* VideoCallWidget::CreateCallingPage()
@@ -237,18 +243,18 @@ QWidget* VideoCallWidget::CreateInCallPage()
     _labCallTime->setAlignment(Qt::AlignCenter);
     _labCallTime->setStyleSheet("font-size: 16px; color: #9fd3ff;");
 
-    _remoteVideoView = new QFrame(page);
+    _remoteVideoView = new QWidget(page);
     _remoteVideoView->setMinimumHeight(520);
     _remoteVideoView->setStyleSheet("background-color: #2a2a2a; border-radius: 12px;");
-    auto remoteLayout = new QVBoxLayout(_remoteVideoView);
-    QLabel* remoteText = new QLabel(QStringLiteral("远端视频区域\n（后续替换为 WebRTC 远端画面）"), _remoteVideoView);
-    remoteText->setAlignment(Qt::AlignCenter);
-    remoteText->setStyleSheet("font-size: 18px; color: #bbbbbb;");
-    remoteLayout->addStretch();
-    remoteLayout->addWidget(remoteText);
-    remoteLayout->addStretch();
 
-    _localPreview = new LocalCameraPreview(_remoteVideoView);
+    auto remoteLayout = new QVBoxLayout(_remoteVideoView);
+    remoteLayout->setContentsMargins(0, 0, 0, 0);
+    remoteLayout->setSpacing(0);
+
+    _webView = new QWebEngineView(_remoteVideoView);
+    remoteLayout->addWidget(_webView);
+
+
     _localPreview->setStyleSheet("background-color: #555555; border-radius: 10px;");
     _localPreview->setGeometry(260, 16, 130, 180);
     _localPreview->raise();
@@ -310,20 +316,11 @@ void VideoCallWidget::ShowConnecting()
     SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
     _labInCallStatus->setText(QStringLiteral("正在建立连接..."));
     _labCallTime->setText(QStringLiteral("00:00"));
-    StartLocalPreview();
     StopCallTimer();
     SwitchToPage(PAGE_INCALL);
     show();
     raise();
     activateWindow();
-
-    QTimer::singleShot(0, this, [this]() {
-        UpdateInCallLocalPreviewGeometry();
-    });
-
-    auto rtc = RtcEngine::GetInstance();
-    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
-    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
 }
 
 void VideoCallWidget::ShowInCall()
@@ -331,20 +328,11 @@ void VideoCallWidget::ShowInCall()
     auto mgr = VideoCallManager::GetInstance();
     SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
     _labInCallStatus->setText(QStringLiteral("通话中"));
-    StartLocalPreview();
     StartCallTimer();
     SwitchToPage(PAGE_INCALL);
     show();
     raise();
     activateWindow();
-
-    QTimer::singleShot(0, this, [this]() {
-        UpdateInCallLocalPreviewGeometry();
-    });
-
-    auto rtc = RtcEngine::GetInstance();
-    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
-    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
 }
 
 void VideoCallWidget::ShowEnd(const QString& text)
@@ -465,27 +453,19 @@ void VideoCallWidget::StartLocalPreview()
     if (_callingPreview && _stack->currentIndex() == PAGE_CALLING) {
         _callingPreview->StartPreview();
     }
-
-    if (_localPreview && _stack->currentIndex() == PAGE_INCALL) {
-        _localPreview->StartPreview();
-    }
 }
 
 void VideoCallWidget::StopLocalPreview()
 {
 
-    if (_callingPreview) {
-        _callingPreview->StopPreview();
-    }
-
-    if (_localPreview) {
-        _localPreview->StopPreview();
+    if (_callingPreview && _stack->currentIndex() == PAGE_CALLING) {
+        _callingPreview->StartPreview();
     }
 }
 
 void VideoCallWidget::StartCallTimer()
 {
-    _callSeconds = 0;
+    _callSeconds = 0;  // 确保每次都从0开始
     _labCallTime->setText(QStringLiteral("00:00"));
     _callTimer->start(1000);
 }
@@ -503,25 +483,7 @@ void VideoCallWidget::StopCallTimer()
 
 void VideoCallWidget::UpdateInCallLocalPreviewGeometry()
 {
-    if (!_localPreview || !_remoteVideoView) {
-        return;
-    }
 
-    int w = 130;
-    int h = 180;
-    int x = _remoteVideoView->width() - w - 16;
-    int y = 16;
-
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-
-    _localPreview->setGeometry(x, y, w, h);
-    _localPreview->raise();
-    _localPreview->show();
-
-    auto rtc = RtcEngine::GetInstance();
-    rtc->SetLocalRenderWidget(GetLocalPreviewWidget());
-    rtc->SetRemoteRenderWidget(GetRemoteVideoWidget());
 }
 
 QWidget* VideoCallWidget::GetLocalPreviewWidget() const
@@ -532,4 +494,17 @@ QWidget* VideoCallWidget::GetLocalPreviewWidget() const
 QWidget* VideoCallWidget::GetRemoteVideoWidget() const
 {
     return _remoteVideoView;
+}
+
+void VideoCallWidget::InitWebRtcPage()
+{
+    if (!_webView) {
+        return;
+    }
+
+    _webChannel = new QWebChannel(_webView->page());
+    _webChannel->registerObject(QStringLiteral("WebRtcJsBridge"), WebRtcJsBridge::GetInstance());
+    _webView->page()->setWebChannel(_webChannel);
+
+    _webView->load(QUrl("qrc:/web/rtc_call.html"));
 }

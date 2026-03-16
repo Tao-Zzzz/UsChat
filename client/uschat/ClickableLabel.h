@@ -13,7 +13,7 @@ public:
     void showIconOverlay(bool show);  //ÏÔÊ¾/Òş²ØÕÚÕÖÍ¼±ê
 protected:
     void mousePressEvent(QMouseEvent* event) override;
-    void enterEvent(QEvent* event) override;
+    void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
 
