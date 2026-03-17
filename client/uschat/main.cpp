@@ -1,12 +1,48 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QFile>
+#include <QStyleFactory>
+#include <QPalette>
+
 #include "global.h"
 #include "tcpmgr.h"
 #include "filetcpmgr.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+
+    // 禁用 Qt 6 的系统主题自动检测
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
+
+// 如果是 Windows，强制不使用深色标题栏
+#ifdef Q_OS_WIN
+    qputenv("QT_QPA_PLATFORM", "windows:darkmode=0");
+#endif
+
+    // 1. 强制使用融合风格（Fusion），它在各平台表现最一致
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
+
+    // 2. 强制设置浅色调色板
+    QPalette lightPalette;
+    lightPalette.setColor(QPalette::Window, QColor(240, 240, 240));
+    lightPalette.setColor(QPalette::WindowText, Qt::black);
+    lightPalette.setColor(QPalette::Base, Qt::white);
+    lightPalette.setColor(QPalette::AlternateBase, QColor(233, 233, 233));
+    lightPalette.setColor(QPalette::ToolTipBase, Qt::white);
+    lightPalette.setColor(QPalette::ToolTipText, Qt::black);
+    lightPalette.setColor(QPalette::Text, Qt::black);
+    lightPalette.setColor(QPalette::Button, QColor(240, 240, 240));
+    lightPalette.setColor(QPalette::ButtonText, Qt::black);
+    lightPalette.setColor(QPalette::BrightText, Qt::red);
+    lightPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+    lightPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    lightPalette.setColor(QPalette::HighlightedText, Qt::white);
+
+    QApplication::setPalette(lightPalette);
+
+
 
     QFile qss(":/style/stylesheet.qss");
 

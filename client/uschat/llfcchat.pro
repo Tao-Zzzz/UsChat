@@ -46,7 +46,6 @@ SOURCES += \
         applyfriendlist.cpp \
         applyfriendpage.cpp \
         authenfriend.cpp \
-        browserrtcbridge.cpp \
         chatdialog.cpp \
         chatpage.cpp \
         chatuserlist.cpp \
@@ -79,7 +78,6 @@ SOURCES += \
         moremenu.cpp \
         registerdialog.cpp \
         resetdialog.cpp \
-        rtcengine.cpp \
         searchlist.cpp \
         statelabel.cpp \
         statewidget.cpp \
@@ -90,8 +88,7 @@ SOURCES += \
         usermgr.cpp \
         videocallmanager.cpp \
         videocallwidget.cpp \
-        webrtcjsbridge.cpp \
-        webrtcmanager.cpp
+        webrtcjsbridge.cpp
 
 HEADERS += \
         BubbleFrame.h \
@@ -112,7 +109,6 @@ HEADERS += \
         applyfriendlist.h \
         applyfriendpage.h \
         authenfriend.h \
-        browserrtcbridge.h \
         chatdialog.h \
         chatpage.h \
         chatuserlist.h \
@@ -145,7 +141,6 @@ HEADERS += \
         moremenu.h \
         registerdialog.h \
         resetdialog.h \
-        rtcengine.h \
         searchlist.h \
         singleton.h \
         statelabel.h \
@@ -157,8 +152,7 @@ HEADERS += \
         usermgr.h \
         videocallmanager.h \
         videocallwidget.h \
-        webrtcjsbridge.h \
-        webrtcmanager.h
+        webrtcjsbridge.h
 
 FORMS += \
         adduseritem.ui \

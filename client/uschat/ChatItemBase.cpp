@@ -31,15 +31,29 @@ ChatItemBase::ChatItemBase(ChatRole role, QWidget *parent)
     {
         m_pNameLabel->setContentsMargins(0,0,8,0);
         m_pNameLabel->setAlignment(Qt::AlignRight);
-        pGLayout->addWidget(m_pNameLabel, 0,2, 1,1);
-        pGLayout->addWidget(m_pIconLabel, 0, 3, 2,1, Qt::AlignTop);
+
+        // 名字在 0行 2列
+        pGLayout->addWidget(m_pNameLabel, 0, 2, 1, 1);
+
+        // 头像跨 2行 放在第 3列
+        pGLayout->addWidget(m_pIconLabel, 0, 3, 2, 1, Qt::AlignTop);
+
+        // 弹簧在第 0列，给它设置伸缩系数 1
         pGLayout->addItem(pSpacer, 1, 0, 1, 1);
-        pGLayout->addWidget(m_pStatusLabel,1,1,1,1,Qt::AlignCenter);
-        pGLayout->addWidget(m_pBubble, 1,2, 1,1);
-        pGLayout->setColumnStretch(0, 2);
-        pGLayout->setColumnStretch(1,0); //status图标(固定大小)
-        pGLayout->setColumnStretch(2,3); //名字+气泡(主要拉伸区域)
-        pGLayout->setColumnStretch(3, 0);
+
+        // 状态图标在第 1列
+        pGLayout->addWidget(m_pStatusLabel, 1, 1, 1, 1, Qt::AlignCenter);
+
+        // 【关键修改点】：给气泡增加 Qt::AlignRight 参数
+        // 这样即便格子的宽度比气泡宽，气泡也会紧贴右侧（头像方向），而不会向左拉伸
+        pGLayout->addWidget(m_pBubble, 1, 2, 1, 1, Qt::AlignRight);
+
+        // 重新校准比例：
+        pGLayout->setColumnStretch(0, 1); // 让左边空白区域吃掉所有剩余空间
+        pGLayout->setColumnStretch(1, 0); // 固定
+        pGLayout->setColumnStretch(2, 0); // 气泡列：不准自动拉伸
+        pGLayout->setColumnStretch(3, 0); // 头像列：固定
+
     }else{
         m_pNameLabel->setContentsMargins(8,0,0,0);
         m_pNameLabel->setAlignment(Qt::AlignLeft);
@@ -47,8 +61,12 @@ ChatItemBase::ChatItemBase(ChatRole role, QWidget *parent)
         pGLayout->addWidget(m_pNameLabel, 0,1, 1,1);
         pGLayout->addWidget(m_pBubble, 1,1, 1,1);
         pGLayout->addItem(pSpacer, 2, 2, 1, 1);
-        pGLayout->setColumnStretch(1, 3);
-        pGLayout->setColumnStretch(2, 2);
+
+        // pGLayout->setColumnStretch(1, 3);
+        // pGLayout->setColumnStretch(2, 2);
+        pGLayout->setColumnStretch(0, 0); // 头像固定
+        pGLayout->setColumnStretch(1, 0); // 气泡和名字按需分配
+        pGLayout->setColumnStretch(2, 1); // 让右边的弹簧（pSpacer）占据所有剩余空间
     }
     this->setLayout(pGLayout);
 }

@@ -53,6 +53,12 @@ void TextBubble::setPlainText(const QString &text)
     }
     //设置这个气泡的最大宽度 只需要设置一次
     setMaximumWidth(max_width + doc_margin * 2 + (margin_left + margin_right));        //设置最大宽度
+
+    // 强制设置宽度，不要给布局留下“自由发挥”的空间
+    setFixedWidth(max_width + doc_margin * 2 + (margin_left + margin_right) + 4);
+
+    // 告诉父级布局：我的尺寸变了，请重新排版
+    this->updateGeometry();
 }
 
 void TextBubble::adjustTextHeight()

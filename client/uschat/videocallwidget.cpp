@@ -1,6 +1,5 @@
 #include "VideoCallWidget.h"
 #include "VideoCallManager.h"
-#include "LocalCameraPreview.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -17,12 +16,12 @@
 #include <QUrl>
 #include "WebRtcJsBridge.h"
 
-
 VideoCallWidget* VideoCallWidget::GetInstance()
 {
     static VideoCallWidget instance;
     return &instance;
 }
+
 VideoCallWidget::VideoCallWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -37,30 +36,51 @@ VideoCallWidget::VideoCallWidget(QWidget *parent)
             this, &VideoCallWidget::ShowIncoming);
 
     connect(mgr, &VideoCallManager::sig_call_accepted, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowConnecting();
     });
 
     connect(mgr, &VideoCallManager::sig_call_rejected, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowEnd(QStringLiteral("对方已拒绝"));
     });
 
     connect(mgr, &VideoCallManager::sig_call_hangup, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowEnd(QStringLiteral("对方已挂断"));
     });
 
     connect(mgr, &VideoCallManager::sig_call_connected, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowInCall();
     });
 
     connect(mgr, &VideoCallManager::sig_call_error, this, [this](const QString& text) {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowEnd(text);
     });
 
     connect(mgr, &VideoCallManager::sig_call_cancelled, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowEnd(QStringLiteral("通话已取消"));
     });
 
     connect(mgr, &VideoCallManager::sig_call_local_hangup, this, [this]() {
+        if (_btnAccept) {
+            _btnAccept->setEnabled(true);
+        }
         ShowEnd(QStringLiteral("通话已结束"));
     });
 
@@ -126,11 +146,14 @@ QWidget* VideoCallWidget::CreateCallingPage()
     QFrame* preview = new QFrame(page);
     preview->setMinimumHeight(360);
     preview->setStyleSheet("background-color: #333333; border-radius: 12px;");
-    auto previewLayout = new QVBoxLayout(preview);
 
-    _callingPreview = new LocalCameraPreview(preview);
-    _callingPreview->setStyleSheet("background-color: #2d2d2d; border-radius: 12px;");
-    previewLayout->addWidget(_callingPreview);
+    auto previewLayout = new QVBoxLayout(preview);
+    QLabel* previewText = new QLabel(QStringLiteral("等待对方接听后开启摄像头预览"), preview);
+    previewText->setAlignment(Qt::AlignCenter);
+    previewText->setStyleSheet("font-size: 18px; color: #bbbbbb;");
+    previewLayout->addStretch();
+    previewLayout->addWidget(previewText);
+    previewLayout->addStretch();
 
     _btnCancel = new QPushButton(QStringLiteral("取消"), page);
     _btnCancel->setFixedHeight(46);
@@ -141,7 +164,6 @@ QWidget* VideoCallWidget::CreateCallingPage()
         );
 
     connect(_btnCancel, &QPushButton::clicked, this, &VideoCallWidget::slot_cancel);
-    // connect(this, &VideoCallWidget::destroyed, localPreview, &QObject::deleteLater);
 
     layout->addWidget(title);
     layout->addSpacing(16);
@@ -202,6 +224,7 @@ QWidget* VideoCallWidget::CreateIncomingPage()
     _btnAccept->setStyleSheet(
         "QPushButton { background-color: #5cb85c; color: white; border: none; border-radius: 8px; font-size: 16px; }"
         "QPushButton:hover { background-color: #449d44; }"
+        "QPushButton:disabled { background-color: #7fbf7f; color: #eeeeee; }"
         );
 
     connect(_btnReject, &QPushButton::clicked, this, &VideoCallWidget::slot_reject);
@@ -254,11 +277,6 @@ QWidget* VideoCallWidget::CreateInCallPage()
     _webView = new QWebEngineView(_remoteVideoView);
     remoteLayout->addWidget(_webView);
 
-
-    _localPreview->setStyleSheet("background-color: #555555; border-radius: 10px;");
-    _localPreview->setGeometry(260, 16, 130, 180);
-    _localPreview->raise();
-
     _btnHangup = new QPushButton(QStringLiteral("挂断"), page);
     _btnHangup->setFixedHeight(46);
     _btnHangup->setStyleSheet(
@@ -285,10 +303,11 @@ void VideoCallWidget::ShowCalling()
     _btnCancel->setEnabled(false);
     StopCallTimer();
     SwitchToPage(PAGE_CALLING);
-    StartLocalPreview();
     show();
     raise();
     activateWindow();
+
+    // emit WebRtcJsBridge::GetInstance()->qtStartPreview();
 }
 
 void VideoCallWidget::ShowIncoming(const QJsonObject& obj)
@@ -299,6 +318,10 @@ void VideoCallWidget::ShowIncoming(const QJsonObject& obj)
     }
     if (name.isEmpty()) {
         name = QStringLiteral("用户 %1").arg(obj.value("from_uid").toInt());
+    }
+
+    if (_btnAccept) {
+        _btnAccept->setEnabled(true);
     }
 
     _labIncomingPeerName->setText(name);
@@ -314,6 +337,7 @@ void VideoCallWidget::ShowConnecting()
 {
     auto mgr = VideoCallManager::GetInstance();
     SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
+
     _labInCallStatus->setText(QStringLiteral("正在建立连接..."));
     _labCallTime->setText(QStringLiteral("00:00"));
     StopCallTimer();
@@ -327,6 +351,7 @@ void VideoCallWidget::ShowInCall()
 {
     auto mgr = VideoCallManager::GetInstance();
     SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
+
     _labInCallStatus->setText(QStringLiteral("通话中"));
     StartCallTimer();
     SwitchToPage(PAGE_INCALL);
@@ -339,11 +364,8 @@ void VideoCallWidget::ShowEnd(const QString& text)
 {
     _labInCallStatus->setText(text);
     StopCallTimer();
-    StopLocalPreview();
 
-    if (isVisible()) {
-        SwitchToPage(PAGE_INCALL);
-    }
+    SwitchToPage(PAGE_INCALL);
 
     QTimer::singleShot(1200, this, [this]() {
         this->hide();
@@ -411,8 +433,10 @@ void VideoCallWidget::resizeEvent(QResizeEvent *event)
 
 void VideoCallWidget::slot_accept()
 {
+    if (_btnAccept) {
+        _btnAccept->setEnabled(false);
+    }
     VideoCallManager::GetInstance()->AcceptCall();
-    ShowConnecting();
 }
 
 void VideoCallWidget::slot_reject()
@@ -448,24 +472,9 @@ void VideoCallWidget::SwitchToPage(int index)
     _stack->setCurrentIndex(index);
 }
 
-void VideoCallWidget::StartLocalPreview()
-{
-    if (_callingPreview && _stack->currentIndex() == PAGE_CALLING) {
-        _callingPreview->StartPreview();
-    }
-}
-
-void VideoCallWidget::StopLocalPreview()
-{
-
-    if (_callingPreview && _stack->currentIndex() == PAGE_CALLING) {
-        _callingPreview->StartPreview();
-    }
-}
-
 void VideoCallWidget::StartCallTimer()
 {
-    _callSeconds = 0;  // 确保每次都从0开始
+    _callSeconds = 0;
     _labCallTime->setText(QStringLiteral("00:00"));
     _callTimer->start(1000);
 }
@@ -483,12 +492,6 @@ void VideoCallWidget::StopCallTimer()
 
 void VideoCallWidget::UpdateInCallLocalPreviewGeometry()
 {
-
-}
-
-QWidget* VideoCallWidget::GetLocalPreviewWidget() const
-{
-    return _localPreview;
 }
 
 QWidget* VideoCallWidget::GetRemoteVideoWidget() const
@@ -505,6 +508,25 @@ void VideoCallWidget::InitWebRtcPage()
     _webChannel = new QWebChannel(_webView->page());
     _webChannel->registerObject(QStringLiteral("WebRtcJsBridge"), WebRtcJsBridge::GetInstance());
     _webView->page()->setWebChannel(_webChannel);
+
+    connect(_webView->page(), &QWebEnginePage::featurePermissionRequested,
+            this, [this](const QUrl &securityOrigin, QWebEnginePage::Feature feature) {
+                if (feature == QWebEnginePage::MediaAudioCapture ||
+                    feature == QWebEnginePage::MediaVideoCapture ||
+                    feature == QWebEnginePage::MediaAudioVideoCapture) {
+                    _webView->page()->setFeaturePermission(
+                        securityOrigin,
+                        feature,
+                        QWebEnginePage::PermissionGrantedByUser
+                        );
+                } else {
+                    _webView->page()->setFeaturePermission(
+                        securityOrigin,
+                        feature,
+                        QWebEnginePage::PermissionDeniedByUser
+                        );
+                }
+            });
 
     _webView->load(QUrl("qrc:/web/rtc_call.html"));
 }

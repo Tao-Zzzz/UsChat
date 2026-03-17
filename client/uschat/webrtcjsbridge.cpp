@@ -13,6 +13,7 @@ WebRtcJsBridge::WebRtcJsBridge(QObject* parent)
 
 void WebRtcJsBridge::jsReady()
 {
+    // 先留空。后续如果你要做“页面 ready 后再收 offer/answer/ice”，可以从这里扩展。
 }
 
 void WebRtcJsBridge::jsSendOffer(const QString& sdp)

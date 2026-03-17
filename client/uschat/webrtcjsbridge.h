@@ -40,6 +40,7 @@ signals:
     void qtSetRemoteAnswer(const QString& sdp);
     void qtAddRemoteIce(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
     void qtHangup();
+    void qtStartPreview();
 };
 
 #endif // WEBRTCJSBRIDGE_H

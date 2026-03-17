@@ -60,25 +60,194 @@ html, body {
 let bridge = null;
 let pc = null;
 let localStream = null;
+let demoVideoEl = null;
 let started = false;
 let role = null;
 let pendingIce = [];
 
-const remoteVideo = document.getElementById('remoteVideo');
-const localVideo = document.getElementById('localVideo');
-const statusEl = document.getElementById('status');
+const DEMO_VIDEO_URL = "qrc:/web/demo.mp4";
+
+const remoteVideo = document.getElementById("remoteVideo");
+const localVideo = document.getElementById("localVideo");
+const statusEl = document.getElementById("status");
 
 function setStatus(text) {
     statusEl.innerText = text;
+    console.log("[RTC]", text);
+}
+
+function logError(prefix, err) {
+    console.error(prefix, err, err && err.name, err && err.message);
+}
+
+function isLikelyDeviceError(err) {
+    if (!err) return false;
+    const name = String(err.name || "");
+    const msg = String(err.message || err || "");
+    return (
+        name.includes("NotReadableError") ||
+        name.includes("TrackStartError") ||
+        name.includes("OverconstrainedError") ||
+        name.includes("NotFoundError") ||
+        msg.includes("Could not start video source") ||
+        msg.includes("device") ||
+        msg.includes("busy")
+    );
+}
+
+async function safePlay(videoEl, label) {
+    try {
+        await videoEl.play();
+        console.log("[RTC] play ok:", label);
+    } catch (e) {
+        console.warn("[RTC] play failed:", label, e);
+    }
+}
+
+function createSilentAudioTrack() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const dst = ctx.createMediaStreamDestination();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.00001;
+    oscillator.connect(gain);
+    gain.connect(dst);
+    oscillator.start();
+    const track = dst.stream.getAudioTracks()[0];
+    return track || null;
+}
+
+function createCanvasVideoTrack(labelText = "Demo Video") {
+    const canvas = document.createElement("canvas");
+    canvas.width = 640;
+    canvas.height = 480;
+    canvas.style.display = "none";
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext("2d");
+    let frame = 0;
+
+    function draw() {
+        frame++;
+
+        // 背景渐变
+        const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        g.addColorStop(0, "#1e3c72");
+        g.addColorStop(1, "#2a5298");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 动态圆
+        const x = 120 + Math.sin(frame * 0.05) * 60;
+        const y = 180 + Math.cos(frame * 0.04) * 50;
+        ctx.beginPath();
+        ctx.arc(x, y, 50, 0, Math.PI * 2);
+        ctx.fillStyle = "#00d4ff";
+        ctx.fill();
+
+        // 动态方块
+        ctx.fillStyle = "#ffd166";
+        ctx.fillRect(360 + Math.sin(frame * 0.03) * 40, 220, 120, 120);
+
+        // 文字
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 36px Arial";
+        ctx.fillText(labelText, 180, 80);
+
+        ctx.font = "24px Arial";
+        ctx.fillText("Fallback Stream", 210, 130);
+
+        // 时间戳
+        ctx.font = "20px monospace";
+        ctx.fillText(new Date().toLocaleTimeString(), 220, 420);
+
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+
+    const stream = canvas.captureStream(15); // 15fps 足够演示
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) {
+        throw new Error("Canvas fallback video track 创建失败");
+    }
+
+    return {
+        canvas,
+        track: videoTrack
+    };
+}
+
+async function tryRealCameraAndMic() {
+    return await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    });
+}
+
+async function tryMicOnly() {
+    return await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true
+    });
+}
+
+async function createFallbackStream() {
+    setStatus("真实摄像头不可用，切换演示模式...");
+
+    const mixed = new MediaStream();
+
+    // 1. 先用 canvas 造一个稳定的视频轨
+    const canvasResult = createCanvasVideoTrack("Demo Camera");
+    const demoVideoTrack = canvasResult.track;
+    mixed.addTrack(demoVideoTrack);
+
+    // 保存下来，方便 hangup 时清理
+    demoVideoEl = canvasResult.canvas;
+
+    // 2. 尝试保留真实麦克风
+    try {
+        const micStream = await tryMicOnly();
+        const micTrack = micStream.getAudioTracks()[0];
+        if (micTrack) {
+            mixed.addTrack(micTrack);
+            setStatus("已使用演示视频 + 真实麦克风");
+            return mixed;
+        }
+    } catch (e) {
+        console.warn("[RTC] mic only failed, fallback to silent audio", e);
+    }
+
+    // 3. 再不行就补一条静音音轨
+    const silentTrack = createSilentAudioTrack();
+    if (silentTrack) {
+        mixed.addTrack(silentTrack);
+    }
+
+    setStatus("已使用演示视频");
+    return mixed;
 }
 
 async function ensureMedia() {
     if (localStream) return localStream;
-    localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-    });
+
+    try {
+        setStatus("正在申请真实摄像头/麦克风...");
+        localStream = await tryRealCameraAndMic();
+        setStatus("已使用真实摄像头");
+    } catch (e) {
+        logError("[RTC] real camera/mic failed", e);
+
+        try {
+            localStream = await createFallbackStream();
+        } catch (fallbackErr) {
+            logError("[RTC] fallback stream failed", fallbackErr);
+            throw new Error("无法获取本地媒体: " + String(fallbackErr));
+        }
+    }
+
     localVideo.srcObject = localStream;
+    await safePlay(localVideo, "localVideo");
     return localStream;
 }
 
@@ -87,12 +256,14 @@ async function ensurePc() {
 
     pc = new RTCPeerConnection({
         iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' }
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun.cloudflare.com:3478" }
         ]
     });
 
     pc.onicecandidate = (event) => {
         if (!event.candidate || !bridge) return;
+        console.log("[RTC] local candidate:", event.candidate.candidate);
         bridge.jsSendIce(
             event.candidate.candidate,
             event.candidate.sdpMid || "",
@@ -100,31 +271,41 @@ async function ensurePc() {
         );
     };
 
-    pc.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-            remoteVideo.srcObject = event.streams[0];
-        }
+    pc.oniceconnectionstatechange = () => {
+        console.log("[RTC] iceConnectionState =", pc.iceConnectionState);
+        setStatus("ICE状态: " + pc.iceConnectionState);
     };
 
     pc.onconnectionstatechange = () => {
+        console.log("[RTC] connectionState =", pc.connectionState);
         setStatus("连接状态: " + pc.connectionState);
+
         if (pc.connectionState === "connected" && bridge) {
             bridge.jsNotifyConnected();
         }
     };
 
+    pc.ontrack = async (event) => {
+        console.log("[RTC] ontrack:", event.track && event.track.kind, event.streams);
+        if (event.streams && event.streams[0]) {
+            remoteVideo.srcObject = event.streams[0];
+            await safePlay(remoteVideo, "remoteVideo");
+            setStatus("已收到远端媒体");
+        }
+    };
+
     const stream = await ensureMedia();
     stream.getTracks().forEach(track => {
+        console.log("[RTC] addTrack:", track.kind, track.readyState);
         pc.addTrack(track, stream);
     });
 
-    // 补加之前提前收到的 ICE
     if (pendingIce.length > 0) {
         for (const item of pendingIce) {
             try {
                 await pc.addIceCandidate(item);
             } catch (e) {
-                console.error(e);
+                logError("[RTC] add pending ice failed", e);
             }
         }
         pendingIce = [];
@@ -133,14 +314,25 @@ async function ensurePc() {
     return pc;
 }
 
+async function startPreview() {
+    const stream = await ensureMedia();
+    localVideo.srcObject = stream;
+    await safePlay(localVideo, "localPreview");
+    return stream;
+}
+
 async function startCaller() {
     if (started) return;
     started = true;
     role = "caller";
-    setStatus("正在创建 Offer...");
+
     const peer = await ensurePc();
+
+    setStatus("正在创建 Offer...");
     const offer = await peer.createOffer();
     await peer.setLocalDescription(offer);
+
+    console.log("[RTC] send offer");
     bridge.jsSendOffer(offer.sdp);
     setStatus("Offer 已发送");
 }
@@ -149,30 +341,34 @@ async function startCallee() {
     if (started) return;
     started = true;
     role = "callee";
+
     await ensurePc();
     setStatus("等待主叫 Offer...");
 }
 
 async function setRemoteOffer(sdp) {
     const peer = await ensurePc();
-    await peer.setRemoteDescription({ type: "offer", sdp: sdp });
+    await peer.setRemoteDescription({ type: "offer", sdp });
+
     const answer = await peer.createAnswer();
     await peer.setLocalDescription(answer);
+
+    console.log("[RTC] send answer");
     bridge.jsSendAnswer(answer.sdp);
     setStatus("Answer 已发送");
 }
 
 async function setRemoteAnswer(sdp) {
     const peer = await ensurePc();
-    await peer.setRemoteDescription({ type: "answer", sdp: sdp });
+    await peer.setRemoteDescription({ type: "answer", sdp });
     setStatus("远端 Answer 已设置");
 }
 
 async function addRemoteIce(candidate, sdpMid, sdpMLineIndex) {
     const ice = {
-        candidate: candidate,
-        sdpMid: sdpMid,
-        sdpMLineIndex: sdpMLineIndex
+        candidate,
+        sdpMid,
+        sdpMLineIndex
     };
 
     if (!pc || !pc.remoteDescription) {
@@ -183,27 +379,39 @@ async function addRemoteIce(candidate, sdpMid, sdpMLineIndex) {
     try {
         await pc.addIceCandidate(ice);
     } catch (e) {
-        console.error(e);
+        logError("[RTC] addIceCandidate failed", e);
     }
 }
 
+function stopLocalStream() {
+    if (localStream) {
+        localStream.getTracks().forEach(t => {
+            try { t.stop(); } catch (e) {}
+        });
+        localStream = null;
+    }
+
+    if (demoVideoEl) {
+        try {
+            demoVideoEl.remove();
+        } catch (e) {}
+        demoVideoEl = null;
+    }
+}
 function doHangup(notifyQt) {
     if (pc) {
-        pc.getSenders().forEach(sender => {
-            if (sender.track) sender.track.stop();
-        });
-        pc.close();
+        try {
+            pc.close();
+        } catch (e) {}
         pc = null;
     }
 
-    if (localStream) {
-        localStream.getTracks().forEach(t => t.stop());
-        localStream = null;
-    }
+    stopLocalStream();
 
     remoteVideo.srcObject = null;
     localVideo.srcObject = null;
     started = false;
+    role = null;
     pendingIce = [];
     setStatus("通话已结束");
 
@@ -217,30 +425,42 @@ new QWebChannel(qt.webChannelTransport, function(channel) {
 
     bridge.qtStartCaller.connect(function() {
         startCaller().catch(function(e) {
+            logError("[RTC] startCaller failed", e);
             bridge.jsNotifyError(String(e));
         });
     });
 
     bridge.qtStartCallee.connect(function() {
         startCallee().catch(function(e) {
+            logError("[RTC] startCallee failed", e);
             bridge.jsNotifyError(String(e));
         });
     });
 
     bridge.qtSetRemoteOffer.connect(function(sdp) {
         setRemoteOffer(sdp).catch(function(e) {
+            logError("[RTC] setRemoteOffer failed", e);
             bridge.jsNotifyError(String(e));
         });
     });
 
     bridge.qtSetRemoteAnswer.connect(function(sdp) {
         setRemoteAnswer(sdp).catch(function(e) {
+            logError("[RTC] setRemoteAnswer failed", e);
             bridge.jsNotifyError(String(e));
         });
     });
 
     bridge.qtAddRemoteIce.connect(function(candidate, sdpMid, sdpMLineIndex) {
         addRemoteIce(candidate, sdpMid, sdpMLineIndex).catch(function(e) {
+            logError("[RTC] addRemoteIce failed", e);
+            bridge.jsNotifyError(String(e));
+        });
+    });
+
+    bridge.qtStartPreview.connect(function() {
+        startPreview().catch(function(e) {
+            logError("[RTC] startPreview failed", e);
             bridge.jsNotifyError(String(e));
         });
     });

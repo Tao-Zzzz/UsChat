@@ -7,7 +7,6 @@ class QLabel;
 class QPushButton;
 class QStackedWidget;
 class QTimer;
-class LocalCameraPreview;
 class QWebEngineView;
 class QWebChannel;
 
@@ -29,7 +28,7 @@ public:
     void SetStatusText(const QString& text);
     void UpdateInCallLocalPreviewGeometry();
 
-    QWidget* GetLocalPreviewWidget() const;
+    // QWidget* GetLocalPreviewWidget() const;
     QWidget* GetRemoteVideoWidget() const;
     void InitWebRtcPage();
 
@@ -52,8 +51,8 @@ private:
     QWidget* CreateInCallPage();
     void SwitchToPage(int index);
 
-    void StartLocalPreview();
-    void StopLocalPreview();
+    // void StartLocalPreview();
+    // void StopLocalPreview();
 
     void StartCallTimer();
     void StopCallTimer();
@@ -84,13 +83,12 @@ private:
     QLabel* _labInCallStatus = nullptr;
     QLabel* _labCallTime = nullptr;
     QWidget* _remoteVideoView = nullptr;
-    LocalCameraPreview* _localPreview = nullptr;
+
     QPushButton* _btnHangup = nullptr;
 
     QTimer* _callTimer = nullptr;
     int _callSeconds = 0;
 
-    LocalCameraPreview* _callingPreview = nullptr;
 
     QWebEngineView* _webView = nullptr;
     QWebChannel* _webChannel = nullptr;

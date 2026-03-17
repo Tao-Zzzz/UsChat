@@ -43,7 +43,7 @@ private:
 	std::function<void()> func_;
 };
 
-#define MAX_LENGTH  1024*2
+#define MAX_LENGTH  1024*16
 //头部总长度
 #define HEAD_TOTAL_LEN 4
 //头部id长度
