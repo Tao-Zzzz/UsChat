@@ -58,6 +58,8 @@ SOURCES += \
         creategroupdialog.cpp \
         customizeedit.cpp \
         customizetextedit.cpp \
+        diarydialog.cpp \
+        diarytablemodel.cpp \
         emojimenu.cpp \
         filetcpmgr.cpp \
         findfaildlg.cpp \
@@ -122,6 +124,9 @@ HEADERS += \
         creategroupdialog.h \
         customizeedit.h \
         customizetextedit.h \
+        diarydialog.h \
+        diarytablemodel.h \
+        diarytask.h \
         emojimenu.h \
         filetcpmgr.h \
         findfaildlg.h \

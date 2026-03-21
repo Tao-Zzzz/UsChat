@@ -30,7 +30,7 @@
 #include <QObject>
 #include "videocallmanager.h"
 #include "videocallwidget.h"
-
+#include "diarydialog.h"
 
 ChatDialog::ChatDialog(QWidget* parent) :
 	QDialog(parent),
@@ -92,6 +92,8 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
 	ui->side_settings_lb->SetState("normal", "hover", "pressed", "selected_normal", "selected_hover", "selected_pressed");
 
+    ui->side_dairy_lb->SetState("normal", "hover", "pressed", "selected_normal", "selected_hover", "selected_pressed");
+
 	AddLBGroup(ui->side_chat_lb);
 	AddLBGroup(ui->side_contact_lb);
 	AddLBGroup(ui->side_settings_lb);
@@ -99,6 +101,8 @@ ChatDialog::ChatDialog(QWidget* parent) :
 	connect(ui->side_chat_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_chat);
 	connect(ui->side_contact_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_contact);
 	connect(ui->side_settings_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_setting);
+    connect(ui->side_dairy_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_dairy);
+
 
 	//链接搜索框输入变化
 	connect(ui->search_edit, &QLineEdit::textChanged, this, &ChatDialog::slot_text_changed);
@@ -1655,4 +1659,16 @@ void ChatDialog::slot_chat_img_upload_finish(int thread_id, int msg_id){
 
     //更新聊天界面信息
     ui->chat_page->UpdateImgChatFinshStatusById(msg_id);
+}
+
+void ChatDialog::slot_side_dairy()
+{
+    // 如果你希望点击 diary 时也有按下视觉效果，可以临时选中
+    ui->side_dairy_lb->SetSelected(true);
+
+    DiaryDialog dlg(this);
+    dlg.exec();
+
+    // 关闭后恢复 normal，避免它常驻选中
+    ui->side_dairy_lb->SetSelected(false);
 }

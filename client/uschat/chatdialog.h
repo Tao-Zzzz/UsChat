@@ -111,6 +111,8 @@ public slots:
     void slot_chat_img_upload_finish(int thread_id, int msg_id);
 
     void slot_video_invite(std::shared_ptr<UserInfo> user_info);
+
+    void slot_side_dairy();
 private slots:
 
     void on_add_btn_clicked();
