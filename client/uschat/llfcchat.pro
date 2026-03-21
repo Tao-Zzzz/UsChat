@@ -58,6 +58,7 @@ SOURCES += \
         creategroupdialog.cpp \
         customizeedit.cpp \
         customizetextedit.cpp \
+        emojimenu.cpp \
         filetcpmgr.cpp \
         findfaildlg.cpp \
         findsuccessdlg.cpp \
@@ -121,6 +122,7 @@ HEADERS += \
         creategroupdialog.h \
         customizeedit.h \
         customizetextedit.h \
+        emojimenu.h \
         filetcpmgr.h \
         findfaildlg.h \
         findsuccessdlg.h \

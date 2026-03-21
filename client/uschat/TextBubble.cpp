@@ -1,84 +1,140 @@
 ﻿#include "TextBubble.h"
-#include <QFontMetricsF>
-#include <QDebug>
-#include <QFont>
-#include "global.h"
-#include <QTimer>
 #include <QTextDocument>
-#include <QTextBlock>
-#include <QTextLayout>
-#include <QFont>
+#include <QAbstractTextDocumentLayout>
+#include <QTextOption>
+#include <QRegularExpression>
+#include <QtMath>
 
 TextBubble::TextBubble(ChatRole role, const QString &text, QWidget *parent)
-    :BubbleFrame(role, parent)
+    : BubbleFrame(role, parent)
 {
-    m_pTextEdit = new QTextEdit();
+    m_pTextEdit = new QTextBrowser(this);
     m_pTextEdit->setReadOnly(true);
     m_pTextEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_pTextEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_pTextEdit->setFrameShape(QFrame::NoFrame);
+    m_pTextEdit->setOpenLinks(false);
+    m_pTextEdit->setOpenExternalLinks(false);
+    m_pTextEdit->setContextMenuPolicy(Qt::NoContextMenu);
+    m_pTextEdit->viewport()->setAutoFillBackground(false);
+    m_pTextEdit->document()->setDocumentMargin(0);
+    QTextOption opt;
+    opt.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    m_pTextEdit->document()->setDefaultTextOption(opt);
     m_pTextEdit->installEventFilter(this);
+
+    m_pTextEdit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
+    m_pTextEdit->setFocusPolicy(Qt::StrongFocus);
+
     QFont font("Microsoft YaHei");
     font.setPointSize(12);
     m_pTextEdit->setFont(font);
-    setPlainText(text);
+
     setWidget(m_pTextEdit);
     initStyleSheet();
+    setMessageText(text);
 }
 
 bool TextBubble::eventFilter(QObject *o, QEvent *e)
 {
-    if(m_pTextEdit == o && e->type() == QEvent::Paint)
-    {
-        adjustTextHeight(); //PaintEvent中设置
+    if (o == m_pTextEdit && (e->type() == QEvent::Resize || e->type() == QEvent::Show)) {
+        adjustBubbleSize();
     }
     return BubbleFrame::eventFilter(o, e);
 }
 
-void TextBubble::setPlainText(const QString &text)
+int TextBubble::maxTextWidth() const
 {
-    m_pTextEdit->setPlainText(text);
-    //m_pTextEdit->setHtml(text);
-    //找到段落中最大宽度
-    qreal doc_margin = m_pTextEdit->document()->documentMargin();
-    int margin_left = this->layout()->contentsMargins().left();
-    int margin_right = this->layout()->contentsMargins().right();
-    QFontMetricsF fm(m_pTextEdit->font());
-    QTextDocument *doc = m_pTextEdit->document();
-    int max_width = 0;
-    //遍历每一段找到 最宽的那一段
-    for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next())    //字体总长
-    {
-        int txtW = int(fm.horizontalAdvance(it.text()));
-        max_width = max_width < txtW ? txtW : max_width;                 //找到最长的那段
-    }
-    //设置这个气泡的最大宽度 只需要设置一次
-    setMaximumWidth(max_width + doc_margin * 2 + (margin_left + margin_right));        //设置最大宽度
-
-    // 强制设置宽度，不要给布局留下“自由发挥”的空间
-    setFixedWidth(max_width + doc_margin * 2 + (margin_left + margin_right) + 4);
-
-    // 告诉父级布局：我的尺寸变了，请重新排版
-    this->updateGeometry();
+    return 260;
 }
 
-void TextBubble::adjustTextHeight()
+QString TextBubble::replaceEmojiTokens(QString escapedText) const
 {
-    qreal doc_margin = m_pTextEdit->document()->documentMargin();    //字体到边框的距离默认为4
-    QTextDocument *doc = m_pTextEdit->document();
-    qreal text_height = 0;
-    //把每一段的高度相加=文本高
-    for (QTextBlock it = doc->begin(); it != doc->end(); it = it.next())
-    {
-        QTextLayout *pLayout = it.layout();
-        QRectF text_rect = pLayout->boundingRect();                             //这段的rect
-        text_height += text_rect.height();
+    static const QMap<QString, QString> emojiMap = {
+        {"[yd_smile]", ":/res/emoji/yd_smile.png"},
+        {"[yd_happy]", ":/res/emoji/yd_happy.png"},
+        {"[yd_love]",  ":/res/emoji/yd_love.png"},
+        {"[yd_shy]",   ":/res/emoji/yd_shy.png"},
+        {"[yd_cry]",   ":/res/emoji/yd_cry.png"},
+        {"[yd_angry]", ":/res/emoji/yd_angry.png"},
+        {"[yd_sleep]", ":/res/emoji/yd_sleep.png"},
+        {"[yd_ok]",    ":/res/emoji/yd_ok.png"},
+        {"[yd_wow]",   ":/res/emoji/yd_wow.png"},
+        {"[yd_sweat]", ":/res/emoji/yd_sweat.png"},
+        {"[yd_think]", ":/res/emoji/yd_think.png"},
+        {"[yd_bye]",   ":/res/emoji/yd_bye.png"}
+    };
+
+    for (auto it = emojiMap.begin(); it != emojiMap.end(); ++it) {
+        const QString imgHtml = QString(
+                                    "<img src=\"%1\" width=\"22\" height=\"22\" style=\"vertical-align:middle;\" />"
+                                    ).arg(it.value());
+
+        escapedText.replace(it.key().toHtmlEscaped(), imgHtml);
     }
-    int vMargin = this->layout()->contentsMargins().top();
-    //设置这个气泡需要的高度 文本高+文本边距+TextEdit边框到气泡边框的距离
-    setFixedHeight(text_height + doc_margin *2 + vMargin*2 );
+
+    return escapedText;
+}
+
+QString TextBubble::convertToHtml(const QString &text) const
+{
+    QString html = text.toHtmlEscaped();
+    html.replace("\n", "<br/>");
+    html = replaceEmojiTokens(html);
+
+    return QString(
+               "<html><body style=\"margin:0px; padding:0px; "
+               "font-family:'Microsoft YaHei'; font-size:12pt; line-height:1.0;\">%1</body></html>"
+               ).arg(html);
+}
+
+void TextBubble::setMessageText(const QString &text)
+{
+    m_pTextEdit->setHtml(convertToHtml(text));
+    adjustBubbleSize();
+}
+
+void TextBubble::adjustBubbleSize()
+{
+    QTextDocument *doc = m_pTextEdit->document();
+    if (!doc) {
+        return;
+    }
+
+    doc->setTextWidth(-1);
+    qreal ideal = doc->idealWidth();
+
+    int textWidth = qCeil(ideal) + 6;
+    if (textWidth < 18) {
+        textWidth = 18;
+    }
+    if (textWidth > maxTextWidth()) {
+        textWidth = maxTextWidth();
+    }
+
+    doc->setTextWidth(textWidth);
+
+    QSizeF docSize = doc->size();
+    int contentW = qCeil(docSize.width());
+    int contentH = qCeil(docSize.height());
+
+    m_pTextEdit->setFixedSize(contentW, contentH);
+
+    const QMargins margins = layout()->contentsMargins();
+    setFixedSize(m_pTextEdit->width() + margins.left() + margins.right(),
+                 m_pTextEdit->height() + margins.top() + margins.bottom());
+
+    updateGeometry();
 }
 
 void TextBubble::initStyleSheet()
 {
-    m_pTextEdit->setStyleSheet("QTextEdit{background:transparent;border:none}");
+    m_pTextEdit->setStyleSheet(
+        "QTextBrowser{"
+        "background:transparent;"
+        "border:none;"
+        "padding:0px;"
+        "margin:0px;"
+        "}"
+        );
 }

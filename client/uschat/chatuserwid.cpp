@@ -12,6 +12,10 @@ ChatUserWid::ChatUserWid(QWidget *parent) :
     SetItemType(ListItemType::CHAT_USER_ITEM);
     ui->red_point->raise();
     ShowRedPoint(false);
+
+
+    ui->user_chat_lb->setWordWrap(false);
+    ui->user_chat_lb->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 }
 
 ChatUserWid::~ChatUserWid()
@@ -38,7 +42,7 @@ void ChatUserWid::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
 
         ui->user_name_lb->setText("AI");
 
-        ui->user_chat_lb->setText(chat_data->GetLastMsg());
+        SetElidedLastMsg(chat_data->GetLastMsg());
         return;
     }
 
@@ -52,7 +56,7 @@ void ChatUserWid::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
 
         ui->user_name_lb->setText(chat_data->GetGroupName());
 
-        ui->user_chat_lb->setText(chat_data->GetLastMsg());
+        SetElidedLastMsg(chat_data->GetLastMsg());
         return;
     }
 
@@ -97,7 +101,7 @@ void ChatUserWid::SetChatData(std::shared_ptr<ChatThreadData> chat_data) {
 
     ui->user_name_lb->setText(other_info->_name);
     
-    ui->user_chat_lb->setText(chat_data->GetLastMsg());
+    SetElidedLastMsg(chat_data->GetLastMsg());
 }
 
 std::shared_ptr<ChatThreadData> ChatUserWid::GetChatData()
@@ -127,11 +131,30 @@ void ChatUserWid::updateLastMsg(std::vector<std::shared_ptr<TextChatData>> msgs)
     }
     
     _chat_data->SetLastMsgId(last_msg_id);
-    ui->user_chat_lb->setText(last_msg);
+    SetElidedLastMsg(last_msg);
 }
 
 void ChatUserWid::updateLastMsg() {
 
-    ui->user_chat_lb->setText(_chat_data->GetLastMsg());
+    SetElidedLastMsg(_chat_data->GetLastMsg());
 }
 
+
+void ChatUserWid::SetElidedLastMsg(const QString& text)
+{
+    ui->user_chat_lb->setWordWrap(false);
+
+    QFontMetrics fm(ui->user_chat_lb->font());
+    QString elided = fm.elidedText(text, Qt::ElideRight, ui->user_chat_lb->width());
+    ui->user_chat_lb->setText(elided);
+    ui->user_chat_lb->setToolTip(text);
+}
+
+void ChatUserWid::resizeEvent(QResizeEvent *event)
+{
+    ListItemBase::resizeEvent(event);
+
+    if (_chat_data) {
+        SetElidedLastMsg(_chat_data->GetLastMsg());
+    }
+}

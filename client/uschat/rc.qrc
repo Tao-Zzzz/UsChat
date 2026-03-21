@@ -61,5 +61,16 @@
         <file>res/ellipsis_hover.png</file>
         <file>res/ellipsis_press.png</file>
         <file>html/rtc_call.html</file>
+        <file>res/emoji/yd_angry.png</file>
+        <file>res/emoji/yd_bye.png</file>
+        <file>res/emoji/yd_cry.png</file>
+        <file>res/emoji/yd_happy.png</file>
+        <file>res/emoji/yd_love.png</file>
+        <file>res/emoji/yd_ok.png</file>
+        <file>res/emoji/yd_shy.png</file>
+        <file>res/emoji/yd_sleep.png</file>
+        <file>res/emoji/yd_smile.png</file>
+        <file>res/emoji/yd_sweat.png</file>
+        <file>res/emoji/yd_think.png</file>
     </qresource>
 </RCC>

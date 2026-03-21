@@ -18,6 +18,9 @@
 #include "aihistorydialog.h"
 #include "moremenu.h"
 #include "aimodeldialog.h"
+#include "EmojiMenu.h"
+#include <QTextCursor>
+
 
 ChatPage::ChatPage(QWidget *parent) :
     QWidget(parent),
@@ -32,11 +35,22 @@ ChatPage::ChatPage(QWidget *parent) :
     ui->file_lb->SetState("normal","hover","press","normal","hover","press");
     ui->more_lb->SetState("normal","hover","press","normal","hover","press");
 
-    connect(ui->more_lb, &ClickedLabel::clicked, this, &ChatPage::slot_clicked_more_label);
+    connect(ui->more_lb, &ClickedLabel::clicked,
+            this, &ChatPage::slot_clicked_more_label);
+
+    connect(ui->emo_lb, &ClickedLabel::clicked,
+            this, &ChatPage::slot_clicked_emoji_label);
 }
+
 
 ChatPage::~ChatPage()
 {
+    if (_emoji_menu) {
+        _emoji_menu->hide();
+        delete _emoji_menu;
+        _emoji_menu = nullptr;
+    }
+
     ClearCurrentUiOnly();
     ClearAllThreadCache();
     delete ui;
@@ -835,6 +849,8 @@ void ChatPage::slot_clicked_more_label(QString name, ClickLbState state)
     Q_UNUSED(name);
     qDebug() << "Current State:" << state;
 
+    hideEmojiMenu();
+
     if (state != ClickLbState::Selected)
         return;
 
@@ -1065,4 +1081,60 @@ void ChatPage::DownloadFileFinished(std::shared_ptr<MsgInfo> msg_info, QString f
         img_data->_msg_info->_transfer_state = TransferState::Completed;
         img_data->_msg_info->_current_size = img_data->_msg_info->_total_size;
     }
+}
+
+void ChatPage::showEmojiMenu()
+{
+    if (!_emoji_menu) {
+        _emoji_menu = new EmojiMenu(this);
+        connect(_emoji_menu, &EmojiMenu::sig_emoji_selected,
+                this, &ChatPage::slot_insert_emoji);
+    }
+
+    _emoji_menu->adjustSize();
+
+    QPoint anchor = ui->emo_lb->mapToGlobal(QPoint(0, 0));
+
+    int x = anchor.x();
+    int y = anchor.y() - _emoji_menu->height();
+
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+
+    _emoji_menu->move(x, y);
+    _emoji_menu->show();
+    _emoji_menu->raise();
+    _emoji_menu->setFocus();
+}
+
+void ChatPage::hideEmojiMenu()
+{
+    if (_emoji_menu) {
+        _emoji_menu->hide();
+    }
+}
+
+void ChatPage::slot_clicked_emoji_label(QString name, ClickLbState state)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(state);
+
+    if (_emoji_menu && _emoji_menu->isVisible()) {
+        hideEmojiMenu();
+        ui->emo_lb->ResetNormalState();
+        return;
+    }
+
+    showEmojiMenu();
+}
+
+void ChatPage::slot_insert_emoji(const QString &token)
+{
+    if (!ui || !ui->chatEdit) {
+        return;
+    }
+
+    ui->chatEdit->insertEmojiToken(token);
+    ui->chatEdit->setFocus();
+    ui->emo_lb->ResetNormalState();
 }

@@ -1,23 +1,28 @@
 ﻿#ifndef TEXTBUBBLE_H
 #define TEXTBUBBLE_H
 
-#include <QTextEdit>
+#include <QTextBrowser>
 #include "BubbleFrame.h"
-#include <QHBoxLayout>
 
 class TextBubble : public BubbleFrame
 {
     Q_OBJECT
 public:
     TextBubble(ChatRole role, const QString &text, QWidget *parent = nullptr);
+
 protected:
-    bool eventFilter(QObject *o, QEvent *e);
+    bool eventFilter(QObject *o, QEvent *e) override;
+
 private:
-    void adjustTextHeight();
-    void setPlainText(const QString &text);
+    void setMessageText(const QString &text);
+    void adjustBubbleSize();
+    QString convertToHtml(const QString& text) const;
+    QString replaceEmojiTokens(QString escapedText) const;
+    int maxTextWidth() const;
     void initStyleSheet();
+
 private:
-    QTextEdit *m_pTextEdit;
+    QTextBrowser *m_pTextEdit;
 };
 
 #endif // TEXTBUBBLE_H

@@ -12,20 +12,22 @@
 #include <QFileIconProvider>
 #include <QPainter>
 #include <QVector>
+#include <QMap>
+#include <QTextImageFormat>
 #include "global.h"
-
 
 class MessageTextEdit : public QTextEdit
 {
     Q_OBJECT
 public:
     explicit MessageTextEdit(QWidget *parent = nullptr);
-
     ~MessageTextEdit();
 
     QVector<std::shared_ptr<MsgInfo>> getMsgList();
 
     void insertFileFromUrl(const QStringList &urls);
+    void insertEmojiToken(const QString& token);
+
 signals:
     void send();
 
@@ -41,14 +43,17 @@ private:
     void insertFromMimeData(const QMimeData *source);
 
 private:
-    bool isImage(QString url);//判断文件是否为图片
+    bool isImage(QString url);
     void insertMsgList(QVector<std::shared_ptr<MsgInfo>>& list, MsgType msgtype,
-        QString text_or_url, QPixmap preview_pix,
-        QString unique_name, uint64_t total_size, QString md5);
-  
+                       QString text_or_url, QPixmap preview_pix,
+                       QString unique_name, uint64_t total_size, QString md5);
+
     QStringList getUrl(QString text);
-    QPixmap getFileIconPixmap(const QString &url);//获取文件图标及大小信息，并转化成图片
-    QString getFileSize(qint64 size);//获取文件大小
+    QPixmap getFileIconPixmap(const QString &url);
+    QString getFileSize(qint64 size);
+
+    QString emojiTokenToPath(const QString& token) const;
+    QString emojiPathToToken(const QString& path) const;
 
 private slots:
     void textEditChanged();

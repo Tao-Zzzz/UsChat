@@ -10,6 +10,9 @@
 #include "chatitembase.h"
 #include "moremenu.h"
 
+class EmojiMenu;
+class QLabel;
+
 namespace Ui {
 class ChatPage;
 }
@@ -40,7 +43,7 @@ public:
     void UpdateImgChatFinshStatusById(int msg_id);
 
 protected:
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void on_send_btn_clicked();
@@ -48,6 +51,8 @@ private slots:
     void on_clicked_paused(QString unique_name, TransferType transfer_type);
     void on_clicked_resume(QString unique_name, TransferType transfer_type);
     void slot_clicked_more_label(QString name, ClickLbState state);
+    void slot_clicked_emoji_label(QString name, ClickLbState state);
+    void slot_insert_emoji(const QString& token);
     void slot_ai_history_selected(int ai_thread_id);
     void slot_ai_model_selected(int ai_model_id);
 
@@ -67,6 +72,8 @@ private:
     void ClearCurrentUiOnly();
     void ClearThreadCache(int thread_id);
     void ClearAllThreadCache();
+    void showEmojiMenu();
+    void hideEmojiMenu();
 
 private:
     Ui::ChatPage *ui;
@@ -77,6 +84,7 @@ private:
     QHash<qint64, ChatItemBase*> _base_item_map;
 
     MoreMenu* _more_menu = nullptr;
+    EmojiMenu* _emoji_menu = nullptr;
 
     QHash<int, ThreadUiCache> _thread_ui_cache;
     int _current_thread_id = -1;
