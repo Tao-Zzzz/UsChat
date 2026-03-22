@@ -7,6 +7,8 @@
 #include "ClickableLabel.h"
 #include <QProgressBar>
 #include "global.h"
+#include "ImagePreviewDialog.h"
+
 class PictureBubble : public BubbleFrame
 {
     Q_OBJECT
@@ -23,6 +25,7 @@ public:
     TransferState state() const { return m_state; }
     void setDownloadFinish(std::shared_ptr<MsgInfo> msg,QString file_path);
     void setUploadFinish(QString file_path);
+    void showPreviewDialog();
 signals:
     void pauseRequested(QString unique_name, TransferType transfer_type);   // 请求暂停
     void resumeRequested(QString unique_name, TransferType transfer_type);  // 请求继续
@@ -47,6 +50,10 @@ private:
     QVBoxLayout* m_vLayout;
     int m_total_size;
     std::shared_ptr<MsgInfo> _msg_info;
+
+    QString m_localFilePath;
+    QPixmap m_originalPixmap;
+    ImagePreviewDialog* m_previewDialog = nullptr;
 };
 
 #endif // PICTUREBUBBLE_H

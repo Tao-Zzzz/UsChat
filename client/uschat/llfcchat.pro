@@ -70,6 +70,7 @@ SOURCES += \
         grouptipitem.cpp \
         httpmgr.cpp \
         imagecropperlabel.cpp \
+        imagepreviewdialog.cpp \
         invaliditem.cpp \
         lineitem.cpp \
         listitembase.cpp \
@@ -138,6 +139,7 @@ HEADERS += \
         httpmgr.h \
         imagecropperdialog.h \
         imagecropperlabel.h \
+        imagepreviewdialog.h \
         invaliditem.h \
         lineitem.h \
         listitembase.h \
