@@ -21,12 +21,14 @@ private slots:
 
     void on_video_chat_clicked();
 
+    void on_voice_chat_clicked();
+
 private:
     Ui::FriendInfoPage *ui;
     std::shared_ptr<UserInfo> _user_info;
 signals:
     void sig_jump_chat_item(std::shared_ptr<UserInfo> si);
-    void sig_video_invite(std::shared_ptr<UserInfo> si);
+    void sig_video_invite(std::shared_ptr<UserInfo> si, CallMediaType media_type);
 
 };
 

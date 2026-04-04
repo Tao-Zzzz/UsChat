@@ -170,6 +170,12 @@ enum ClickLbState{
 };
 
 
+enum CallMediaType
+{
+    Audio = 0,
+    Video = 1
+};
+
 namespace ApiPath {
     constexpr const char* Chat = "/ai/chat";
     constexpr const char* LoadThread = "/ai/load_thread";

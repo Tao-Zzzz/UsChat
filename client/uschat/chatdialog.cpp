@@ -1453,7 +1453,7 @@ void ChatDialog::slot_jump_chat_item_from_infopage(std::shared_ptr<UserInfo> use
 
 
 
-void ChatDialog::slot_video_invite(std::shared_ptr<UserInfo> user_info)
+void ChatDialog::slot_video_invite(std::shared_ptr<UserInfo> user_info, CallMediaType media_type)
 {
     slot_jump_chat_item_from_infopage(user_info);
 
@@ -1463,7 +1463,7 @@ void ChatDialog::slot_video_invite(std::shared_ptr<UserInfo> user_info)
     auto uid = UserMgr::GetInstance()->GetUid();
     auto peer_name = user_info->_name;
 
-    VideoCallManager::GetInstance()->StartCall(uid, user_info->_uid);
+    VideoCallManager::GetInstance()->StartCall(uid, user_info, media_type);
 }
 
 void ChatDialog::slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info) {

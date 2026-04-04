@@ -25,6 +25,21 @@ bool IsProgrammaticQtHangupInProgress()
 }
 }
 
+static CallMediaType FromMediaTypeValue(int value)
+{
+    // 安全判断，防止非法值
+    switch (value)
+    {
+    case 0:
+        return CallMediaType::Audio;
+    case 1:
+        return CallMediaType::Video;
+    default:
+        // 默认给语音，更安全
+        return CallMediaType::Video;
+    }
+}
+
 VideoCallManager* VideoCallManager::GetInstance()
 {
     static VideoCallManager instance;
@@ -87,7 +102,7 @@ VideoCallManager::VideoCallManager(QObject *parent)
     });
 }
 
-void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_user_info)
+void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_user_info, CallMediaType mediaType)
 {
     if (_state != CallState::Idle) {
         emit sig_call_error(QStringLiteral("当前已有通话进行中"));
@@ -105,10 +120,12 @@ void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_us
     _rtcStarted = false;
 
     _peer_user_info = other_user_info;
+    _mediaType = mediaType;
 
     QJsonObject jsonObj;
     jsonObj["uid"] = selfUid;
     jsonObj["other_id"] = other_user_info->_uid;
+    jsonObj["call_type"] = static_cast<int>(_mediaType);
 
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_INVITE_REQ, doc.toJson(QJsonDocument::Compact));
@@ -240,6 +257,13 @@ void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
         return;
     }
 
+
+    if (obj.contains("call_type")) {
+        _mediaType = FromMediaTypeValue(obj["call_type"].toInt());
+    } else {
+        _mediaType = CallMediaType::Video; // 兼容旧端
+    }
+
     _state = CallState::Connecting;
     emit sig_call_accepted();
 
@@ -277,6 +301,9 @@ void VideoCallManager::HandleNotifyVideoInvite(const QJsonObject& obj)
     _peer_user_info = UserMgr::GetInstance()->GetFriendById(_peerUid);
 
 
+    if (obj.contains("call_type")) {
+        _mediaType = FromMediaTypeValue(obj["call_type"].toInt());
+    }
 
     emit sig_show_incoming_ui(obj);
 }
@@ -460,6 +487,7 @@ void VideoCallManager::Reset()
     _selfUid = 0;
     _peerUid = 0;
     _callId.clear();
+    _mediaType = CallMediaType::Video;
 }
 
 void VideoCallManager::StartBrowserRtcAsCallerIfNeeded()
@@ -469,6 +497,7 @@ void VideoCallManager::StartBrowserRtcAsCallerIfNeeded()
     }
 
     _browserRtcStarted = true;
+    emit WebRtcJsBridge::GetInstance()->qtSetMediaType(static_cast<int>(_mediaType));
     emit WebRtcJsBridge::GetInstance()->qtStartCaller();
 }
 
@@ -479,5 +508,6 @@ void VideoCallManager::StartBrowserRtcAsCalleeIfNeeded()
     }
 
     _browserRtcStarted = true;
+    emit WebRtcJsBridge::GetInstance()->qtSetMediaType(static_cast<int>(_mediaType));
     emit WebRtcJsBridge::GetInstance()->qtStartCallee();
 }

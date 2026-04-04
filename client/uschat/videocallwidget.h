@@ -31,7 +31,7 @@ public:
     // QWidget* GetLocalPreviewWidget() const;
     QWidget* GetRemoteVideoWidget() const;
     void InitWebRtcPage();
-
+    void SetMediaType(int mediaType);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -68,6 +68,7 @@ private:
     };
 
 private:
+    int _mediaType = 1; // 0 audio, 1 video
     QStackedWidget* _stack = nullptr;
 
     QLabel* _labCallingPeerName = nullptr;

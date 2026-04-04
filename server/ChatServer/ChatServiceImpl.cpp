@@ -340,7 +340,7 @@ Status ChatServiceImpl::NotifyVideoEvent(ServerContext* context,
 	short notify_msg_id = 0;
 
 	switch (request->notify_type()) {
-	case VIDEO_NOTIFY_INVITE:
+	case VideoNotifyType::VIDEO_NOTIFY_INVITE:
 		notify_msg_id = ID_NOTIFY_VIDEO_INVITE_REQ;
 		rtvalue["from_uid"] = from_uid;
 		rtvalue["call_type"] = request->call_type();
@@ -355,41 +355,41 @@ Status ChatServiceImpl::NotifyVideoEvent(ServerContext* context,
 		}
 		break;
 
-	case VIDEO_NOTIFY_ACCEPT:
+	case VideoNotifyType::VIDEO_NOTIFY_ACCEPT:
 		notify_msg_id = ID_NOTIFY_VIDEO_ACCEPT_REQ;
 		rtvalue["uid"] = from_uid;
 		break;
 
-	case VIDEO_NOTIFY_REJECT:
+	case VideoNotifyType::VIDEO_NOTIFY_REJECT:
 		notify_msg_id = ID_NOTIFY_VIDEO_REJECT_REQ;
 		rtvalue["uid"] = from_uid;
 		break;
 
-	case VIDEO_NOTIFY_CANCEL:
+	case VideoNotifyType::VIDEO_NOTIFY_CANCEL:
 		notify_msg_id = ID_NOTIFY_VIDEO_CANCEL_REQ;
 		rtvalue["uid"] = from_uid;
 		break;
 
-	case VIDEO_NOTIFY_HANGUP:
+	case VideoNotifyType::VIDEO_NOTIFY_HANGUP:
 		notify_msg_id = ID_NOTIFY_VIDEO_HANGUP_REQ;
 		rtvalue["uid"] = from_uid;
 		break;
 
-	case VIDEO_NOTIFY_WEBRTC_OFFER:
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_OFFER:
 		notify_msg_id = ID_NOTIFY_WEBRTC_OFFER_REQ;
 		rtvalue["uid"] = from_uid;
 		rtvalue["other_id"] = to_uid;
 		rtvalue["sdp"] = request->sdp();
 		break;
 
-	case VIDEO_NOTIFY_WEBRTC_ANSWER:
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ANSWER:
 		notify_msg_id = ID_NOTIFY_WEBRTC_ANSWER_REQ;
 		rtvalue["uid"] = from_uid;
 		rtvalue["other_id"] = to_uid;
 		rtvalue["sdp"] = request->sdp();
 		break;
 
-	case VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE:
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE:
 		notify_msg_id = ID_NOTIFY_WEBRTC_ICE_CANDIDATE_REQ;
 		rtvalue["uid"] = from_uid;
 		rtvalue["other_id"] = to_uid;

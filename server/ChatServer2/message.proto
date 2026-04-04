@@ -171,13 +171,57 @@ message NotifyChatImgRsp{
     int32 thread_id =7;
 }
 
+
+
+enum VideoNotifyType {
+    VIDEO_NOTIFY_INVITE = 0;
+    VIDEO_NOTIFY_ACCEPT = 1;
+    VIDEO_NOTIFY_REJECT = 2;
+    VIDEO_NOTIFY_CANCEL = 3;
+    VIDEO_NOTIFY_HANGUP = 4;
+    VIDEO_NOTIFY_WEBRTC_OFFER = 5;
+    VIDEO_NOTIFY_WEBRTC_ANSWER = 6;
+    VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE = 7;
+}
+
+message NotifyVideoEventReq {
+    int32 from_uid = 1;
+    int32 to_uid = 2;
+    string call_id = 3;
+    VideoNotifyType notify_type = 4;
+
+    // invite ”√
+    int32 call_type = 5;
+    string name = 6;
+    string icon = 7;
+    string nick = 8;
+
+    // webrtc ”√
+    string sdp = 9;
+    string candidate = 10;
+    string sdpMid = 11;
+    int32 sdpMLineIndex = 12;
+}
+
+message NotifyVideoEventRsp {
+    int32 error = 1;
+    int32 from_uid = 2;
+    int32 to_uid = 3;
+    string call_id = 4;
+    VideoNotifyType notify_type = 5;
+}
+
 service ChatService {
 	rpc NotifyAddFriend(AddFriendReq) returns (AddFriendRsp) {}
 	rpc RplyAddFriend(RplyFriendReq) returns (RplyFriendRsp) {}
 	rpc SendChatMsg(SendChatMsgReq) returns (SendChatMsgRsp) {}
+	
 	rpc NotifyAuthFriend(AuthFriendReq) returns (AuthFriendRsp) {}
 	rpc NotifyTextChatMsg(TextChatMsgReq) returns (TextChatMsgRsp){}
 	rpc NotifyKickUser(KickUserReq) returns (KickUserRsp){}
+	
 	rpc NotifyGroupTextChatMsg(GroupTextChatMsgReq) returns (GroupTextChatMsgRsp) {}
 	rpc NotifyChatImgMsg(NotifyChatImgReq) returns (NotifyChatImgRsp){}
+
+	rpc NotifyVideoEvent(NotifyVideoEventReq) returns (NotifyVideoEventRsp);
 }

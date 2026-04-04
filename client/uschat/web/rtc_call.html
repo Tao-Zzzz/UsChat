@@ -65,6 +65,10 @@ let started = false;
 let role = null;
 let pendingIce = [];
 
+let mediaType = 1; // 0 audio, 1 video
+const MEDIA_TYPE_AUDIO = 0;
+const MEDIA_TYPE_VIDEO = 1;
+
 const DEMO_VIDEO_URL = "qrc:/web/demo.mp4";
 
 const remoteVideo = document.getElementById("remoteVideo");
@@ -101,6 +105,22 @@ async function safePlay(videoEl, label) {
         console.log("[RTC] play ok:", label);
     } catch (e) {
         console.warn("[RTC] play failed:", label, e);
+    }
+}
+
+function setMediaType(type) {
+    mediaType = Number(type);
+    console.log("[RTC] mediaType =", mediaType);
+
+    if (mediaType === MEDIA_TYPE_AUDIO) {
+        localVideo.style.display = "none";
+        remoteVideo.style.display = "none";
+        document.getElementById("root").style.background = "#1b1b1b";
+        setStatus("语音通话模式");
+    } else {
+        localVideo.style.display = "block";
+        remoteVideo.style.display = "block";
+        document.getElementById("root").style.background = "#000";
     }
 }
 
@@ -185,6 +205,20 @@ async function tryRealCameraAndMic() {
     });
 }
 
+async function tryAudioVideo() {
+    return await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+    });
+}
+
+async function tryAudioOnly() {
+    return await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true
+    });
+}
+
 async function tryMicOnly() {
     return await navigator.mediaDevices.getUserMedia({
         video: false,
@@ -232,25 +266,37 @@ async function ensureMedia() {
     if (localStream) return localStream;
 
     try {
-        setStatus("正在申请真实摄像头/麦克风...");
-        localStream = await tryRealCameraAndMic();
-        setStatus("已使用真实摄像头");
+        if (mediaType === MEDIA_TYPE_AUDIO) {
+            setStatus("正在申请麦克风...");
+            localStream = await tryAudioOnly();
+            setStatus("已使用麦克风");
+        } else {
+            setStatus("正在申请摄像头/麦克风...");
+            localStream = await tryAudioVideo();
+            setStatus("已使用真实摄像头");
+        }
     } catch (e) {
-        logError("[RTC] real camera/mic failed", e);
+        logError("[RTC] getUserMedia failed", e);
 
-        try {
+        if (mediaType === MEDIA_TYPE_AUDIO) {
+            // 语音通话失败时，最多补静音音轨，不要再造假视频
+            const mixed = new MediaStream();
+            const silentTrack = createSilentAudioTrack();
+            if (silentTrack) mixed.addTrack(silentTrack);
+            localStream = mixed;
+            setStatus("麦克风不可用，已使用静音音轨");
+        } else {
             localStream = await createFallbackStream();
-        } catch (fallbackErr) {
-            logError("[RTC] fallback stream failed", fallbackErr);
-            throw new Error("无法获取本地媒体: " + String(fallbackErr));
         }
     }
 
-    localVideo.srcObject = localStream;
-    await safePlay(localVideo, "localVideo");
+    if (mediaType === MEDIA_TYPE_VIDEO) {
+        localVideo.srcObject = localStream;
+        await safePlay(localVideo, "localVideo");
+    }
+
     return localStream;
 }
-
 async function ensurePc() {
     if (pc) return pc;
 
@@ -286,11 +332,16 @@ async function ensurePc() {
     };
 
     pc.ontrack = async (event) => {
-        console.log("[RTC] ontrack:", event.track && event.track.kind, event.streams);
         if (event.streams && event.streams[0]) {
-            remoteVideo.srcObject = event.streams[0];
-            await safePlay(remoteVideo, "remoteVideo");
-            setStatus("已收到远端媒体");
+            if (mediaType === MEDIA_TYPE_VIDEO) {
+                remoteVideo.srcObject = event.streams[0];
+                await safePlay(remoteVideo, "remoteVideo");
+                setStatus("已收到远端视频");
+            } else {
+                remoteVideo.srcObject = event.streams[0]; // 用它播声音
+                await safePlay(remoteVideo, "remoteAudio");
+                setStatus("已收到远端语音");
+            }
         }
     };
 
@@ -316,8 +367,12 @@ async function ensurePc() {
 
 async function startPreview() {
     const stream = await ensureMedia();
-    localVideo.srcObject = stream;
-    await safePlay(localVideo, "localPreview");
+
+    if (mediaType === MEDIA_TYPE_VIDEO) {
+        localVideo.srcObject = stream;
+        await safePlay(localVideo, "localPreview");
+    }
+
     return stream;
 }
 
@@ -469,6 +524,9 @@ new QWebChannel(qt.webChannelTransport, function(channel) {
         doHangup(false);
     });
 
+    bridge.qtSetMediaType.connect(function(type) {
+        setMediaType(type);
+    });
     bridge.jsReady();
     setStatus("页面已就绪");
 });

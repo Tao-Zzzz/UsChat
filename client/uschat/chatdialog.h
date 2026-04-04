@@ -110,7 +110,7 @@ public slots:
     void slot_download_finish(std::shared_ptr<MsgInfo> msg_info, QString file_path);
     void slot_chat_img_upload_finish(int thread_id, int msg_id);
 
-    void slot_video_invite(std::shared_ptr<UserInfo> user_info);
+    void slot_video_invite(std::shared_ptr<UserInfo> user_info, CallMediaType media_type);
 
     void slot_side_dairy();
 private slots:

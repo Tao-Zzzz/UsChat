@@ -248,3 +248,37 @@ KickUserRsp ChatGrpcClient::NotifyKickUser(std::string server_ip, const KickUser
 
 	return rsp;
 }
+
+NotifyVideoEventRsp ChatGrpcClient::NotifyVideoEvent(const std::string& server_ip, const NotifyVideoEventReq& req) {
+	NotifyVideoEventRsp rsp;
+	rsp.set_error(ErrorCodes::Success);
+
+	Defer defer([&rsp, &req]() {
+		rsp.set_from_uid(req.from_uid());
+		rsp.set_to_uid(req.to_uid());
+		rsp.set_call_id(req.call_id());
+		rsp.set_notify_type(req.notify_type());
+		});
+
+	auto find_iter = _pools.find(server_ip);
+	if (find_iter == _pools.end()) {
+		rsp.set_error(ErrorCodes::RPCFailed);
+		return rsp;
+	}
+
+	auto& pool = find_iter->second;
+	ClientContext context;
+	auto stub = pool->getConnection();
+	Status status = stub->NotifyVideoEvent(&context, req, &rsp);
+
+	Defer defercon([&stub, &pool]() {
+		pool->returnConnection(std::move(stub));
+		});
+
+	if (!status.ok()) {
+		rsp.set_error(ErrorCodes::RPCFailed);
+		return rsp;
+	}
+
+	return rsp;
+}

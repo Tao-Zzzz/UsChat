@@ -1271,15 +1271,16 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 		return;
 	}
 
-	if (!root.isMember("uid") || !root.isMember("other_id")) {
+	if (!root.isMember("uid") || !root.isMember("other_id") || !root.isMember("call_type")) {
 		rtvalue["error"] = ErrorCodes::Error_Json;
 		return;
 	}
 
 	int uid = root["uid"].asInt();
 	int other_id = root["other_id"].asInt();
+	int call_type = root["call_type"].asInt();
 
-	if (uid <= 0 || other_id <= 0) {
+	if (uid <= 0 || other_id <= 0 || call_type < 0) {
 		rtvalue["error"] = ErrorCodes::Error_Json;
 		return;
 	}
@@ -1303,6 +1304,7 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 	auto call_id = CallMgr::GetInstance().CreateCallSession(uid, other_id);
 	rtvalue["call_id"] = call_id;
 	rtvalue["other_id"] = other_id;
+	rtvalue["call_type"] = call_type;
 
 	std::string base_key = USER_BASE_INFO + std::to_string(uid);
 	auto apply_info = std::make_shared<UserInfo>();
@@ -1312,7 +1314,8 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 	notify["error"] = ErrorCodes::Success;
 	notify["call_id"] = call_id;
 	notify["from_uid"] = uid;
-	notify["call_type"] = "video";
+	notify["call_type"] = call_type;
+
 	if (b_info) {
 		notify["name"] = apply_info->name;
 		notify["icon"] = apply_info->icon;
@@ -1329,6 +1332,7 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 			rtvalue["error"] = ErrorCodes::ERR_VIDEO_USER_OFFLINE;
 			rtvalue.removeMember("call_id");
 			rtvalue.removeMember("other_id");
+			rtvalue.removeMember("call_type");
 			return;
 		}
 
@@ -1337,7 +1341,6 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 	}
 
 	// ===== 新增：跨服 gRPC =====
-	std::string to_ip_value;
 
 	//查询redis 查找touid对应的server ip
 	auto to_str = std::to_string(other_id);
@@ -1351,6 +1354,7 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 		rtvalue["error"] = ErrorCodes::RPCFailed;
 		rtvalue.removeMember("call_id");
 		rtvalue.removeMember("other_id");
+		rtvalue.removeMember("call_type");
 		return;
 	}
 
@@ -1359,7 +1363,7 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 	req.set_to_uid(other_id);
 	req.set_call_id(call_id);
 	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_INVITE);
-	req.set_call_type("video");
+	req.set_call_type(call_type);
 
 	if (b_info) {
 		req.set_name(apply_info->name);
@@ -1373,6 +1377,7 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 		rtvalue["error"] = rsp.error();
 		rtvalue.removeMember("call_id");
 		rtvalue.removeMember("other_id");
+		rtvalue.removeMember("media_type");
 		return;
 	}
 }
@@ -1443,8 +1448,6 @@ void LogicSystem::VideoAccept(std::shared_ptr<CSession> session, const short& ms
 	}
 
 	// ===== 新增：跨服 gRPC =====
-
-	std::string to_ip_value;
 
 	//查询redis 查找touid对应的server ip
 	auto to_str = std::to_string(other_id);
@@ -1523,8 +1526,6 @@ void LogicSystem::VideoReject(std::shared_ptr<CSession> session, const short& ms
 			}
 		}
 		else {
-			std::string to_ip_value;
-
 			//查询redis 查找touid对应的server ip
 			auto to_str = std::to_string(other_id);
 			auto to_ip_key = USERIPPREFIX + to_str;
@@ -1606,7 +1607,6 @@ void LogicSystem::VideoCancel(std::shared_ptr<CSession> session, const short& ms
 		}
 		else {
 			// ===== 新增：跨服 gRPC =====
-			std::string to_ip_value;
 			//查询redis 查找touid对应的server ip
 			auto to_str = std::to_string(other_id);
 			auto to_ip_key = USERIPPREFIX + to_str;
@@ -1687,7 +1687,6 @@ void LogicSystem::VideoHangup(std::shared_ptr<CSession> session, const short& ms
 		}
 		else {
 			// ===== 新增：跨服 gRPC =====
-			std::string to_ip_value;
 			//查询redis 查找touid对应的server ip
 			auto to_str = std::to_string(other_id);
 			auto to_ip_key = USERIPPREFIX + to_str;
@@ -1766,7 +1765,6 @@ void LogicSystem::WebrtcOffer(std::shared_ptr<CSession> session, const short& ms
 	}
 
 	// ===== 新增：跨服 gRPC =====
-	std::string to_ip_value;
 	//查询redis 查找touid对应的server ip
 	auto to_str = std::to_string(other_id);
 	auto to_ip_key = USERIPPREFIX + to_str;
@@ -1838,7 +1836,6 @@ void LogicSystem::WebrtcAnswer(std::shared_ptr<CSession> session, const short& m
 	}
 
 	// ===== 新增：跨服 gRPC =====
-	std::string to_ip_value;
 	//查询redis 查找touid对应的server ip
 	auto to_str = std::to_string(other_id);
 	auto to_ip_key = USERIPPREFIX + to_str;
@@ -1905,7 +1902,6 @@ void LogicSystem::WebrtcIceCandidate(std::shared_ptr<CSession> session, const sh
 	}
 
 	// ===== 新增：跨服 gRPC =====
-	std::string to_ip_value;
 	//查询redis 查找touid对应的server ip
 	auto to_str = std::to_string(other_id);
 	auto to_ip_key = USERIPPREFIX + to_str;

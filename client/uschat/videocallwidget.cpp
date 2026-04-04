@@ -293,6 +293,9 @@ QWidget* VideoCallWidget::CreateInCallPage()
     layout->addWidget(_remoteVideoView, 1);
     layout->addWidget(_btnHangup);
 
+
+    _remoteVideoView->setVisible(VideoCallManager::GetInstance()->GetMediaType() == 1);
+
     return page;
 }
 

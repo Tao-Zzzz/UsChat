@@ -21,7 +21,7 @@ class VideoCallManager : public QObject
 public:
     static VideoCallManager* GetInstance();
 
-    void StartCall(int selfUid, std::shared_ptr<UserInfo> user_info);
+    void StartCall(int selfUid, std::shared_ptr<UserInfo> user_info, CallMediaType mediaType);
     void AcceptCall();
     void RejectCall();
     void CancelCall();
@@ -65,6 +65,11 @@ public:
 
     void StartBrowserRtcAsCallerIfNeeded();
     void StartBrowserRtcAsCalleeIfNeeded();
+
+    CallMediaType GetMediaType() const { return _mediaType; }
+    bool IsAudioCall() const { return _mediaType == CallMediaType::Audio; }
+    bool IsVideoCall() const { return _mediaType == CallMediaType::Video; }
+
 signals:
     void sig_show_calling_ui();
     void sig_show_incoming_ui(const QJsonObject& obj);
@@ -97,6 +102,8 @@ private:
     QString _callId;
     bool _rtcStarted = false;
     bool _browserRtcStarted = false;
+
+    CallMediaType _mediaType = CallMediaType::Video;
 };
 
 #endif // VIDEOCALLMANAGER_H

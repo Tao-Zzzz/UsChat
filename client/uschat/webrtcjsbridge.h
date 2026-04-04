@@ -41,6 +41,7 @@ signals:
     void qtAddRemoteIce(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
     void qtHangup();
     void qtStartPreview();
+    void qtSetMediaType(int mediaType);
 };
 
 #endif // WEBRTCJSBRIDGE_H

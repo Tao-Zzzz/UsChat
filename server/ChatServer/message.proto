@@ -191,7 +191,7 @@ message NotifyVideoEventReq {
     VideoNotifyType notify_type = 4;
 
     // invite ”√
-    string call_type = 5;
+    int32 call_type = 5;
     string name = 6;
     string icon = 7;
     string nick = 8;

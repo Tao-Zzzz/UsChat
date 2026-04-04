@@ -4495,7 +4495,6 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
 
   enum : int {
     kCallIdFieldNumber = 3,
-    kCallTypeFieldNumber = 5,
     kNameFieldNumber = 6,
     kIconFieldNumber = 7,
     kNickFieldNumber = 8,
@@ -4505,6 +4504,7 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
     kFromUidFieldNumber = 1,
     kToUidFieldNumber = 2,
     kNotifyTypeFieldNumber = 4,
+    kCallTypeFieldNumber = 5,
     kSdpMLineIndexFieldNumber = 12,
   };
   // string call_id = 3;
@@ -4521,22 +4521,6 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
   const std::string& _internal_call_id() const;
   void _internal_set_call_id(const std::string& value);
   std::string* _internal_mutable_call_id();
-  public:
-
-  // string call_type = 5;
-  void clear_call_type();
-  const std::string& call_type() const;
-  void set_call_type(const std::string& value);
-  void set_call_type(std::string&& value);
-  void set_call_type(const char* value);
-  void set_call_type(const char* value, size_t size);
-  std::string* mutable_call_type();
-  std::string* release_call_type();
-  void set_allocated_call_type(std::string* call_type);
-  private:
-  const std::string& _internal_call_type() const;
-  void _internal_set_call_type(const std::string& value);
-  std::string* _internal_mutable_call_type();
   public:
 
   // string name = 6;
@@ -4662,6 +4646,15 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
   void _internal_set_notify_type(::message::VideoNotifyType value);
   public:
 
+  // int32 call_type = 5;
+  void clear_call_type();
+  ::PROTOBUF_NAMESPACE_ID::int32 call_type() const;
+  void set_call_type(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_call_type() const;
+  void _internal_set_call_type(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
   // int32 sdpMLineIndex = 12;
   void clear_sdpmlineindex();
   ::PROTOBUF_NAMESPACE_ID::int32 sdpmlineindex() const;
@@ -4679,7 +4672,6 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr call_id_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr call_type_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr icon_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr nick_;
@@ -4689,6 +4681,7 @@ class NotifyVideoEventReq PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::int32 from_uid_;
   ::PROTOBUF_NAMESPACE_ID::int32 to_uid_;
   int notify_type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 call_type_;
   ::PROTOBUF_NAMESPACE_ID::int32 sdpmlineindex_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
@@ -7819,66 +7812,24 @@ inline void NotifyVideoEventReq::set_notify_type(::message::VideoNotifyType valu
   // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.notify_type)
 }
 
-// string call_type = 5;
+// int32 call_type = 5;
 inline void NotifyVideoEventReq::clear_call_type() {
-  call_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  call_type_ = 0;
 }
-inline const std::string& NotifyVideoEventReq::call_type() const {
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::_internal_call_type() const {
+  return call_type_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::call_type() const {
   // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.call_type)
   return _internal_call_type();
 }
-inline void NotifyVideoEventReq::set_call_type(const std::string& value) {
+inline void NotifyVideoEventReq::_internal_set_call_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  call_type_ = value;
+}
+inline void NotifyVideoEventReq::set_call_type(::PROTOBUF_NAMESPACE_ID::int32 value) {
   _internal_set_call_type(value);
   // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.call_type)
-}
-inline std::string* NotifyVideoEventReq::mutable_call_type() {
-  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.call_type)
-  return _internal_mutable_call_type();
-}
-inline const std::string& NotifyVideoEventReq::_internal_call_type() const {
-  return call_type_.Get();
-}
-inline void NotifyVideoEventReq::_internal_set_call_type(const std::string& value) {
-  
-  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
-}
-inline void NotifyVideoEventReq::set_call_type(std::string&& value) {
-  
-  call_type_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.call_type)
-}
-inline void NotifyVideoEventReq::set_call_type(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
-  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.call_type)
-}
-inline void NotifyVideoEventReq::set_call_type(const char* value,
-    size_t size) {
-  
-  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.call_type)
-}
-inline std::string* NotifyVideoEventReq::_internal_mutable_call_type() {
-  
-  return call_type_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline std::string* NotifyVideoEventReq::release_call_type() {
-  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.call_type)
-  return call_type_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-}
-inline void NotifyVideoEventReq::set_allocated_call_type(std::string* call_type) {
-  if (call_type != nullptr) {
-    
-  } else {
-    
-  }
-  call_type_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), call_type,
-      GetArena());
-  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.call_type)
 }
 
 // string name = 6;

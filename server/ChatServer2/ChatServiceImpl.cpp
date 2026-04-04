@@ -282,15 +282,6 @@ Status ChatServiceImpl::NotifyChatImgMsg(::grpc::ServerContext* context, const :
 		response->set_message_id(request->message_id());
 		});
 
-	//用户不在内存中则直接返回
-	if (session == nullptr) {
-		//这里只是返回1个状态
-		return Status::OK;
-	}
-
-	//在内存中则直接发送通知对方
-	session->NotifyChatImgRecv(request);
-
 
 	//查找用户是否在本服务器
 	auto from_uid = request->from_uid();
@@ -304,6 +295,114 @@ Status ChatServiceImpl::NotifyChatImgMsg(::grpc::ServerContext* context, const :
 
 	//在内存中则直接发送通知对方
 	from_session->NotifySendClientChatImgRecv(request);
+	
+	
+	
+	//用户不在内存中则直接返回
+	if (session == nullptr) {
+		//这里只是返回1个状态
+		return Status::OK;
+	}
+
+	//在内存中则直接发送通知对方
+	session->NotifyChatImgRecv(request);
+
 	//这里只是返回1个状态
+	return Status::OK;
+}
+
+
+Status ChatServiceImpl::NotifyVideoEvent(ServerContext* context,
+	const NotifyVideoEventReq* request,
+	NotifyVideoEventRsp* reply) {
+	auto to_uid = request->to_uid();
+	auto from_uid = request->from_uid();
+
+	auto session = UserMgr::GetInstance()->GetSession(to_uid);
+
+	Defer defer([request, reply]() {
+		reply->set_error(ErrorCodes::Success);
+		reply->set_from_uid(request->from_uid());
+		reply->set_to_uid(request->to_uid());
+		reply->set_call_id(request->call_id());
+		reply->set_notify_type(request->notify_type());
+		});
+
+	// 用户不在本服内存中，直接返回 OK
+	if (session == nullptr) {
+		return Status::OK;
+	}
+
+	Json::Value rtvalue;
+	rtvalue["error"] = ErrorCodes::Success;
+	rtvalue["call_id"] = request->call_id();
+
+	short notify_msg_id = 0;
+
+	switch (request->notify_type()) {
+	case VideoNotifyType::VIDEO_NOTIFY_INVITE:
+		notify_msg_id = ID_NOTIFY_VIDEO_INVITE_REQ;
+		rtvalue["from_uid"] = from_uid;
+		rtvalue["call_type"] = request->call_type();
+		if (!request->name().empty()) {
+			rtvalue["name"] = request->name();
+		}
+		if (!request->icon().empty()) {
+			rtvalue["icon"] = request->icon();
+		}
+		if (!request->nick().empty()) {
+			rtvalue["nick"] = request->nick();
+		}
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_ACCEPT:
+		notify_msg_id = ID_NOTIFY_VIDEO_ACCEPT_REQ;
+		rtvalue["uid"] = from_uid;
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_REJECT:
+		notify_msg_id = ID_NOTIFY_VIDEO_REJECT_REQ;
+		rtvalue["uid"] = from_uid;
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_CANCEL:
+		notify_msg_id = ID_NOTIFY_VIDEO_CANCEL_REQ;
+		rtvalue["uid"] = from_uid;
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_HANGUP:
+		notify_msg_id = ID_NOTIFY_VIDEO_HANGUP_REQ;
+		rtvalue["uid"] = from_uid;
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_OFFER:
+		notify_msg_id = ID_NOTIFY_WEBRTC_OFFER_REQ;
+		rtvalue["uid"] = from_uid;
+		rtvalue["other_id"] = to_uid;
+		rtvalue["sdp"] = request->sdp();
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ANSWER:
+		notify_msg_id = ID_NOTIFY_WEBRTC_ANSWER_REQ;
+		rtvalue["uid"] = from_uid;
+		rtvalue["other_id"] = to_uid;
+		rtvalue["sdp"] = request->sdp();
+		break;
+
+	case VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE:
+		notify_msg_id = ID_NOTIFY_WEBRTC_ICE_CANDIDATE_REQ;
+		rtvalue["uid"] = from_uid;
+		rtvalue["other_id"] = to_uid;
+		rtvalue["candidate"] = request->candidate();
+		rtvalue["sdpMid"] = request->sdpmid();
+		rtvalue["sdpMLineIndex"] = request->sdpmlineindex();
+		break;
+
+	default:
+		reply->set_error(ErrorCodes::Error_Json);
+		return Status::OK;
+	}
+
+	session->Send(rtvalue.toStyledString(), notify_msg_id);
 	return Status::OK;
 }

@@ -41,6 +41,13 @@ void FriendInfoPage::on_msg_chat_clicked()
 void FriendInfoPage::on_video_chat_clicked()
 {
     qDebug() << "vedio btn clicked";
-    emit sig_video_invite(_user_info);
+    emit sig_video_invite(_user_info, CallMediaType::Video);
+}
+
+
+void FriendInfoPage::on_voice_chat_clicked()
+{
+    qDebug() << "voice btn clicked";
+    emit sig_video_invite(_user_info, CallMediaType::Audio);
 }
 

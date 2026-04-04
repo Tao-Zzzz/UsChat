@@ -841,7 +841,7 @@ const char descriptor_table_protodef_message_2eproto[] PROTOBUF_SECTION_VARIABLE
   "d\030\007 \001(\005\"\373\001\n\023NotifyVideoEventReq\022\020\n\010from_"
   "uid\030\001 \001(\005\022\016\n\006to_uid\030\002 \001(\005\022\017\n\007call_id\030\003 \001"
   "(\t\022-\n\013notify_type\030\004 \001(\0162\030.message.VideoN"
-  "otifyType\022\021\n\tcall_type\030\005 \001(\t\022\014\n\004name\030\006 \001"
+  "otifyType\022\021\n\tcall_type\030\005 \001(\005\022\014\n\004name\030\006 \001"
   "(\t\022\014\n\004icon\030\007 \001(\t\022\014\n\004nick\030\010 \001(\t\022\013\n\003sdp\030\t "
   "\001(\t\022\021\n\tcandidate\030\n \001(\t\022\016\n\006sdpMid\030\013 \001(\t\022\025"
   "\n\rsdpMLineIndex\030\014 \001(\005\"\206\001\n\023NotifyVideoEve"
@@ -7690,11 +7690,6 @@ NotifyVideoEventReq::NotifyVideoEventReq(const NotifyVideoEventReq& from)
     call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_call_id(),
       GetArena());
   }
-  call_type_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_call_type().empty()) {
-    call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_call_type(),
-      GetArena());
-  }
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_name().empty()) {
     name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_name(),
@@ -7734,7 +7729,6 @@ NotifyVideoEventReq::NotifyVideoEventReq(const NotifyVideoEventReq& from)
 void NotifyVideoEventReq::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_NotifyVideoEventReq_message_2eproto.base);
   call_id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  call_type_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   icon_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   nick_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -7755,7 +7749,6 @@ NotifyVideoEventReq::~NotifyVideoEventReq() {
 void NotifyVideoEventReq::SharedDtor() {
   GOOGLE_DCHECK(GetArena() == nullptr);
   call_id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  call_type_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   icon_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   nick_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -7786,7 +7779,6 @@ void NotifyVideoEventReq::Clear() {
   (void) cached_has_bits;
 
   call_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  call_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   icon_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   nick_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
@@ -7838,12 +7830,10 @@ const char* NotifyVideoEventReq::_InternalParse(const char* ptr, ::PROTOBUF_NAME
           _internal_set_notify_type(static_cast<::message::VideoNotifyType>(val));
         } else goto handle_unusual;
         continue;
-      // string call_type = 5;
+      // int32 call_type = 5;
       case 5:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 42)) {
-          auto str = _internal_mutable_call_type();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "message.NotifyVideoEventReq.call_type"));
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
+          call_type_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7965,14 +7955,10 @@ failure:
       4, this->_internal_notify_type(), target);
   }
 
-  // string call_type = 5;
-  if (this->call_type().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_call_type().data(), static_cast<int>(this->_internal_call_type().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "message.NotifyVideoEventReq.call_type");
-    target = stream->WriteStringMaybeAliased(
-        5, this->_internal_call_type(), target);
+  // int32 call_type = 5;
+  if (this->call_type() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(5, this->_internal_call_type(), target);
   }
 
   // string name = 6;
@@ -8064,13 +8050,6 @@ size_t NotifyVideoEventReq::ByteSizeLong() const {
         this->_internal_call_id());
   }
 
-  // string call_type = 5;
-  if (this->call_type().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_call_type());
-  }
-
   // string name = 6;
   if (this->name().size() > 0) {
     total_size += 1 +
@@ -8133,6 +8112,13 @@ size_t NotifyVideoEventReq::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_notify_type());
   }
 
+  // int32 call_type = 5;
+  if (this->call_type() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_call_type());
+  }
+
   // int32 sdpMLineIndex = 12;
   if (this->sdpmlineindex() != 0) {
     total_size += 1 +
@@ -8174,9 +8160,6 @@ void NotifyVideoEventReq::MergeFrom(const NotifyVideoEventReq& from) {
   if (from.call_id().size() > 0) {
     _internal_set_call_id(from._internal_call_id());
   }
-  if (from.call_type().size() > 0) {
-    _internal_set_call_type(from._internal_call_type());
-  }
   if (from.name().size() > 0) {
     _internal_set_name(from._internal_name());
   }
@@ -8203,6 +8186,9 @@ void NotifyVideoEventReq::MergeFrom(const NotifyVideoEventReq& from) {
   }
   if (from.notify_type() != 0) {
     _internal_set_notify_type(from._internal_notify_type());
+  }
+  if (from.call_type() != 0) {
+    _internal_set_call_type(from._internal_call_type());
   }
   if (from.sdpmlineindex() != 0) {
     _internal_set_sdpmlineindex(from._internal_sdpmlineindex());
@@ -8231,7 +8217,6 @@ void NotifyVideoEventReq::InternalSwap(NotifyVideoEventReq* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   call_id_.Swap(&other->call_id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  call_type_.Swap(&other->call_type_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   icon_.Swap(&other->icon_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   nick_.Swap(&other->nick_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
