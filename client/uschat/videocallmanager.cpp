@@ -12,10 +12,11 @@ namespace
 int g_programmaticQtHangupDepth = 0;
 bool g_acceptPending = false;
 
-void SafeEmitQtHangup()
+
+void SafeEmitQtHangup(WebRtcJsBridge* bridge)
 {
     ++g_programmaticQtHangupDepth;
-    emit WebRtcJsBridge::GetInstance()->qtHangup();
+    emit bridge->qtHangup();
     --g_programmaticQtHangupDepth;
 }
 
@@ -40,6 +41,13 @@ static CallMediaType FromMediaTypeValue(int value)
     }
 }
 
+WebRtcJsBridge* VideoCallManager::CurrentBridge() const
+{
+    return (_mediaType == CallMediaType::Video)
+    ? WebRtcJsBridge::GetVideoInstance()
+    : WebRtcJsBridge::GetVoiceInstance();
+}
+
 VideoCallManager* VideoCallManager::GetInstance()
 {
     static VideoCallManager instance;
@@ -49,63 +57,65 @@ VideoCallManager* VideoCallManager::GetInstance()
 VideoCallManager::VideoCallManager(QObject *parent)
     : QObject(parent)
 {
-    auto bridge = WebRtcJsBridge::GetInstance();
+    auto videoBridge = WebRtcJsBridge::GetVideoInstance();
+    auto voiceBridge = WebRtcJsBridge::GetVoiceInstance();
 
-    connect(bridge, &WebRtcJsBridge::sigRemoteOffer,
-            this, &VideoCallManager::SendOffer);
+    auto bindBridge = [this](WebRtcJsBridge* bridge) {
+        connect(bridge, &WebRtcJsBridge::sigRemoteOffer,
+                this, &VideoCallManager::SendOffer);
 
-    connect(bridge, &WebRtcJsBridge::sigRemoteAnswer,
-            this, &VideoCallManager::SendAnswer);
+        connect(bridge, &WebRtcJsBridge::sigRemoteAnswer,
+                this, &VideoCallManager::SendAnswer);
 
-    connect(bridge, &WebRtcJsBridge::sigRemoteIce,
-            this, &VideoCallManager::SendIceCandidate);
+        connect(bridge, &WebRtcJsBridge::sigRemoteIce,
+                this, &VideoCallManager::SendIceCandidate);
 
-    connect(bridge, &WebRtcJsBridge::sigCallConnected, this, [this]() {
-        MarkCallConnected();
-    });
+        connect(bridge, &WebRtcJsBridge::sigCallConnected, this, [this]() {
+            MarkCallConnected();
+        });
 
-    // 关键修复：
-    // 网页侧的 hangup 不能再无脑回调到 Hangup()，否则会和 qtHangup 形成递归/重入
-    connect(bridge, &WebRtcJsBridge::sigHangup, this, [this]() {
-        // 如果这是 Qt 主动下发的 qtHangup 触发出来的回调，直接忽略
-        if (IsProgrammaticQtHangupInProgress()) {
-            return;
-        }
-
-        // 只有在真的还处于通话中时，才把它当成“本地 RTC 意外关闭”
-        if (_state == CallState::Connecting || _state == CallState::InCall) {
-            const int selfUid = _selfUid;
-            const int peerUid = _peerUid;
-            const QString callId = _callId;
-
-            emit sig_call_local_hangup();
-
-            if (!callId.isEmpty()) {
-                QJsonObject jsonObj;
-                jsonObj["uid"] = selfUid;
-                jsonObj["other_id"] = peerUid;
-                jsonObj["call_id"] = callId;
-
-                QJsonDocument doc(jsonObj);
-                emit TcpMgr::GetInstance()->sig_send_data(
-                                               ID_VIDEO_HANGUP_REQ,
-                                               doc.toJson(QJsonDocument::Compact)
-                                               );
+        connect(bridge, &WebRtcJsBridge::sigHangup, this, [this]() {
+            if (IsProgrammaticQtHangupInProgress()) {
+                return;
             }
 
-            Reset();
-        }
-    });
+            if (_state == CallState::Connecting || _state == CallState::InCall) {
+                const int selfUid = _selfUid;
+                const int peerUid = _peerUid;
+                const QString callId = _callId;
 
-    connect(bridge, &WebRtcJsBridge::sigCallError, this, [this](const QString& err) {
-        emit sig_call_error(err);
-    });
+                EmitCallLocalHangupByMediaType();
+
+                if (!callId.isEmpty()) {
+                    QJsonObject jsonObj;
+                    jsonObj["uid"] = selfUid;
+                    jsonObj["other_id"] = peerUid;
+                    jsonObj["call_id"] = callId;
+
+                    QJsonDocument doc(jsonObj);
+                    emit TcpMgr::GetInstance()->sig_send_data(
+                                                   ID_VIDEO_HANGUP_REQ,
+                                                   doc.toJson(QJsonDocument::Compact)
+                                                   );
+                }
+
+                Reset();
+            }
+        });
+
+        connect(bridge, &WebRtcJsBridge::sigCallError, this, [this](const QString& err) {
+            EmitCallErrorByMediaType(err);
+        });
+    };
+
+    bindBridge(videoBridge);
+    bindBridge(voiceBridge);
 }
 
 void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_user_info, CallMediaType mediaType)
 {
     if (_state != CallState::Idle) {
-        emit sig_call_error(QStringLiteral("当前已有通话进行中"));
+        EmitCallErrorByMediaType(QStringLiteral("当前已有通话进行中"));
         return;
     }
 
@@ -129,8 +139,8 @@ void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_us
 
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_INVITE_REQ, doc.toJson(QJsonDocument::Compact));
-    emit sig_show_calling_ui();
-    emit sig_call_can_cancel(false);
+    EmitShowCallingUiByMediaType();
+    EmitCallCanCancelByMediaType(false);
 }
 
 void VideoCallManager::AcceptCall()
@@ -170,7 +180,7 @@ void VideoCallManager::RejectCall()
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_REJECT_REQ, doc.toJson(QJsonDocument::Compact));
 
-    SafeEmitQtHangup();
+    SafeEmitQtHangup(CurrentBridge());
     Reset();
 }
 
@@ -181,8 +191,8 @@ void VideoCallManager::CancelCall()
     }
 
     if (_callId.isEmpty()) {
-        emit sig_call_cancelled();
-        SafeEmitQtHangup();
+        EmitCallCancelledByMediaType();
+        SafeEmitQtHangup(CurrentBridge());
         Reset();
         return;
     }
@@ -195,15 +205,15 @@ void VideoCallManager::CancelCall()
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_CANCEL_REQ, doc.toJson(QJsonDocument::Compact));
 
-    emit sig_call_cancelled();
-    SafeEmitQtHangup();
+    EmitCallCancelledByMediaType();
+    SafeEmitQtHangup(CurrentBridge());
     Reset();
 }
 
 void VideoCallManager::Hangup()
 {
     if ((_state != CallState::Connecting && _state != CallState::InCall) || _callId.isEmpty()) {
-        SafeEmitQtHangup();
+        SafeEmitQtHangup(CurrentBridge());
         Reset();
         return;
     }
@@ -212,7 +222,7 @@ void VideoCallManager::Hangup()
     const int peerUid = _peerUid;
     const QString callId = _callId;
 
-    SafeEmitQtHangup();
+    SafeEmitQtHangup(CurrentBridge());
 
     QJsonObject jsonObj;
     jsonObj["uid"] = selfUid;
@@ -222,7 +232,7 @@ void VideoCallManager::Hangup()
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_HANGUP_REQ, doc.toJson(QJsonDocument::Compact));
 
-    emit sig_call_local_hangup();
+    EmitCallLocalHangupByMediaType();
     Reset();
 }
 
@@ -230,14 +240,18 @@ void VideoCallManager::HandleVideoInviteRsp(const QJsonObject& obj)
 {
     int err = obj.value("error").toInt();
     if (err != 0) {
-        emit sig_call_error(QStringLiteral("发起视频邀请失败，错误码: %1").arg(err));
-        SafeEmitQtHangup();
+        EmitCallErrorByMediaType(QStringLiteral("发起%1失败，错误码: %2")
+                                .arg(_mediaType == CallMediaType::Video
+                                         ? QStringLiteral("视频通话邀请")
+                                         : QStringLiteral("语音通话邀请"))
+                                .arg(err));
+        SafeEmitQtHangup(CurrentBridge());
         Reset();
         return;
     }
 
     _callId = obj.value("call_id").toString();
-    emit sig_call_can_cancel(true);
+    EmitCallCanCancelByMediaType(true);
 }
 
 void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
@@ -246,8 +260,12 @@ void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
 
     int err = obj.value("error").toInt();
     if (err != 0) {
-        emit sig_call_error(QStringLiteral("接听失败，错误码: %1").arg(err));
-        SafeEmitQtHangup();
+        EmitCallErrorByMediaType(QStringLiteral("发起%1失败，错误码: %2")
+                                .arg(_mediaType == CallMediaType::Video
+                                         ? QStringLiteral("视频通话邀请")
+                                         : QStringLiteral("语音通话邀请"))
+                                .arg(err));
+        SafeEmitQtHangup(CurrentBridge());
         Reset();
         return;
     }
@@ -257,15 +275,8 @@ void VideoCallManager::HandleVideoAcceptRsp(const QJsonObject& obj)
         return;
     }
 
-
-    if (obj.contains("call_type")) {
-        _mediaType = FromMediaTypeValue(obj["call_type"].toInt());
-    } else {
-        _mediaType = CallMediaType::Video; // 兼容旧端
-    }
-
     _state = CallState::Connecting;
-    emit sig_call_accepted();
+    EmitCallAcceptedByMediaType();
 
     // 这是发给被叫 B 的
     StartBrowserRtcAsCalleeIfNeeded();
@@ -303,9 +314,11 @@ void VideoCallManager::HandleNotifyVideoInvite(const QJsonObject& obj)
 
     if (obj.contains("call_type")) {
         _mediaType = FromMediaTypeValue(obj["call_type"].toInt());
+    } else {
+        _mediaType = CallMediaType::Video;
     }
 
-    emit sig_show_incoming_ui(obj);
+    EmitShowIncomingUiByMediaType(obj);
 }
 
 void VideoCallManager::HandleNotifyVideoAccept(const QJsonObject& obj)
@@ -320,7 +333,7 @@ void VideoCallManager::HandleNotifyVideoAccept(const QJsonObject& obj)
     }
 
     _state = CallState::Connecting;
-    emit sig_call_accepted();
+    EmitCallAcceptedByMediaType();
 
     // 这是发给主叫 A 的
     StartBrowserRtcAsCallerIfNeeded();
@@ -333,8 +346,8 @@ void VideoCallManager::HandleNotifyVideoReject(const QJsonObject& obj)
         return;
     }
 
-    emit sig_call_rejected();
-    SafeEmitQtHangup();
+    EmitCallRejectedByMediaType();
+    SafeEmitQtHangup(CurrentBridge());
     Reset();
 }
 
@@ -345,8 +358,8 @@ void VideoCallManager::HandleNotifyVideoCancel(const QJsonObject& obj)
         return;
     }
 
-    emit sig_call_cancelled();
-    SafeEmitQtHangup();
+    EmitCallCancelledByMediaType();
+    SafeEmitQtHangup(CurrentBridge());
     Reset();
 }
 
@@ -357,8 +370,8 @@ void VideoCallManager::HandleNotifyVideoHangup(const QJsonObject& obj)
         return;
     }
 
-    SafeEmitQtHangup();
-    emit sig_call_hangup();
+    SafeEmitQtHangup(CurrentBridge());
+    EmitCallHangupByMediaType();
     Reset();
 }
 
@@ -428,7 +441,7 @@ void VideoCallManager::HandleNotifyOffer(const QJsonObject& obj)
         return;
     }
 
-    emit WebRtcJsBridge::GetInstance()->qtSetRemoteOffer(sdp);
+    emit CurrentBridge()->qtSetRemoteOffer(sdp);
 }
 
 void VideoCallManager::HandleNotifyAnswer(const QJsonObject& obj)
@@ -447,7 +460,7 @@ void VideoCallManager::HandleNotifyAnswer(const QJsonObject& obj)
         return;
     }
 
-    emit WebRtcJsBridge::GetInstance()->qtSetRemoteAnswer(sdp);
+    emit CurrentBridge()->qtSetRemoteAnswer(sdp);
 }
 
 void VideoCallManager::HandleNotifyIceCandidate(const QJsonObject& obj)
@@ -461,11 +474,11 @@ void VideoCallManager::HandleNotifyIceCandidate(const QJsonObject& obj)
         return;
     }
 
-    emit WebRtcJsBridge::GetInstance()->qtAddRemoteIce(
-                                           obj.value("candidate").toString(),
-                                           obj.value("sdpMid").toString(),
-                                           obj.value("sdpMLineIndex").toInt()
-                                           );
+    emit CurrentBridge()->qtAddRemoteIce(
+                             obj.value("candidate").toString(),
+                             obj.value("sdpMid").toString(),
+                             obj.value("sdpMLineIndex").toInt()
+                             );
 }
 
 void VideoCallManager::MarkCallConnected()
@@ -475,7 +488,7 @@ void VideoCallManager::MarkCallConnected()
     }
 
     _state = CallState::InCall;
-    emit sig_call_connected();
+    EmitCallConnectedByMediaType();
 }
 
 void VideoCallManager::Reset()
@@ -497,8 +510,8 @@ void VideoCallManager::StartBrowserRtcAsCallerIfNeeded()
     }
 
     _browserRtcStarted = true;
-    emit WebRtcJsBridge::GetInstance()->qtSetMediaType(static_cast<int>(_mediaType));
-    emit WebRtcJsBridge::GetInstance()->qtStartCaller();
+    emit CurrentBridge()->qtSetMediaType(static_cast<int>(_mediaType));
+    emit CurrentBridge()->qtStartCaller();
 }
 
 void VideoCallManager::StartBrowserRtcAsCalleeIfNeeded()
@@ -508,6 +521,123 @@ void VideoCallManager::StartBrowserRtcAsCalleeIfNeeded()
     }
 
     _browserRtcStarted = true;
-    emit WebRtcJsBridge::GetInstance()->qtSetMediaType(static_cast<int>(_mediaType));
-    emit WebRtcJsBridge::GetInstance()->qtStartCallee();
+    emit CurrentBridge()->qtSetMediaType(static_cast<int>(_mediaType));
+    emit CurrentBridge()->qtStartCallee();
+}
+
+void VideoCallManager::EmitShowCallingUiByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_show_calling_ui();
+    } else {
+        emit sig_voice_show_calling_ui();
+    }
+}
+
+void VideoCallManager::EmitShowIncomingUiByMediaType(const QJsonObject& obj)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_show_incoming_ui(obj);
+    } else {
+        emit sig_voice_show_incoming_ui(obj);
+    }
+}
+
+void VideoCallManager::EmitCallAcceptedByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_accepted();
+    } else {
+        emit sig_voice_call_accepted();
+    }
+}
+
+void VideoCallManager::EmitCallRejectedByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_rejected();
+    } else {
+        emit sig_voice_call_rejected();
+    }
+}
+
+void VideoCallManager::EmitCallHangupByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_hangup();
+    } else {
+        emit sig_voice_call_hangup();
+    }
+}
+
+void VideoCallManager::EmitCallConnectedByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_connected();
+    } else {
+        emit sig_voice_call_connected();
+    }
+}
+
+void VideoCallManager::EmitRecvOfferByMediaType(const QString& sdp)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_recv_offer(sdp);
+    } else {
+        emit sig_voice_recv_offer(sdp);
+    }
+}
+
+void VideoCallManager::EmitRecvAnswerByMediaType(const QString& sdp)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_recv_answer(sdp);
+    } else {
+        emit sig_voice_recv_answer(sdp);
+    }
+}
+
+void VideoCallManager::EmitRecvIceCandidateByMediaType(const QString& candidate, const QString& sdpMid, int sdpMLineIndex)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_recv_ice_candidate(candidate, sdpMid, sdpMLineIndex);
+    } else {
+        emit sig_voice_recv_ice_candidate(candidate, sdpMid, sdpMLineIndex);
+    }
+}
+
+void VideoCallManager::EmitCallErrorByMediaType(const QString& text)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_error(text);
+    } else {
+        emit sig_voice_call_error(text);
+    }
+}
+
+void VideoCallManager::EmitCallCancelledByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_cancelled();
+    } else {
+        emit sig_voice_call_cancelled();
+    }
+}
+
+void VideoCallManager::EmitCallLocalHangupByMediaType()
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_local_hangup();
+    } else {
+        emit sig_voice_call_local_hangup();
+    }
+}
+
+void VideoCallManager::EmitCallCanCancelByMediaType(bool enable)
+{
+    if (_mediaType == CallMediaType::Video) {
+        emit sig_video_call_can_cancel(enable);
+    } else {
+        emit sig_voice_call_can_cancel(enable);
+    }
 }

@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QString>
 #include "userdata.h"
+#include "WebRtcJsBridge.h"
 
 enum class CallState
 {
@@ -70,29 +71,72 @@ public:
     bool IsAudioCall() const { return _mediaType == CallMediaType::Audio; }
     bool IsVideoCall() const { return _mediaType == CallMediaType::Video; }
 
+
+
 signals:
-    void sig_show_calling_ui();
-    void sig_show_incoming_ui(const QJsonObject& obj);
-    void sig_call_accepted();
-    void sig_call_rejected();
-    void sig_call_hangup();
-    void sig_call_connected();
+    // =========================
+    // video signals
+    // =========================
+    void sig_video_show_calling_ui();
+    void sig_video_show_incoming_ui(const QJsonObject& obj);
+    void sig_video_call_accepted();
+    void sig_video_call_rejected();
+    void sig_video_call_hangup();
+    void sig_video_call_connected();
 
-    void sig_recv_offer(const QString& sdp);
-    void sig_recv_answer(const QString& sdp);
-    void sig_recv_ice_candidate(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
+    void sig_video_recv_offer(const QString& sdp);
+    void sig_video_recv_answer(const QString& sdp);
+    void sig_video_recv_ice_candidate(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
 
-    // 给 UI 用的额外状态
-    void sig_call_error(const QString& text);
-    void sig_call_cancelled();
-    void sig_call_local_hangup();
-    void sig_call_can_cancel(bool enable);
+    void sig_video_call_error(const QString& text);
+    void sig_video_call_cancelled();
+    void sig_video_call_local_hangup();
+    void sig_video_call_can_cancel(bool enable);
+
+    // =========================
+    // voice signals
+    // =========================
+    void sig_voice_show_calling_ui();
+    void sig_voice_show_incoming_ui(const QJsonObject& obj);
+    void sig_voice_call_accepted();
+    void sig_voice_call_rejected();
+    void sig_voice_call_hangup();
+    void sig_voice_call_connected();
+
+    void sig_voice_recv_offer(const QString& sdp);
+    void sig_voice_recv_answer(const QString& sdp);
+    void sig_voice_recv_ice_candidate(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
+
+    void sig_voice_call_error(const QString& text);
+    void sig_voice_call_cancelled();
+    void sig_voice_call_local_hangup();
+    void sig_voice_call_can_cancel(bool enable);
+
 
 private:
+    WebRtcJsBridge* CurrentBridge() const;
     explicit VideoCallManager(QObject *parent = nullptr);
     void Reset();
     void StartRtcAsCallerIfNeeded();
     void StartRtcAsCalleeIfNeeded();
+
+
+    void EmitShowCallingUiByMediaType();
+    void EmitShowIncomingUiByMediaType(const QJsonObject& obj);
+    void EmitCallAcceptedByMediaType();
+    void EmitCallRejectedByMediaType();
+    void EmitCallHangupByMediaType();
+    void EmitCallConnectedByMediaType();
+
+    void EmitRecvOfferByMediaType(const QString& sdp);
+    void EmitRecvAnswerByMediaType(const QString& sdp);
+    void EmitRecvIceCandidateByMediaType(const QString& candidate, const QString& sdpMid, int sdpMLineIndex);
+
+    void EmitCallErrorByMediaType(const QString& text);
+    void EmitCallCancelledByMediaType();
+    void EmitCallLocalHangupByMediaType();
+    void EmitCallCanCancelByMediaType(bool enable);
+
 private:
     CallState _state = CallState::Idle;
     int _selfUid = 0;

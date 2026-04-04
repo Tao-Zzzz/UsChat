@@ -30,6 +30,7 @@
 #include <QObject>
 #include "videocallmanager.h"
 #include "videocallwidget.h"
+#include "voicecallwidget.h"
 #include "diarydialog.h"
 
 ChatDialog::ChatDialog(QWidget* parent) :
@@ -244,6 +245,7 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
 
     VideoCallWidget::GetInstance();
+    VoiceCallWidget::GetInstance();
 }
 
 ChatDialog::~ChatDialog()

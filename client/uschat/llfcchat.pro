@@ -92,6 +92,7 @@ SOURCES += \
         usermgr.cpp \
         videocallmanager.cpp \
         videocallwidget.cpp \
+        voicecallwidget.cpp \
         webrtcjsbridge.cpp
 
 HEADERS += \
@@ -161,6 +162,7 @@ HEADERS += \
         usermgr.h \
         videocallmanager.h \
         videocallwidget.h \
+        voicecallwidget.h \
         webrtcjsbridge.h
 
 FORMS += \

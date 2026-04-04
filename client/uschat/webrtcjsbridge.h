@@ -8,10 +8,13 @@ class WebRtcJsBridge : public QObject
 {
     Q_OBJECT
 public:
-    static WebRtcJsBridge* GetInstance();
+    static WebRtcJsBridge* GetVideoInstance();
+    static WebRtcJsBridge* GetVoiceInstance();
+
     explicit WebRtcJsBridge(QObject* parent = nullptr);
 
 signals:
+    // JS -> Qt
     void sigStartCaller();
     void sigStartCallee();
     void sigRemoteOffer(const QString& sdp);
@@ -23,7 +26,6 @@ signals:
     void sigCallError(const QString& msg);
 
 public slots:
-    // JS -> Qt
     void jsReady();
     void jsSendOffer(const QString& sdp);
     void jsSendAnswer(const QString& sdp);
