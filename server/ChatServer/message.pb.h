@@ -31,6 +31,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
@@ -47,7 +48,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[24]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -106,6 +107,12 @@ extern NotifyChatImgReqDefaultTypeInternal _NotifyChatImgReq_default_instance_;
 class NotifyChatImgRsp;
 class NotifyChatImgRspDefaultTypeInternal;
 extern NotifyChatImgRspDefaultTypeInternal _NotifyChatImgRsp_default_instance_;
+class NotifyVideoEventReq;
+class NotifyVideoEventReqDefaultTypeInternal;
+extern NotifyVideoEventReqDefaultTypeInternal _NotifyVideoEventReq_default_instance_;
+class NotifyVideoEventRsp;
+class NotifyVideoEventRspDefaultTypeInternal;
+extern NotifyVideoEventRspDefaultTypeInternal _NotifyVideoEventRsp_default_instance_;
 class RplyFriendReq;
 class RplyFriendReqDefaultTypeInternal;
 extern RplyFriendReqDefaultTypeInternal _RplyFriendReq_default_instance_;
@@ -146,6 +153,8 @@ template<> ::message::LoginReq* Arena::CreateMaybeMessage<::message::LoginReq>(A
 template<> ::message::LoginRsp* Arena::CreateMaybeMessage<::message::LoginRsp>(Arena*);
 template<> ::message::NotifyChatImgReq* Arena::CreateMaybeMessage<::message::NotifyChatImgReq>(Arena*);
 template<> ::message::NotifyChatImgRsp* Arena::CreateMaybeMessage<::message::NotifyChatImgRsp>(Arena*);
+template<> ::message::NotifyVideoEventReq* Arena::CreateMaybeMessage<::message::NotifyVideoEventReq>(Arena*);
+template<> ::message::NotifyVideoEventRsp* Arena::CreateMaybeMessage<::message::NotifyVideoEventRsp>(Arena*);
 template<> ::message::RplyFriendReq* Arena::CreateMaybeMessage<::message::RplyFriendReq>(Arena*);
 template<> ::message::RplyFriendRsp* Arena::CreateMaybeMessage<::message::RplyFriendRsp>(Arena*);
 template<> ::message::SendChatMsgReq* Arena::CreateMaybeMessage<::message::SendChatMsgReq>(Arena*);
@@ -156,6 +165,37 @@ template<> ::message::TextChatMsgRsp* Arena::CreateMaybeMessage<::message::TextC
 PROTOBUF_NAMESPACE_CLOSE
 namespace message {
 
+enum VideoNotifyType : int {
+  VIDEO_NOTIFY_INVITE = 0,
+  VIDEO_NOTIFY_ACCEPT = 1,
+  VIDEO_NOTIFY_REJECT = 2,
+  VIDEO_NOTIFY_CANCEL = 3,
+  VIDEO_NOTIFY_HANGUP = 4,
+  VIDEO_NOTIFY_WEBRTC_OFFER = 5,
+  VIDEO_NOTIFY_WEBRTC_ANSWER = 6,
+  VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE = 7,
+  VideoNotifyType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  VideoNotifyType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool VideoNotifyType_IsValid(int value);
+constexpr VideoNotifyType VideoNotifyType_MIN = VIDEO_NOTIFY_INVITE;
+constexpr VideoNotifyType VideoNotifyType_MAX = VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE;
+constexpr int VideoNotifyType_ARRAYSIZE = VideoNotifyType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* VideoNotifyType_descriptor();
+template<typename T>
+inline const std::string& VideoNotifyType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, VideoNotifyType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function VideoNotifyType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    VideoNotifyType_descriptor(), enum_t_value);
+}
+inline bool VideoNotifyType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, VideoNotifyType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<VideoNotifyType>(
+    VideoNotifyType_descriptor(), name, value);
+}
 // ===================================================================
 
 class GetVarifyReq PROTOBUF_FINAL :
@@ -4339,6 +4379,508 @@ class NotifyChatImgRsp PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
+// -------------------------------------------------------------------
+
+class NotifyVideoEventReq PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:message.NotifyVideoEventReq) */ {
+ public:
+  inline NotifyVideoEventReq() : NotifyVideoEventReq(nullptr) {}
+  virtual ~NotifyVideoEventReq();
+
+  NotifyVideoEventReq(const NotifyVideoEventReq& from);
+  NotifyVideoEventReq(NotifyVideoEventReq&& from) noexcept
+    : NotifyVideoEventReq() {
+    *this = ::std::move(from);
+  }
+
+  inline NotifyVideoEventReq& operator=(const NotifyVideoEventReq& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline NotifyVideoEventReq& operator=(NotifyVideoEventReq&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const NotifyVideoEventReq& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const NotifyVideoEventReq* internal_default_instance() {
+    return reinterpret_cast<const NotifyVideoEventReq*>(
+               &_NotifyVideoEventReq_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    24;
+
+  friend void swap(NotifyVideoEventReq& a, NotifyVideoEventReq& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(NotifyVideoEventReq* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(NotifyVideoEventReq* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline NotifyVideoEventReq* New() const final {
+    return CreateMaybeMessage<NotifyVideoEventReq>(nullptr);
+  }
+
+  NotifyVideoEventReq* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<NotifyVideoEventReq>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const NotifyVideoEventReq& from);
+  void MergeFrom(const NotifyVideoEventReq& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(NotifyVideoEventReq* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "message.NotifyVideoEventReq";
+  }
+  protected:
+  explicit NotifyVideoEventReq(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kCallIdFieldNumber = 3,
+    kCallTypeFieldNumber = 5,
+    kNameFieldNumber = 6,
+    kIconFieldNumber = 7,
+    kNickFieldNumber = 8,
+    kSdpFieldNumber = 9,
+    kCandidateFieldNumber = 10,
+    kSdpMidFieldNumber = 11,
+    kFromUidFieldNumber = 1,
+    kToUidFieldNumber = 2,
+    kNotifyTypeFieldNumber = 4,
+    kSdpMLineIndexFieldNumber = 12,
+  };
+  // string call_id = 3;
+  void clear_call_id();
+  const std::string& call_id() const;
+  void set_call_id(const std::string& value);
+  void set_call_id(std::string&& value);
+  void set_call_id(const char* value);
+  void set_call_id(const char* value, size_t size);
+  std::string* mutable_call_id();
+  std::string* release_call_id();
+  void set_allocated_call_id(std::string* call_id);
+  private:
+  const std::string& _internal_call_id() const;
+  void _internal_set_call_id(const std::string& value);
+  std::string* _internal_mutable_call_id();
+  public:
+
+  // string call_type = 5;
+  void clear_call_type();
+  const std::string& call_type() const;
+  void set_call_type(const std::string& value);
+  void set_call_type(std::string&& value);
+  void set_call_type(const char* value);
+  void set_call_type(const char* value, size_t size);
+  std::string* mutable_call_type();
+  std::string* release_call_type();
+  void set_allocated_call_type(std::string* call_type);
+  private:
+  const std::string& _internal_call_type() const;
+  void _internal_set_call_type(const std::string& value);
+  std::string* _internal_mutable_call_type();
+  public:
+
+  // string name = 6;
+  void clear_name();
+  const std::string& name() const;
+  void set_name(const std::string& value);
+  void set_name(std::string&& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  std::string* mutable_name();
+  std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // string icon = 7;
+  void clear_icon();
+  const std::string& icon() const;
+  void set_icon(const std::string& value);
+  void set_icon(std::string&& value);
+  void set_icon(const char* value);
+  void set_icon(const char* value, size_t size);
+  std::string* mutable_icon();
+  std::string* release_icon();
+  void set_allocated_icon(std::string* icon);
+  private:
+  const std::string& _internal_icon() const;
+  void _internal_set_icon(const std::string& value);
+  std::string* _internal_mutable_icon();
+  public:
+
+  // string nick = 8;
+  void clear_nick();
+  const std::string& nick() const;
+  void set_nick(const std::string& value);
+  void set_nick(std::string&& value);
+  void set_nick(const char* value);
+  void set_nick(const char* value, size_t size);
+  std::string* mutable_nick();
+  std::string* release_nick();
+  void set_allocated_nick(std::string* nick);
+  private:
+  const std::string& _internal_nick() const;
+  void _internal_set_nick(const std::string& value);
+  std::string* _internal_mutable_nick();
+  public:
+
+  // string sdp = 9;
+  void clear_sdp();
+  const std::string& sdp() const;
+  void set_sdp(const std::string& value);
+  void set_sdp(std::string&& value);
+  void set_sdp(const char* value);
+  void set_sdp(const char* value, size_t size);
+  std::string* mutable_sdp();
+  std::string* release_sdp();
+  void set_allocated_sdp(std::string* sdp);
+  private:
+  const std::string& _internal_sdp() const;
+  void _internal_set_sdp(const std::string& value);
+  std::string* _internal_mutable_sdp();
+  public:
+
+  // string candidate = 10;
+  void clear_candidate();
+  const std::string& candidate() const;
+  void set_candidate(const std::string& value);
+  void set_candidate(std::string&& value);
+  void set_candidate(const char* value);
+  void set_candidate(const char* value, size_t size);
+  std::string* mutable_candidate();
+  std::string* release_candidate();
+  void set_allocated_candidate(std::string* candidate);
+  private:
+  const std::string& _internal_candidate() const;
+  void _internal_set_candidate(const std::string& value);
+  std::string* _internal_mutable_candidate();
+  public:
+
+  // string sdpMid = 11;
+  void clear_sdpmid();
+  const std::string& sdpmid() const;
+  void set_sdpmid(const std::string& value);
+  void set_sdpmid(std::string&& value);
+  void set_sdpmid(const char* value);
+  void set_sdpmid(const char* value, size_t size);
+  std::string* mutable_sdpmid();
+  std::string* release_sdpmid();
+  void set_allocated_sdpmid(std::string* sdpmid);
+  private:
+  const std::string& _internal_sdpmid() const;
+  void _internal_set_sdpmid(const std::string& value);
+  std::string* _internal_mutable_sdpmid();
+  public:
+
+  // int32 from_uid = 1;
+  void clear_from_uid();
+  ::PROTOBUF_NAMESPACE_ID::int32 from_uid() const;
+  void set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from_uid() const;
+  void _internal_set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 to_uid = 2;
+  void clear_to_uid();
+  ::PROTOBUF_NAMESPACE_ID::int32 to_uid() const;
+  void set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_to_uid() const;
+  void _internal_set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // .message.VideoNotifyType notify_type = 4;
+  void clear_notify_type();
+  ::message::VideoNotifyType notify_type() const;
+  void set_notify_type(::message::VideoNotifyType value);
+  private:
+  ::message::VideoNotifyType _internal_notify_type() const;
+  void _internal_set_notify_type(::message::VideoNotifyType value);
+  public:
+
+  // int32 sdpMLineIndex = 12;
+  void clear_sdpmlineindex();
+  ::PROTOBUF_NAMESPACE_ID::int32 sdpmlineindex() const;
+  void set_sdpmlineindex(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_sdpmlineindex() const;
+  void _internal_set_sdpmlineindex(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:message.NotifyVideoEventReq)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr call_id_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr call_type_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr icon_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr nick_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sdp_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr candidate_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr sdpmid_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_uid_;
+  ::PROTOBUF_NAMESPACE_ID::int32 to_uid_;
+  int notify_type_;
+  ::PROTOBUF_NAMESPACE_ID::int32 sdpmlineindex_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class NotifyVideoEventRsp PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:message.NotifyVideoEventRsp) */ {
+ public:
+  inline NotifyVideoEventRsp() : NotifyVideoEventRsp(nullptr) {}
+  virtual ~NotifyVideoEventRsp();
+
+  NotifyVideoEventRsp(const NotifyVideoEventRsp& from);
+  NotifyVideoEventRsp(NotifyVideoEventRsp&& from) noexcept
+    : NotifyVideoEventRsp() {
+    *this = ::std::move(from);
+  }
+
+  inline NotifyVideoEventRsp& operator=(const NotifyVideoEventRsp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline NotifyVideoEventRsp& operator=(NotifyVideoEventRsp&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const NotifyVideoEventRsp& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const NotifyVideoEventRsp* internal_default_instance() {
+    return reinterpret_cast<const NotifyVideoEventRsp*>(
+               &_NotifyVideoEventRsp_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    25;
+
+  friend void swap(NotifyVideoEventRsp& a, NotifyVideoEventRsp& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(NotifyVideoEventRsp* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(NotifyVideoEventRsp* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline NotifyVideoEventRsp* New() const final {
+    return CreateMaybeMessage<NotifyVideoEventRsp>(nullptr);
+  }
+
+  NotifyVideoEventRsp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<NotifyVideoEventRsp>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const NotifyVideoEventRsp& from);
+  void MergeFrom(const NotifyVideoEventRsp& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(NotifyVideoEventRsp* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "message.NotifyVideoEventRsp";
+  }
+  protected:
+  explicit NotifyVideoEventRsp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kCallIdFieldNumber = 4,
+    kErrorFieldNumber = 1,
+    kFromUidFieldNumber = 2,
+    kToUidFieldNumber = 3,
+    kNotifyTypeFieldNumber = 5,
+  };
+  // string call_id = 4;
+  void clear_call_id();
+  const std::string& call_id() const;
+  void set_call_id(const std::string& value);
+  void set_call_id(std::string&& value);
+  void set_call_id(const char* value);
+  void set_call_id(const char* value, size_t size);
+  std::string* mutable_call_id();
+  std::string* release_call_id();
+  void set_allocated_call_id(std::string* call_id);
+  private:
+  const std::string& _internal_call_id() const;
+  void _internal_set_call_id(const std::string& value);
+  std::string* _internal_mutable_call_id();
+  public:
+
+  // int32 error = 1;
+  void clear_error();
+  ::PROTOBUF_NAMESPACE_ID::int32 error() const;
+  void set_error(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_error() const;
+  void _internal_set_error(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 from_uid = 2;
+  void clear_from_uid();
+  ::PROTOBUF_NAMESPACE_ID::int32 from_uid() const;
+  void set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_from_uid() const;
+  void _internal_set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 to_uid = 3;
+  void clear_to_uid();
+  ::PROTOBUF_NAMESPACE_ID::int32 to_uid() const;
+  void set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_to_uid() const;
+  void _internal_set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // .message.VideoNotifyType notify_type = 5;
+  void clear_notify_type();
+  ::message::VideoNotifyType notify_type() const;
+  void set_notify_type(::message::VideoNotifyType value);
+  private:
+  ::message::VideoNotifyType _internal_notify_type() const;
+  void _internal_set_notify_type(::message::VideoNotifyType value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:message.NotifyVideoEventRsp)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr call_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 error_;
+  ::PROTOBUF_NAMESPACE_ID::int32 from_uid_;
+  ::PROTOBUF_NAMESPACE_ID::int32 to_uid_;
+  int notify_type_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
 // ===================================================================
 
 
@@ -7151,9 +7693,739 @@ inline void NotifyChatImgRsp::set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value
   // @@protoc_insertion_point(field_set:message.NotifyChatImgRsp.thread_id)
 }
 
+// -------------------------------------------------------------------
+
+// NotifyVideoEventReq
+
+// int32 from_uid = 1;
+inline void NotifyVideoEventReq::clear_from_uid() {
+  from_uid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::_internal_from_uid() const {
+  return from_uid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::from_uid() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.from_uid)
+  return _internal_from_uid();
+}
+inline void NotifyVideoEventReq::_internal_set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  from_uid_ = value;
+}
+inline void NotifyVideoEventReq::set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from_uid(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.from_uid)
+}
+
+// int32 to_uid = 2;
+inline void NotifyVideoEventReq::clear_to_uid() {
+  to_uid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::_internal_to_uid() const {
+  return to_uid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::to_uid() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.to_uid)
+  return _internal_to_uid();
+}
+inline void NotifyVideoEventReq::_internal_set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  to_uid_ = value;
+}
+inline void NotifyVideoEventReq::set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_to_uid(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.to_uid)
+}
+
+// string call_id = 3;
+inline void NotifyVideoEventReq::clear_call_id() {
+  call_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::call_id() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.call_id)
+  return _internal_call_id();
+}
+inline void NotifyVideoEventReq::set_call_id(const std::string& value) {
+  _internal_set_call_id(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.call_id)
+}
+inline std::string* NotifyVideoEventReq::mutable_call_id() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.call_id)
+  return _internal_mutable_call_id();
+}
+inline const std::string& NotifyVideoEventReq::_internal_call_id() const {
+  return call_id_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_call_id(const std::string& value) {
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_call_id(std::string&& value) {
+  
+  call_id_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.call_id)
+}
+inline void NotifyVideoEventReq::set_call_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.call_id)
+}
+inline void NotifyVideoEventReq::set_call_id(const char* value,
+    size_t size) {
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.call_id)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_call_id() {
+  
+  return call_id_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_call_id() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.call_id)
+  return call_id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_call_id(std::string* call_id) {
+  if (call_id != nullptr) {
+    
+  } else {
+    
+  }
+  call_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), call_id,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.call_id)
+}
+
+// .message.VideoNotifyType notify_type = 4;
+inline void NotifyVideoEventReq::clear_notify_type() {
+  notify_type_ = 0;
+}
+inline ::message::VideoNotifyType NotifyVideoEventReq::_internal_notify_type() const {
+  return static_cast< ::message::VideoNotifyType >(notify_type_);
+}
+inline ::message::VideoNotifyType NotifyVideoEventReq::notify_type() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.notify_type)
+  return _internal_notify_type();
+}
+inline void NotifyVideoEventReq::_internal_set_notify_type(::message::VideoNotifyType value) {
+  
+  notify_type_ = value;
+}
+inline void NotifyVideoEventReq::set_notify_type(::message::VideoNotifyType value) {
+  _internal_set_notify_type(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.notify_type)
+}
+
+// string call_type = 5;
+inline void NotifyVideoEventReq::clear_call_type() {
+  call_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::call_type() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.call_type)
+  return _internal_call_type();
+}
+inline void NotifyVideoEventReq::set_call_type(const std::string& value) {
+  _internal_set_call_type(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.call_type)
+}
+inline std::string* NotifyVideoEventReq::mutable_call_type() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.call_type)
+  return _internal_mutable_call_type();
+}
+inline const std::string& NotifyVideoEventReq::_internal_call_type() const {
+  return call_type_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_call_type(const std::string& value) {
+  
+  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_call_type(std::string&& value) {
+  
+  call_type_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.call_type)
+}
+inline void NotifyVideoEventReq::set_call_type(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.call_type)
+}
+inline void NotifyVideoEventReq::set_call_type(const char* value,
+    size_t size) {
+  
+  call_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.call_type)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_call_type() {
+  
+  return call_type_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_call_type() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.call_type)
+  return call_type_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_call_type(std::string* call_type) {
+  if (call_type != nullptr) {
+    
+  } else {
+    
+  }
+  call_type_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), call_type,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.call_type)
+}
+
+// string name = 6;
+inline void NotifyVideoEventReq::clear_name() {
+  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::name() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.name)
+  return _internal_name();
+}
+inline void NotifyVideoEventReq::set_name(const std::string& value) {
+  _internal_set_name(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.name)
+}
+inline std::string* NotifyVideoEventReq::mutable_name() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.name)
+  return _internal_mutable_name();
+}
+inline const std::string& NotifyVideoEventReq::_internal_name() const {
+  return name_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_name(const std::string& value) {
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_name(std::string&& value) {
+  
+  name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.name)
+}
+inline void NotifyVideoEventReq::set_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.name)
+}
+inline void NotifyVideoEventReq::set_name(const char* value,
+    size_t size) {
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.name)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_name() {
+  
+  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_name() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.name)
+  return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.name)
+}
+
+// string icon = 7;
+inline void NotifyVideoEventReq::clear_icon() {
+  icon_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::icon() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.icon)
+  return _internal_icon();
+}
+inline void NotifyVideoEventReq::set_icon(const std::string& value) {
+  _internal_set_icon(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.icon)
+}
+inline std::string* NotifyVideoEventReq::mutable_icon() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.icon)
+  return _internal_mutable_icon();
+}
+inline const std::string& NotifyVideoEventReq::_internal_icon() const {
+  return icon_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_icon(const std::string& value) {
+  
+  icon_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_icon(std::string&& value) {
+  
+  icon_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.icon)
+}
+inline void NotifyVideoEventReq::set_icon(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  icon_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.icon)
+}
+inline void NotifyVideoEventReq::set_icon(const char* value,
+    size_t size) {
+  
+  icon_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.icon)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_icon() {
+  
+  return icon_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_icon() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.icon)
+  return icon_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_icon(std::string* icon) {
+  if (icon != nullptr) {
+    
+  } else {
+    
+  }
+  icon_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), icon,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.icon)
+}
+
+// string nick = 8;
+inline void NotifyVideoEventReq::clear_nick() {
+  nick_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::nick() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.nick)
+  return _internal_nick();
+}
+inline void NotifyVideoEventReq::set_nick(const std::string& value) {
+  _internal_set_nick(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.nick)
+}
+inline std::string* NotifyVideoEventReq::mutable_nick() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.nick)
+  return _internal_mutable_nick();
+}
+inline const std::string& NotifyVideoEventReq::_internal_nick() const {
+  return nick_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_nick(const std::string& value) {
+  
+  nick_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_nick(std::string&& value) {
+  
+  nick_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.nick)
+}
+inline void NotifyVideoEventReq::set_nick(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  nick_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.nick)
+}
+inline void NotifyVideoEventReq::set_nick(const char* value,
+    size_t size) {
+  
+  nick_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.nick)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_nick() {
+  
+  return nick_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_nick() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.nick)
+  return nick_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_nick(std::string* nick) {
+  if (nick != nullptr) {
+    
+  } else {
+    
+  }
+  nick_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), nick,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.nick)
+}
+
+// string sdp = 9;
+inline void NotifyVideoEventReq::clear_sdp() {
+  sdp_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::sdp() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.sdp)
+  return _internal_sdp();
+}
+inline void NotifyVideoEventReq::set_sdp(const std::string& value) {
+  _internal_set_sdp(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.sdp)
+}
+inline std::string* NotifyVideoEventReq::mutable_sdp() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.sdp)
+  return _internal_mutable_sdp();
+}
+inline const std::string& NotifyVideoEventReq::_internal_sdp() const {
+  return sdp_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_sdp(const std::string& value) {
+  
+  sdp_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_sdp(std::string&& value) {
+  
+  sdp_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.sdp)
+}
+inline void NotifyVideoEventReq::set_sdp(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  sdp_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.sdp)
+}
+inline void NotifyVideoEventReq::set_sdp(const char* value,
+    size_t size) {
+  
+  sdp_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.sdp)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_sdp() {
+  
+  return sdp_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_sdp() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.sdp)
+  return sdp_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_sdp(std::string* sdp) {
+  if (sdp != nullptr) {
+    
+  } else {
+    
+  }
+  sdp_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sdp,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.sdp)
+}
+
+// string candidate = 10;
+inline void NotifyVideoEventReq::clear_candidate() {
+  candidate_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::candidate() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.candidate)
+  return _internal_candidate();
+}
+inline void NotifyVideoEventReq::set_candidate(const std::string& value) {
+  _internal_set_candidate(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.candidate)
+}
+inline std::string* NotifyVideoEventReq::mutable_candidate() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.candidate)
+  return _internal_mutable_candidate();
+}
+inline const std::string& NotifyVideoEventReq::_internal_candidate() const {
+  return candidate_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_candidate(const std::string& value) {
+  
+  candidate_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_candidate(std::string&& value) {
+  
+  candidate_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.candidate)
+}
+inline void NotifyVideoEventReq::set_candidate(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  candidate_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.candidate)
+}
+inline void NotifyVideoEventReq::set_candidate(const char* value,
+    size_t size) {
+  
+  candidate_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.candidate)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_candidate() {
+  
+  return candidate_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_candidate() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.candidate)
+  return candidate_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_candidate(std::string* candidate) {
+  if (candidate != nullptr) {
+    
+  } else {
+    
+  }
+  candidate_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), candidate,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.candidate)
+}
+
+// string sdpMid = 11;
+inline void NotifyVideoEventReq::clear_sdpmid() {
+  sdpmid_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventReq::sdpmid() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.sdpMid)
+  return _internal_sdpmid();
+}
+inline void NotifyVideoEventReq::set_sdpmid(const std::string& value) {
+  _internal_set_sdpmid(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.sdpMid)
+}
+inline std::string* NotifyVideoEventReq::mutable_sdpmid() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventReq.sdpMid)
+  return _internal_mutable_sdpmid();
+}
+inline const std::string& NotifyVideoEventReq::_internal_sdpmid() const {
+  return sdpmid_.Get();
+}
+inline void NotifyVideoEventReq::_internal_set_sdpmid(const std::string& value) {
+  
+  sdpmid_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventReq::set_sdpmid(std::string&& value) {
+  
+  sdpmid_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventReq.sdpMid)
+}
+inline void NotifyVideoEventReq::set_sdpmid(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  sdpmid_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventReq.sdpMid)
+}
+inline void NotifyVideoEventReq::set_sdpmid(const char* value,
+    size_t size) {
+  
+  sdpmid_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventReq.sdpMid)
+}
+inline std::string* NotifyVideoEventReq::_internal_mutable_sdpmid() {
+  
+  return sdpmid_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventReq::release_sdpmid() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventReq.sdpMid)
+  return sdpmid_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventReq::set_allocated_sdpmid(std::string* sdpmid) {
+  if (sdpmid != nullptr) {
+    
+  } else {
+    
+  }
+  sdpmid_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), sdpmid,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventReq.sdpMid)
+}
+
+// int32 sdpMLineIndex = 12;
+inline void NotifyVideoEventReq::clear_sdpmlineindex() {
+  sdpmlineindex_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::_internal_sdpmlineindex() const {
+  return sdpmlineindex_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventReq::sdpmlineindex() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventReq.sdpMLineIndex)
+  return _internal_sdpmlineindex();
+}
+inline void NotifyVideoEventReq::_internal_set_sdpmlineindex(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  sdpmlineindex_ = value;
+}
+inline void NotifyVideoEventReq::set_sdpmlineindex(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_sdpmlineindex(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventReq.sdpMLineIndex)
+}
+
+// -------------------------------------------------------------------
+
+// NotifyVideoEventRsp
+
+// int32 error = 1;
+inline void NotifyVideoEventRsp::clear_error() {
+  error_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::_internal_error() const {
+  return error_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::error() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventRsp.error)
+  return _internal_error();
+}
+inline void NotifyVideoEventRsp::_internal_set_error(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  error_ = value;
+}
+inline void NotifyVideoEventRsp::set_error(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_error(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.error)
+}
+
+// int32 from_uid = 2;
+inline void NotifyVideoEventRsp::clear_from_uid() {
+  from_uid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::_internal_from_uid() const {
+  return from_uid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::from_uid() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventRsp.from_uid)
+  return _internal_from_uid();
+}
+inline void NotifyVideoEventRsp::_internal_set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  from_uid_ = value;
+}
+inline void NotifyVideoEventRsp::set_from_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_from_uid(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.from_uid)
+}
+
+// int32 to_uid = 3;
+inline void NotifyVideoEventRsp::clear_to_uid() {
+  to_uid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::_internal_to_uid() const {
+  return to_uid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 NotifyVideoEventRsp::to_uid() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventRsp.to_uid)
+  return _internal_to_uid();
+}
+inline void NotifyVideoEventRsp::_internal_set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  to_uid_ = value;
+}
+inline void NotifyVideoEventRsp::set_to_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_to_uid(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.to_uid)
+}
+
+// string call_id = 4;
+inline void NotifyVideoEventRsp::clear_call_id() {
+  call_id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& NotifyVideoEventRsp::call_id() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventRsp.call_id)
+  return _internal_call_id();
+}
+inline void NotifyVideoEventRsp::set_call_id(const std::string& value) {
+  _internal_set_call_id(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.call_id)
+}
+inline std::string* NotifyVideoEventRsp::mutable_call_id() {
+  // @@protoc_insertion_point(field_mutable:message.NotifyVideoEventRsp.call_id)
+  return _internal_mutable_call_id();
+}
+inline const std::string& NotifyVideoEventRsp::_internal_call_id() const {
+  return call_id_.Get();
+}
+inline void NotifyVideoEventRsp::_internal_set_call_id(const std::string& value) {
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void NotifyVideoEventRsp::set_call_id(std::string&& value) {
+  
+  call_id_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.NotifyVideoEventRsp.call_id)
+}
+inline void NotifyVideoEventRsp::set_call_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.NotifyVideoEventRsp.call_id)
+}
+inline void NotifyVideoEventRsp::set_call_id(const char* value,
+    size_t size) {
+  
+  call_id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.NotifyVideoEventRsp.call_id)
+}
+inline std::string* NotifyVideoEventRsp::_internal_mutable_call_id() {
+  
+  return call_id_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* NotifyVideoEventRsp::release_call_id() {
+  // @@protoc_insertion_point(field_release:message.NotifyVideoEventRsp.call_id)
+  return call_id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void NotifyVideoEventRsp::set_allocated_call_id(std::string* call_id) {
+  if (call_id != nullptr) {
+    
+  } else {
+    
+  }
+  call_id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), call_id,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.NotifyVideoEventRsp.call_id)
+}
+
+// .message.VideoNotifyType notify_type = 5;
+inline void NotifyVideoEventRsp::clear_notify_type() {
+  notify_type_ = 0;
+}
+inline ::message::VideoNotifyType NotifyVideoEventRsp::_internal_notify_type() const {
+  return static_cast< ::message::VideoNotifyType >(notify_type_);
+}
+inline ::message::VideoNotifyType NotifyVideoEventRsp::notify_type() const {
+  // @@protoc_insertion_point(field_get:message.NotifyVideoEventRsp.notify_type)
+  return _internal_notify_type();
+}
+inline void NotifyVideoEventRsp::_internal_set_notify_type(::message::VideoNotifyType value) {
+  
+  notify_type_ = value;
+}
+inline void NotifyVideoEventRsp::set_notify_type(::message::VideoNotifyType value) {
+  _internal_set_notify_type(value);
+  // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.notify_type)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -7204,6 +8476,16 @@ inline void NotifyChatImgRsp::set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace message
+
+PROTOBUF_NAMESPACE_OPEN
+
+template <> struct is_proto_enum< ::message::VideoNotifyType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::message::VideoNotifyType>() {
+  return ::message::VideoNotifyType_descriptor();
+}
+
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
 

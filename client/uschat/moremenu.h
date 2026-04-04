@@ -16,11 +16,11 @@ public:
 
     // 添加分割线
     void addSeparator();
-
+    virtual void hideEvent(QHideEvent *event) override;
 signals:
     void sig_switch_history();
     void sig_clear_history();
-
+    void sig_menu_hidden();   // ✅ 新增
 private:
     QWidget*        m_container;
     QVBoxLayout*    m_mainLayout;

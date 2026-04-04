@@ -477,78 +477,94 @@ void ChatDialog::slot_load_ai_history_requested(int ai_thread_id)
 // }
 void ChatDialog::slot_ai_load_chat(ReqId id, QString res, ErrorCodes err)
 {
-    if(_cur_chat_thread_id == AI_THREAD){
-        auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
+    Q_UNUSED(id);
 
-        ui->chat_page->clearItems();
-        qDebug() << "clear once";
-        chat_data->ClearChatMsg();
-
-
-        QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
-        if (!doc.isObject()) {
-            qWarning() << "load_chat_msg response is not object";
-            return;
+    if (err != ErrorCodes::SUCCESS) {
+        qWarning() << "slot_ai_load_chat failed, err =" << err;
+        if (_cur_chat_thread_id == AI_THREAD) {
+            showLoadingDlg(false);
         }
-
-        QJsonObject root = doc.object();
-
-        // 取 ai_thread_id
-        int ai_thread_id = root["ai_thread_id"].toInt();
-        AIMgr::GetInstance()->SetCurAiThread(ai_thread_id);
-        // 取 messages 数组
-        QJsonArray msgs = root["messages"].toArray();
-
-        int sleft_uid = UserMgr::GetInstance()->GetUid();
-
-        for (const QJsonValue& v : msgs) {
-            QJsonObject obj = v.toObject();
-
-            int msg_id = obj["msg_id"].toInt();
-            QString role = obj["role"].toString();
-            QString content = obj["content"].toString();
-            QString created_at = obj["created_at"].toString();
-
-            std::shared_ptr<TextChatData> txt_msg;
-            // 构造并渲染消息
-            if(role == "assistant"){
-                txt_msg = std::make_shared<TextChatData>(msg_id, AI_THREAD, ChatFormType::AI,
-                                                              ChatMsgType::TEXT, content, AI_UID, MsgStatus::READED);
-            }else{
-                txt_msg = std::make_shared<TextChatData>(msg_id, AI_THREAD, ChatFormType::AI,
-                                                         ChatMsgType::TEXT, content, sleft_uid, MsgStatus::READED);
-            }
-
-            chat_data-> AppendMsg(msg_id, txt_msg);
-            ui->chat_page->AppendAiChatMsg(txt_msg);
-
-        }
-
-        auto find_iter = _chat_thread_items.find(AI_THREAD);
-        if (find_iter == _chat_thread_items.end()) {
-            qDebug() << "thread_id [" << AI_THREAD << "] not found, set curent row 0";
-            ui->chat_user_list->setCurrentRow(0);
-            return;
-        }
-
-        QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
-        if (!widget) {
-            return;
-        }
-
-        auto con_item = qobject_cast<ChatUserWid*>(widget);
-        if (!con_item) {
-            return;
-        }
-
-        con_item->updateLastMsg();
-
-        if (_cur_chat_thread_id != AI_THREAD) {
-            return;
-        }
-
-        showLoadingDlg(false);
+        return;
     }
+
+    if (_cur_chat_thread_id != AI_THREAD) {
+        return;
+    }
+
+    auto chat_data = UserMgr::GetInstance()->GetChatThreadByThreadId(AI_THREAD);
+    if (!chat_data) {
+        qWarning() << "AI chat_data is null";
+        showLoadingDlg(false);
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(res.toUtf8());
+    if (!doc.isObject()) {
+        qWarning() << "load_chat_msg response is not object";
+        showLoadingDlg(false);
+        return;
+    }
+
+    QJsonObject root = doc.object();
+
+    // 当前 AI 历史会话 id
+    int ai_thread_id = root["ai_thread_id"].toInt();
+    AIMgr::GetInstance()->SetCurAiThread(ai_thread_id);
+
+    QJsonArray msgs = root["messages"].toArray();
+    int self_uid = UserMgr::GetInstance()->GetUid();
+
+    // 这里只清数据，不碰 UI
+    chat_data->ClearChatMsg();
+
+    for (const QJsonValue& v : msgs) {
+        QJsonObject obj = v.toObject();
+
+        int msg_id = obj["msg_id"].toInt();
+        QString role = obj["role"].toString();
+        QString content = obj["content"].toString();
+
+        std::shared_ptr<TextChatData> txt_msg;
+        if (role == "assistant") {
+            txt_msg = std::make_shared<TextChatData>(
+                msg_id,
+                AI_THREAD,
+                ChatFormType::AI,
+                ChatMsgType::TEXT,
+                content,
+                AI_UID,
+                MsgStatus::READED
+                );
+        } else {
+            txt_msg = std::make_shared<TextChatData>(
+                msg_id,
+                AI_THREAD,
+                ChatFormType::AI,
+                ChatMsgType::TEXT,
+                content,
+                self_uid,
+                MsgStatus::READED
+                );
+        }
+
+        // 只写数据
+        chat_data->AppendMsg(msg_id, txt_msg);
+    }
+
+    // 统一交给 ChatPage 处理缓存 / 恢复 / 构建
+    ui->chat_page->SetChatData(chat_data);
+
+    auto find_iter = _chat_thread_items.find(AI_THREAD);
+    if (find_iter != _chat_thread_items.end()) {
+        QWidget* widget = ui->chat_user_list->itemWidget(find_iter.value());
+        if (widget) {
+            if (auto con_item = qobject_cast<ChatUserWid*>(widget)) {
+                con_item->updateLastMsg();
+            }
+        }
+    }
+
+    showLoadingDlg(false);
 }
 
 void ChatDialog::slot_img_chat_msg(std::shared_ptr<ImgChatData> imgchat) {
@@ -1441,10 +1457,12 @@ void ChatDialog::slot_video_invite(std::shared_ptr<UserInfo> user_info)
 {
     slot_jump_chat_item_from_infopage(user_info);
 
-    // 先确保窗口实例已创建
+    // 先确保窗口实例已创建 懒汉
     VideoCallWidget::GetInstance();
 
     auto uid = UserMgr::GetInstance()->GetUid();
+    auto peer_name = user_info->_name;
+
     VideoCallManager::GetInstance()->StartCall(uid, user_info->_uid);
 }
 

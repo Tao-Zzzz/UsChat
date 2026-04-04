@@ -126,15 +126,15 @@ void ChatPage::ClearAllThreadCache()
 
 void ChatPage::SaveCurrentThreadCache()
 {
-    if (_current_thread_id < 0) {
-        ui->chat_data_list->beginBatchUpdate();
-        ui->chat_data_list->clearLayoutItemsOnly();
-        ui->chat_data_list->endBatchUpdate(false);
+    // if (_current_thread_id < 0) {
+    //     ui->chat_data_list->beginBatchUpdate();
+    //     ui->chat_data_list->clearLayoutItemsOnly();
+    //     ui->chat_data_list->endBatchUpdate(false);
 
-        _unrsp_item_map.clear();
-        _base_item_map.clear();
-        return;
-    }
+    //     _unrsp_item_map.clear();
+    //     _base_item_map.clear();
+    //     return;
+    // }
 
     ThreadUiCache cache;
 
@@ -851,8 +851,12 @@ void ChatPage::slot_clicked_more_label(QString name, ClickLbState state)
 
     hideEmojiMenu();
 
-    if (state != ClickLbState::Selected)
+    // ✅ 如果菜单已显示 → 直接关闭
+    if (_more_menu && _more_menu->isVisible()) {
+        _more_menu->hide();
+        ui->more_lb->ResetNormalState();
         return;
+    }
 
     if (!_more_menu)
     {
@@ -870,6 +874,12 @@ void ChatPage::slot_clicked_more_label(QString name, ClickLbState state)
         connect(switchModel, &QPushButton::clicked, this, [this]() {
             qDebug() << "clear history clicked";
             showAiModelWindow();
+            ui->more_lb->ResetNormalState();
+        });
+
+
+        // ✅ 新增：菜单隐藏时同步状态
+        connect(_more_menu, &MoreMenu::sig_menu_hidden, this, [this]() {
             ui->more_lb->ResetNormalState();
         });
 

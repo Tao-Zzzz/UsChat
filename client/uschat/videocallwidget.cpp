@@ -15,6 +15,7 @@
 #include <QWebChannel>
 #include <QUrl>
 #include "WebRtcJsBridge.h"
+#include "usermgr.h"
 
 VideoCallWidget* VideoCallWidget::GetInstance()
 {
@@ -298,7 +299,12 @@ QWidget* VideoCallWidget::CreateInCallPage()
 void VideoCallWidget::ShowCalling()
 {
     auto mgr = VideoCallManager::GetInstance();
-    SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
+
+
+    // todo ... 呼叫名
+    // QString peer_name = UserMgr::GetInstance()->GetName(mgr->GetPeerUid())
+
+    SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerName()));
     _labCallingStatus->setText(QStringLiteral("正在呼叫对方..."));
     _btnCancel->setEnabled(false);
     StopCallTimer();
@@ -320,6 +326,12 @@ void VideoCallWidget::ShowIncoming(const QJsonObject& obj)
         name = QStringLiteral("用户 %1").arg(obj.value("from_uid").toInt());
     }
 
+    auto mgr = VideoCallManager::GetInstance();
+
+    if (mgr->GetPeerName() != nullptr){
+        name = mgr->GetPeerName();
+    }
+
     if (_btnAccept) {
         _btnAccept->setEnabled(true);
     }
@@ -336,7 +348,7 @@ void VideoCallWidget::ShowIncoming(const QJsonObject& obj)
 void VideoCallWidget::ShowConnecting()
 {
     auto mgr = VideoCallManager::GetInstance();
-    SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerUid()));
+    SetPeerName(QStringLiteral("用户 %1").arg(mgr->GetPeerName()));
 
     _labInCallStatus->setText(QStringLiteral("正在建立连接..."));
     _labCallTime->setText(QStringLiteral("00:00"));

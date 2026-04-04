@@ -87,7 +87,7 @@ VideoCallManager::VideoCallManager(QObject *parent)
     });
 }
 
-void VideoCallManager::StartCall(int selfUid, int otherUid)
+void VideoCallManager::StartCall(int selfUid, std::shared_ptr<UserInfo> other_user_info)
 {
     if (_state != CallState::Idle) {
         emit sig_call_error(QStringLiteral("当前已有通话进行中"));
@@ -97,15 +97,18 @@ void VideoCallManager::StartCall(int selfUid, int otherUid)
     g_acceptPending = false;
 
     _selfUid = selfUid;
-    _peerUid = otherUid;
+    _peerUid = other_user_info->_uid;
+
     _callId.clear();
     _state = CallState::Calling;
     _browserRtcStarted = false;
     _rtcStarted = false;
 
+    _peer_user_info = other_user_info;
+
     QJsonObject jsonObj;
     jsonObj["uid"] = selfUid;
-    jsonObj["other_id"] = otherUid;
+    jsonObj["other_id"] = other_user_info->_uid;
 
     QJsonDocument doc(jsonObj);
     emit TcpMgr::GetInstance()->sig_send_data(ID_VIDEO_INVITE_REQ, doc.toJson(QJsonDocument::Compact));
@@ -269,6 +272,11 @@ void VideoCallManager::HandleNotifyVideoInvite(const QJsonObject& obj)
     _state = CallState::Ringing;
     _browserRtcStarted = false;
     _rtcStarted = false;
+
+
+    _peer_user_info = UserMgr::GetInstance()->GetFriendById(_peerUid);
+
+
 
     emit sig_show_incoming_ui(obj);
 }

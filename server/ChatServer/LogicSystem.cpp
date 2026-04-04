@@ -1254,6 +1254,8 @@ void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session, const short
 	// todo... 这里可能要通知所有人群聊已经创建完毕
 }
 
+
+
 void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
 {
 	Json::Value root;
@@ -1334,7 +1336,45 @@ void LogicSystem::VideoInvite(std::shared_ptr<CSession> session, const short& ms
 		return;
 	}
 
-	// TODO: 跨服 gRPC
+	// ===== 新增：跨服 gRPC =====
+	std::string to_ip_value;
+
+	//查询redis 查找touid对应的server ip
+	auto to_str = std::to_string(other_id);
+	auto to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+
+	if (!b_ip) {
+		CallMgr::GetInstance().EndCall(call_id);
+		rtvalue["error"] = ErrorCodes::RPCFailed;
+		rtvalue.removeMember("call_id");
+		rtvalue.removeMember("other_id");
+		return;
+	}
+
+	NotifyVideoEventReq req;
+	req.set_from_uid(uid);
+	req.set_to_uid(other_id);
+	req.set_call_id(call_id);
+	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_INVITE);
+	req.set_call_type("video");
+
+	if (b_info) {
+		req.set_name(apply_info->name);
+		req.set_icon(apply_info->icon);
+		req.set_nick(apply_info->nick);
+	}
+
+	auto rsp = ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
+	if (rsp.error() != ErrorCodes::Success) {
+		CallMgr::GetInstance().EndCall(call_id);
+		rtvalue["error"] = rsp.error();
+		rtvalue.removeMember("call_id");
+		rtvalue.removeMember("other_id");
+		return;
+	}
 }
 
 void LogicSystem::VideoAccept(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
@@ -1402,7 +1442,33 @@ void LogicSystem::VideoAccept(std::shared_ptr<CSession> session, const short& ms
 		return;
 	}
 
-	// TODO: 跨服 gRPC
+	// ===== 新增：跨服 gRPC =====
+
+	std::string to_ip_value;
+
+	//查询redis 查找touid对应的server ip
+	auto to_str = std::to_string(other_id);
+	auto to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+
+	if (!b_ip) {
+		rtvalue["error"] = ErrorCodes::RPCFailed;
+		return;
+	}
+
+	NotifyVideoEventReq req;
+	req.set_from_uid(uid);
+	req.set_to_uid(other_id);
+	req.set_call_id(call_id);
+	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_ACCEPT);
+
+	auto rsp = ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
+	if (rsp.error() != ErrorCodes::Success) {
+		rtvalue["error"] = rsp.error();
+		return;
+	}
 }
 
 void LogicSystem::VideoReject(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
@@ -1457,7 +1523,30 @@ void LogicSystem::VideoReject(std::shared_ptr<CSession> session, const short& ms
 			}
 		}
 		else {
-			// TODO: 跨服 gRPC
+			std::string to_ip_value;
+
+			//查询redis 查找touid对应的server ip
+			auto to_str = std::to_string(other_id);
+			auto to_ip_key = USERIPPREFIX + to_str;
+			std::string to_ip_value = "";
+			bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+
+			if (b_ip) {
+				NotifyVideoEventReq req;
+				req.set_from_uid(uid);
+				req.set_to_uid(other_id);
+				req.set_call_id(call_id);
+				req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_REJECT);
+
+				auto rsp = ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
+				if (rsp.error() != ErrorCodes::Success) {
+					rtvalue["error"] = rsp.error();
+				}
+			}
+			else {
+				rtvalue["error"] = ErrorCodes::RPCFailed;
+			}
 		}
 	}
 
@@ -1516,7 +1605,29 @@ void LogicSystem::VideoCancel(std::shared_ptr<CSession> session, const short& ms
 			}
 		}
 		else {
-			// TODO: 跨服 gRPC
+			// ===== 新增：跨服 gRPC =====
+			std::string to_ip_value;
+			//查询redis 查找touid对应的server ip
+			auto to_str = std::to_string(other_id);
+			auto to_ip_key = USERIPPREFIX + to_str;
+			std::string to_ip_value = "";
+			bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+			if (b_ip) {
+				NotifyVideoEventReq req;
+				req.set_from_uid(uid);
+				req.set_to_uid(other_id);
+				req.set_call_id(call_id);
+				req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_CANCEL);
+
+				auto rsp = ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
+				if (rsp.error() != ErrorCodes::Success) {
+					rtvalue["error"] = rsp.error();
+				}
+			}
+			else {
+				rtvalue["error"] = ErrorCodes::RPCFailed;
+			}
 		}
 	}
 
@@ -1575,7 +1686,29 @@ void LogicSystem::VideoHangup(std::shared_ptr<CSession> session, const short& ms
 			}
 		}
 		else {
-			// TODO: 跨服 gRPC
+			// ===== 新增：跨服 gRPC =====
+			std::string to_ip_value;
+			//查询redis 查找touid对应的server ip
+			auto to_str = std::to_string(other_id);
+			auto to_ip_key = USERIPPREFIX + to_str;
+			std::string to_ip_value = "";
+			bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+			if (b_ip) {
+				NotifyVideoEventReq req;
+				req.set_from_uid(uid);
+				req.set_to_uid(other_id);
+				req.set_call_id(call_id);
+				req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_HANGUP);
+
+				auto rsp = ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
+				if (rsp.error() != ErrorCodes::Success) {
+					rtvalue["error"] = rsp.error();
+				}
+			}
+			else {
+				rtvalue["error"] = ErrorCodes::RPCFailed;
+			}
 		}
 	}
 
@@ -1632,7 +1765,26 @@ void LogicSystem::WebrtcOffer(std::shared_ptr<CSession> session, const short& ms
 		return;
 	}
 
-	// TODO: 跨服 gRPC
+	// ===== 新增：跨服 gRPC =====
+	std::string to_ip_value;
+	//查询redis 查找touid对应的server ip
+	auto to_str = std::to_string(other_id);
+	auto to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (!b_ip) {
+		return;
+	}
+
+	NotifyVideoEventReq req;
+	req.set_from_uid(uid);
+	req.set_to_uid(other_id);
+	req.set_call_id(call_id);
+	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_WEBRTC_OFFER);
+	req.set_sdp(sdp);
+
+	ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
 }
 
 void LogicSystem::WebrtcAnswer(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
@@ -1685,7 +1837,26 @@ void LogicSystem::WebrtcAnswer(std::shared_ptr<CSession> session, const short& m
 		return;
 	}
 
-	// TODO: 跨服 gRPC
+	// ===== 新增：跨服 gRPC =====
+	std::string to_ip_value;
+	//查询redis 查找touid对应的server ip
+	auto to_str = std::to_string(other_id);
+	auto to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (!b_ip) {
+		return;
+	}
+
+	NotifyVideoEventReq req;
+	req.set_from_uid(uid);
+	req.set_to_uid(other_id);
+	req.set_call_id(call_id);
+	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ANSWER);
+	req.set_sdp(sdp);
+
+	ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
 }
 
 void LogicSystem::WebrtcIceCandidate(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data)
@@ -1733,5 +1904,26 @@ void LogicSystem::WebrtcIceCandidate(std::shared_ptr<CSession> session, const sh
 		return;
 	}
 
-	// TODO: 跨服 gRPC
+	// ===== 新增：跨服 gRPC =====
+	std::string to_ip_value;
+	//查询redis 查找touid对应的server ip
+	auto to_str = std::to_string(other_id);
+	auto to_ip_key = USERIPPREFIX + to_str;
+	std::string to_ip_value = "";
+	bool b_ip = RedisMgr::GetInstance()->Get(to_ip_key, to_ip_value);
+
+	if (!b_ip) {
+		return;
+	}
+
+	NotifyVideoEventReq req;
+	req.set_from_uid(uid);
+	req.set_to_uid(other_id);
+	req.set_call_id(call_id);
+	req.set_notify_type(message::VideoNotifyType::VIDEO_NOTIFY_WEBRTC_ICE_CANDIDATE);
+	req.set_candidate(root["candidate"].asString());
+	req.set_sdpmid(root["sdpMid"].asString());
+	req.set_sdpmlineindex(root["sdpMLineIndex"].asInt());
+
+	ChatGrpcClient::GetInstance()->NotifyVideoEvent(to_ip_value, req);
 }

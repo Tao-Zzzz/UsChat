@@ -27,6 +27,11 @@ using message::KickUserRsp;
 using message::GroupTextChatMsgReq;
 using message::GroupTextChatMsgRsp;
 
+using message::NotifyVideoEventReq;
+using message::NotifyVideoEventRsp;
+
+using message::VideoNotifyType;
+
 class ChatServiceImpl final: public ChatService::Service
 {
 public:
@@ -41,13 +46,17 @@ public:
 		const TextChatMsgReq* request, TextChatMsgRsp* response) override;
 	
 	Status NotifyGroupTextChatMsg(::grpc::ServerContext* context, const GroupTextChatMsgReq* request, GroupTextChatMsgRsp* reply);
-	bool GetBaseInfo(std::string base_key, int uid, std::shared_ptr<UserInfo>& userinfo);
+	bool GetBaseInfo(std::string base_key, int uid, std::shared_ptr<UserInfo>& userinfo) ;
 
 	//接受rpc踢人请求
 	Status NotifyKickUser(::grpc::ServerContext* context,
 		const KickUserReq* request, KickUserRsp* response) override;
 
 	Status NotifyChatImgMsg(::grpc::ServerContext* context, const ::message::NotifyChatImgReq* request, ::message::NotifyChatImgRsp* response);
+
+	Status NotifyVideoEvent(ServerContext* context,
+		const NotifyVideoEventReq* request,
+		NotifyVideoEventRsp* reply) override;
 
 	void RegisterServer(std::shared_ptr<CServer> pServer);
 private:

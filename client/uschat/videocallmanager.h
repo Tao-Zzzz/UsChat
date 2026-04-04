@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QJsonObject>
 #include <QString>
+#include "userdata.h"
 
 enum class CallState
 {
@@ -20,7 +21,7 @@ class VideoCallManager : public QObject
 public:
     static VideoCallManager* GetInstance();
 
-    void StartCall(int selfUid, int otherUid);
+    void StartCall(int selfUid, std::shared_ptr<UserInfo> user_info);
     void AcceptCall();
     void RejectCall();
     void CancelCall();
@@ -49,6 +50,14 @@ public:
     CallState GetState() const { return _state; }
     QString GetCallId() const { return _callId; }
     int GetPeerUid() const { return _peerUid; }
+    QString GetPeerName() const {
+
+        if(_peer_user_info == nullptr){
+            return nullptr;
+        }
+
+        return _peer_user_info->_name;
+    }
     int GetSelfUid() const { return _selfUid; }
 
     // WebRTC 真正接通后可主动调用这个
@@ -83,6 +92,8 @@ private:
     CallState _state = CallState::Idle;
     int _selfUid = 0;
     int _peerUid = 0;
+    std::shared_ptr<UserInfo> _peer_user_info;
+
     QString _callId;
     bool _rtcStarted = false;
     bool _browserRtcStarted = false;

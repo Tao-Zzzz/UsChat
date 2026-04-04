@@ -77,3 +77,9 @@ void MoreMenu::addSeparator()
     line->setStyleSheet("background: #e5e5e5;");
     m_containerLayout->addWidget(line);
 }
+
+void MoreMenu::hideEvent(QHideEvent *event)
+{
+    QWidget::hideEvent(event);
+    emit sig_menu_hidden();   // ✅ 菜单一旦消失就通知外部
+}
