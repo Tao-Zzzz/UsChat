@@ -61,6 +61,8 @@ SOURCES += \
         diarydialog.cpp \
         diarytablemodel.cpp \
         emojimenu.cpp \
+        faceauthmgr.cpp \
+        faceregisterdialog.cpp \
         filetcpmgr.cpp \
         findfaildlg.cpp \
         findsuccessdlg.cpp \
@@ -130,6 +132,8 @@ HEADERS += \
         diarytablemodel.h \
         diarytask.h \
         emojimenu.h \
+        faceauthmgr.h \
+        faceregisterdialog.h \
         filetcpmgr.h \
         findfaildlg.h \
         findsuccessdlg.h \
@@ -187,6 +191,25 @@ FORMS += \
         registerdialog.ui \
         resetdialog.ui \
         userinfopage.ui
+
+
+
+# ====================== OpenCV 4.10.0 + MSVC 2022 配置 ======================
+# 1. OpenCV 头文件路径
+INCLUDEPATH += E:\Tool\opencv\opencv\build\include
+
+# 2. OpenCV 库文件路径
+LIBS += -LE:\Tool\opencv\opencv\build\x64\vc16\lib
+
+# 3. 链接库（Release + Debug 自动区分）
+CONFIG(debug, debug|release) {
+    LIBS += -lopencv_world4130d
+} else {
+    LIBS += -lopencv_world4130
+}
+
+
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

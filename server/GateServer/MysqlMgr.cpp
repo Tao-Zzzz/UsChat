@@ -29,4 +29,8 @@ bool MysqlMgr::TestProcedure(const std::string& email, int& uid, string& name) {
 	return _dao.TestProcedure(email,uid, name);
 }
 
+std::shared_ptr<UserInfo> MysqlMgr::GetUser(int uid)
+{
+	return _dao.GetUser(uid);
+}
 

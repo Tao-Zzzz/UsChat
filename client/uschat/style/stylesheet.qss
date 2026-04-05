@@ -61,6 +61,14 @@ background-color:rgb(255,255,255)
     color: rgb(42, 112, 241);
 }
 
+#face_label[state='normal'],#face_label[state='selected']{
+    color:black;
+}
+
+#face_label[state='hover'], #face_label[state='selected_hover']{
+    color: rgb(42, 112, 241);
+}
+
 #side_bar{
   background-color:rgb(46,46,46);
 }

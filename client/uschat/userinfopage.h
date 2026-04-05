@@ -20,6 +20,8 @@ protected:
 private slots:
     void slot_up_load();
 
+    void on_face_btn_clicked();
+
 private:
     Ui::UserInfoPage *ui;
 

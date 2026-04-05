@@ -1,6 +1,7 @@
 #pragma once
 #include "const.h"
 #include <thread>
+#include "data.h"
 
 class SqlConnection {
 public:
@@ -212,13 +213,6 @@ private:
 	std::atomic<int> _fail_count;
 };
 
-struct UserInfo {
-	std::string name;
-	std::string pwd;
-	int uid;
-	std::string email;
-};
-
 class MysqlDao
 {
 public:
@@ -230,6 +224,8 @@ public:
 	bool UpdatePwd(const std::string& name, const std::string& newpwd);
 	bool CheckPwd(const std::string& name, const std::string& pwd, UserInfo& userInfo);
 	bool TestProcedure(const std::string& email, int& uid, string& name);
+
+	std::shared_ptr<UserInfo> GetUser(int uid);
 private:
 	std::unique_ptr<MySqlPool> pool_;
 };

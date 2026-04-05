@@ -72,8 +72,8 @@
         <file>res/emoji/yd_smile.png</file>
         <file>res/emoji/yd_sweat.png</file>
         <file>res/emoji/yd_think.png</file>
-        <file>res/dairy_.png</file>
-        <file>res/dairy_press.png</file>
         <file>res/dairy_hover.png</file>
+        <file>res/dairy_press.png</file>
+        <file>res/dairy_.png</file>
     </qresource>
 </RCC>

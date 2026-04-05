@@ -13,6 +13,7 @@
 #include "filetcpmgr.h"
 #include "global.h"
 #include <QRegularExpression>
+#include "faceregisterdialog.h"
 
 UserInfoPage::UserInfoPage(QWidget *parent) :
     QWidget(parent),
@@ -272,4 +273,43 @@ void UserInfoPage::slot_up_load()
 
 
 
+
+
+void UserInfoPage::on_face_btn_clicked()
+{
+    // 1. 检查是否已经录入过人脸
+    bool hasRegistered = false;
+    cv::FileStorage fs("static/my_face_feature.xml", cv::FileStorage::READ);
+    if (fs.isOpened()) {
+        cv::Mat feature;
+        fs["feature"] >> feature;
+        // 如果能读出矩阵且不为空，说明录过了
+        if (!feature.empty()) {
+            hasRegistered = true;
+        }
+        fs.release();
+    }
+
+    // 2. 如果已经录入过，弹窗提醒用户
+    if (hasRegistered) {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "提示",
+                                      "您已经绑定过人脸，是否要重新录入覆盖原人脸？",
+                                      QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::No) {
+            return; // 用户点击否，直接退出
+        }
+    }
+
+    // 3. 获取当前登录用户的账号和密码
+    // 【重要提示】：因为用户现在在 UserInfoPage（说明已经登录了），
+    // 你的全局类里（比如 UserMgr）肯定存了当前用户的 email 和 pwd。
+    // 请把下面两行替换成你实际获取账号密码的代码！
+    // 3. 【修改点】：获取当前登录用户的 uid
+    int currentUid = UserMgr::GetInstance()->GetUid();
+
+    // 4. 【修改点】：弹出录入窗口，只传入 uid
+    FaceRegisterDialog dlg(currentUid, this);
+    dlg.exec();
+}
 

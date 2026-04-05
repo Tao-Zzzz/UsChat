@@ -289,6 +289,77 @@ LogicSystem::LogicSystem() {
 		beast::ostream(connection->_response.body()) << jsonstr;
 		return true;
 		});
+
+
+	RegPost("/face_login", [](std::shared_ptr<HttpConnection> connection) {
+		auto body_str = boost::beast::buffers_to_string(connection->_request.body().data());
+		std::cout << "receive face_login body is " << body_str << std::endl;
+		connection->_response.set(http::field::content_type, "text/json");
+		Json::Value root;
+		Json::Reader reader;
+		Json::Value src_root;
+		bool parse_success = reader.parse(body_str, src_root);
+		if (!parse_success) {
+			std::cout << "Failed to parse JSON data!" << std::endl;
+			root["error"] = ErrorCodes::Error_Json;
+			std::string jsonstr = root.toStyledString();
+			beast::ostream(connection->_response.body()) << jsonstr;
+			return true;
+		}
+
+		if (!src_root.isMember("uid")) {
+			std::cout << "Failed to find uid in JSON data!" << std::endl;
+			root["error"] = ErrorCodes::Error_Json;
+			std::string jsonstr = root.toStyledString();
+			beast::ostream(connection->_response.body()) << jsonstr;
+			return true;
+		}
+
+		// 1. 提取客户端发来的 uid
+		int uid = src_root["uid"].asInt();
+
+		// 2. 使用你的智能指针方案查询数据库
+		std::shared_ptr<UserInfo> user_ptr = MysqlMgr::GetInstance()->GetUser(uid);
+
+		// 3. 判断是否查到用户
+		if (user_ptr == nullptr) {
+			std::cout << " user uid not match or not exist" << std::endl;
+			root["error"] = ErrorCodes::UidInvalid; // 确保枚举里有这个错误码
+			std::string jsonstr = root.toStyledString();
+			beast::ostream(connection->_response.body()) << jsonstr;
+			return true;
+		}
+
+		// 4. 查询StatusServer找到合适的连接，注意这里用 user_ptr->uid
+		auto reply = StatusGrpcClient::GetInstance()->GetChatServer(user_ptr->uid);
+		if (reply.error()) {
+			std::cout << " grpc get chat server failed, error is " << reply.error() << std::endl;
+			root["error"] = ErrorCodes::RPCFailed;
+			std::string jsonstr = root.toStyledString();
+			beast::ostream(connection->_response.body()) << jsonstr;
+			return true;
+		}
+
+		std::cout << "succeed to face_login, uid is " << user_ptr->uid << std::endl;
+
+		// 5. 组装返回数据，全部从智能指针 user_ptr 中获取
+		root["error"] = 0;
+		root["email"] = user_ptr->email;
+		root["uid"] = user_ptr->uid;
+		root["token"] = reply.token();
+		root["chathost"] = reply.host();
+		root["chatport"] = reply.port();
+
+		auto& gCfgMgr = ConfigMgr::Inst();
+		std::string res_port = gCfgMgr["ResServer"]["Port"];
+		std::string res_host = gCfgMgr["ResServer"]["Host"];
+		root["reshost"] = res_host;
+		root["resport"] = res_port;
+
+		std::string jsonstr = root.toStyledString();
+		beast::ostream(connection->_response.body()) << jsonstr;
+		return true;
+		});
 }
 
 void LogicSystem::RegGet(std::string url, HttpHandler handler) {

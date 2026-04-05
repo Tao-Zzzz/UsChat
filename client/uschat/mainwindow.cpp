@@ -5,6 +5,7 @@
 #include <QLayout>
 #include <QMessageBox>
 #include "filetcpmgr.h"
+#include "faceauthmgr.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -17,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent) :
     _login_dlg->setWindowFlags(Qt::CustomizeWindowHint|Qt::FramelessWindowHint);
     _login_dlg->show();
     setCentralWidget(_login_dlg);
+
+    FaceAuthMgr::GetInstance()->Init("static/face_detection_yunet_2023mar.onnx",
+                                     "static/face_recognition_sface_2021dec.onnx");
 
     //连接登录界面注册信号
     connect(_login_dlg, &LoginDialog::switchRegister, this, &MainWindow::SlotSwitchReg);
