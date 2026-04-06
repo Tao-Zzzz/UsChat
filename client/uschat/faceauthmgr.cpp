@@ -1,5 +1,19 @@
 #include "FaceAuthMgr.h"
 #include <QDebug>
+#include <QJsonArray>
+
+
+QJsonArray MatToJsonArray(const cv::Mat& mat) {
+    QJsonArray arr;
+    // SFace 返回的特征通常是连续的 CV_32F (float) 类型矩阵
+    if (mat.isContinuous() && mat.type() == CV_32F) {
+        const float* ptr = mat.ptr<float>();
+        for (int i = 0; i < mat.cols * mat.rows; ++i) {
+            arr.append(static_cast<double>(ptr[i]));
+        }
+    }
+    return arr;
+}
 
 bool FaceAuthMgr::Init(const std::string& det_model_path, const std::string& rec_model_path)
 {

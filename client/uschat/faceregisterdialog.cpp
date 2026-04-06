@@ -4,6 +4,9 @@
 #include <QImage>
 #include <QPixmap>
 #include <QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
+#include "httpmgr.h"
 
 FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
     : QDialog(parent), m_uid(uid)
@@ -56,6 +59,8 @@ FaceRegisterDialog::~FaceRegisterDialog()
     }
 }
 
+
+
 // 刷新画面
 void FaceRegisterDialog::updateFrame()
 {
@@ -72,6 +77,8 @@ void FaceRegisterDialog::updateFrame()
     m_videoLabel->setPixmap(QPixmap::fromImage(img).scaled(m_videoLabel->size(), Qt::KeepAspectRatio));
 }
 
+extern QJsonArray MatToJsonArray(const cv::Mat& mat);
+
 // 点击拍照录入
 void FaceRegisterDialog::onCaptureClicked()
 {
@@ -80,25 +87,26 @@ void FaceRegisterDialog::onCaptureClicked()
     // 先暂停定时器，定格画面，让用户知道拍下来了
     m_timer->stop();
 
-    // 核心步骤：提取特征向量
+    // 1. AI 提取特征
     cv::Mat feature = FaceAuthMgr::GetInstance()->ExtractFeature(m_currentFrame);
-
-    // 如果返回的矩阵为空，说明画面里没有人脸或者人脸不清晰
     if (feature.empty()) {
-        QMessageBox::warning(this, "提示", "未检测到清晰的人脸，请正对摄像头重试！");
-        m_timer->start(30); // 恢复画面继续拍
+        QMessageBox::warning(this, "提示", "未检测到人脸，请重试！");
+        m_timer->start(30);
         return;
     }
 
-    // 保存人脸特征向量到本地 XML
-    cv::FileStorage fs("static/my_face_feature.xml", cv::FileStorage::WRITE);
-    fs << "feature" << feature;
-    fs.release();
+    // 2. 转换数据并组装 JSON
+    QJsonArray featureArray = MatToJsonArray(feature);
+    QJsonObject jsonObj;
+    jsonObj["uid"] = m_uid; // 传入进来的用户 UID
+    jsonObj["feature"] = featureArray;
 
-    // 【修改点】：保存 uid 到本地注册表
-    QSettings settings("MyCompany", "MyApp");
-    settings.setValue("saved_uid", m_uid);
+    // 3. 发送给 Python AI 微服务 (注意端口是 8000)
+    HttpMgr::GetInstance()->PostHttpReq(QUrl("http://127.0.0.1:8010/api/face/register"),
+                                        jsonObj,
+                                        ReqId::ID_FACE_REGISTER,
+                                        Modules::LOGINMOD); // 借用 LOGINMOD 模块发送
 
-    QMessageBox::information(this, "成功", "人脸录入成功！下次登录可直接使用扫脸。");
+    QMessageBox::information(this, "成功", "人脸特征正在上传云端绑定！");
     this->accept();
 }

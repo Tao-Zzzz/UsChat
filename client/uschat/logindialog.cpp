@@ -117,6 +117,44 @@ void LoginDialog::initHttpHandlers()
        // qDebug() << "send thread is " << QThread::currentThread();
        // emit sig_test();
     });
+
+
+    // 注册处理: Python 1:N 搜索结果回包
+    _handlers.insert(ReqId::ID_FACE_SEARCH, [this](QJsonObject jsonObj){
+        int error = jsonObj["error"].toInt();
+
+        if(error != 0) { // Python 那边没匹配到
+            showTip(tr("人脸库中未找到匹配项或相似度低"), false);
+            enableBtn(true);
+            return;
+        }
+
+        // 匹配成功！拿到 Python 服务器算出来的 UID
+        int uid = jsonObj["uid"].toInt();
+        qDebug() << "Face match success! UID:" << uid;
+        showTip(tr("身份确认成功，正在连接聊天服务..."), true);
+
+        // 组装新的请求，发给你原有的 C++ 后端
+        QJsonObject loginObj;
+        loginObj["uid"] = uid;
+
+        // 向 C++ 网关发送登录请求，复用 ID_LOGIN_USER，触发原有的长链接跳转逻辑
+        HttpMgr::GetInstance()->PostHttpReq(QUrl(gate_url_prefix + "/face_login"),
+                                            loginObj,
+                                            ReqId::ID_LOGIN_USER,
+                                            Modules::LOGINMOD);
+    });
+
+    // 注册处理: 人脸录入结果回包 (可选，用于在界面提示)
+    _handlers.insert(ReqId::ID_FACE_REGISTER, [this](QJsonObject jsonObj){
+        int error = jsonObj["error"].toInt();
+        if(error == 0) {
+            // 你也可以用 QMessageBox 提示
+            qDebug() << "云端人脸特征录入成功!";
+        } else {
+            qDebug() << "云端人脸特征录入失败!";
+        }
+    });
 }
 
 void LoginDialog::showTip(QString str, bool b_ok)
@@ -138,88 +176,56 @@ void LoginDialog::slot_forget_pwd()
     emit switchReset();
 }
 
+extern QJsonArray MatToJsonArray(const cv::Mat& mat);
+
 void LoginDialog::slot_face_login()
 {
-    // 1. 从本地获取之前绑定的“标准人脸特征” (假设你用 xml 保存了 cv::Mat)
-    // 【注意】：你需要先做一个“录入人脸”的功能，把用户的特征提取出来存在本地
-    cv::Mat mySavedFeature;
-    cv::FileStorage fs("static/my_face_feature.xml", cv::FileStorage::READ);
-    if (fs.isOpened()) {
-        fs["feature"] >> mySavedFeature;
-        fs.release();
-    }
-
-    if (mySavedFeature.empty()) {
-        QMessageBox::warning(this, "提示", "您尚未录入人脸，请先使用密码登录并绑定人脸！");
-        return;
-    }
-
-    // 2. 打开摄像头
     cv::VideoCapture cap(0);
     if (!cap.isOpened()) {
         QMessageBox::warning(this, "错误", "无法打开摄像头！");
         return;
     }
 
-    cv::Mat frame;
-    bool login_success = false;
-
-
     cv::namedWindow("Face Scan Login (Press ESC to cancel)", cv::WINDOW_AUTOSIZE);
-    // 3. 开始实时扫描识别
+    cv::Mat frame, targetFeature;
+
     while (true) {
         cap >> frame;
         if (frame.empty()) break;
 
-        // 1. 先把当前画面显示出来
-        cv::putText(frame, "Scanning face...", cv::Point(50, 50),
+        cv::putText(frame, "Scanning...", cv::Point(50, 50),
                     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 255, 0), 2);
         cv::imshow("Face Scan Login (Press ESC to cancel)", frame);
-
-        // 刷新一下 Qt 事件循环，确保画面被绘制
         cv::waitKey(1);
 
-        // 2. 再做 AI 提取与比对
-        cv::Mat currentFeature = FaceAuthMgr::GetInstance()->ExtractFeature(frame);
-        if (!currentFeature.empty()) {
-            float score = FaceAuthMgr::GetInstance()->Match(mySavedFeature, currentFeature);
-            if (score > 0.363f) {
-                login_success = true;
-                // 为了让用户看清楚绿字，这里甚至可以加一个短暂的延时，比如 QThread::msleep(500);
-                break;
-            }
-        }
-
-        // 3. 处理按键退出
-        if (cv::waitKey(30) == 27) { // 按 ESC 键退出
+        // 提取特征，提取到就立即跳出循环
+        targetFeature = FaceAuthMgr::GetInstance()->ExtractFeature(frame);
+        if (!targetFeature.empty()) {
             break;
         }
+
+        if (cv::waitKey(30) == 27) break; // 按 ESC 退出
     }
 
-    // 4. 清理摄像头和窗口
+    // 严谨清理窗口
     cv::destroyAllWindows();
     cap.release();
-    cv::waitKey(1); // 【关键修复 1】：必须加这一行！给 OpenCV 1毫秒的时间去彻底回收底层窗口句柄
+    cv::waitKey(1);
 
-    // 5. 如果识别成功，复用你的 HTTP 登录逻辑
-    if (login_success) {
-        QSettings settings("MyCompany", "MyApp");
-        int uid = settings.value("saved_uid", -1).toInt();
+    // 如果拿到特征，发送 1:N 请求给 Python
+    if (!targetFeature.empty()) {
+        QJsonArray featureArray = MatToJsonArray(targetFeature);
+        QJsonObject jsonObj;
+        jsonObj["feature"] = featureArray;
 
-        if (uid == -1) {
-            QMessageBox::warning(this, "提示", "本地账号凭据丢失，请先用密码登录并重新绑定人脸！");
-            return;
-        }
+        showTip(tr("云端匹配中..."), true);
+        enableBtn(false);
 
-        // 组装并发送登录请求
-        QJsonObject json_obj;
-        json_obj["uid"] = uid;
-
-        HttpMgr::GetInstance()->PostHttpReq(QUrl(gate_url_prefix+"/face_login"),
-                                            json_obj,
-                                            ReqId::ID_LOGIN_USER,
+        // 【关键】：发送给 Python 服务器进行检索
+        HttpMgr::GetInstance()->PostHttpReq(QUrl("http://127.0.0.1:8010/api/face/search"),
+                                            jsonObj,
+                                            ReqId::ID_FACE_SEARCH,
                                             Modules::LOGINMOD);
-
     }
 }
 
