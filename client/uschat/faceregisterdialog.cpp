@@ -7,13 +7,16 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include "httpmgr.h"
+#include "faceauthmgr.h"
+
+extern QJsonArray MatToJsonArray(const cv::Mat& mat);
 
 FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
     : QDialog(parent), m_uid(uid)
 {
     // 1. 窗口基础设置
     this->setWindowTitle("录入人脸");
-    this->setFixedSize(450, 450);
+    this->setFixedSize(450, 480); // 稍微加高一点容纳新按钮
 
     // 2. 界面布局初始化
     m_videoLabel = new QLabel(this);
@@ -22,11 +25,19 @@ FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
     m_videoLabel->setStyleSheet("background-color: black; color: white;");
     m_videoLabel->setText("正在打开摄像头...");
 
-    m_captureBtn = new QPushButton("拍照并绑定", this);
+    m_captureBtn = new QPushButton("拍照", this);
+    m_retakeBtn = new QPushButton("重拍", this);
+    m_confirmBtn = new QPushButton("确认绑定", this);
     m_cancelBtn = new QPushButton("取消", this);
+
+    // 初始状态下隐藏“重拍”和“确认”
+    m_retakeBtn->hide();
+    m_confirmBtn->hide();
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnLayout->addWidget(m_captureBtn);
+    btnLayout->addWidget(m_retakeBtn);
+    btnLayout->addWidget(m_confirmBtn);
     btnLayout->addWidget(m_cancelBtn);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
@@ -35,6 +46,8 @@ FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
 
     // 3. 信号槽绑定
     connect(m_captureBtn, &QPushButton::clicked, this, &FaceRegisterDialog::onCaptureClicked);
+    connect(m_retakeBtn, &QPushButton::clicked, this, &FaceRegisterDialog::onRetakeClicked);
+    connect(m_confirmBtn, &QPushButton::clicked, this, &FaceRegisterDialog::onConfirmClicked);
     connect(m_cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
     // 4. 打开摄像头
@@ -42,7 +55,6 @@ FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
         m_videoLabel->setText("无法打开摄像头！请检查设备。");
         m_captureBtn->setEnabled(false);
     } else {
-        // 使用 QTimer 每 30ms (约 33帧/秒) 刷新一次画面，防止主线程卡死
         m_timer = new QTimer(this);
         connect(m_timer, &QTimer::timeout, this, &FaceRegisterDialog::updateFrame);
         m_timer->start(30);
@@ -51,7 +63,6 @@ FaceRegisterDialog::FaceRegisterDialog(int uid, QWidget *parent)
 
 FaceRegisterDialog::~FaceRegisterDialog()
 {
-    // 释放摄像头和定时器
     if (m_cap.isOpened()) m_cap.release();
     if (m_timer) {
         m_timer->stop();
@@ -59,53 +70,61 @@ FaceRegisterDialog::~FaceRegisterDialog()
     }
 }
 
-
-
-// 刷新画面
 void FaceRegisterDialog::updateFrame()
 {
     m_cap >> m_currentFrame;
     if (m_currentFrame.empty()) return;
 
-    // OpenCV 默认是 BGR 格式，而 Qt 显示需要 RGB 格式，所以要做转换
     cv::Mat rgbFrame;
     cv::cvtColor(m_currentFrame, rgbFrame, cv::COLOR_BGR2RGB);
 
-    // 将 cv::Mat 转为 QImage
     QImage img(rgbFrame.data, rgbFrame.cols, rgbFrame.rows, rgbFrame.step, QImage::Format_RGB888);
-    // 缩放并显示在 QLabel 上
     m_videoLabel->setPixmap(QPixmap::fromImage(img).scaled(m_videoLabel->size(), Qt::KeepAspectRatio));
 }
 
-extern QJsonArray MatToJsonArray(const cv::Mat& mat);
-
-// 点击拍照录入
+// 点击拍照：定格画面，展示新按钮
 void FaceRegisterDialog::onCaptureClicked()
 {
     if (m_currentFrame.empty()) return;
 
-    // 先暂停定时器，定格画面，让用户知道拍下来了
-    m_timer->stop();
+    m_timer->stop(); // 定格画面
 
+    m_captureBtn->hide();
+    m_retakeBtn->show();
+    m_confirmBtn->show();
+}
+
+// 点击重拍：恢复画面刷新
+void FaceRegisterDialog::onRetakeClicked()
+{
+    m_retakeBtn->hide();
+    m_confirmBtn->hide();
+    m_captureBtn->show();
+
+    m_timer->start(30); // 恢复刷新
+}
+
+// 点击确认绑定：提取特征并上传
+void FaceRegisterDialog::onConfirmClicked()
+{
     // 1. AI 提取特征
     cv::Mat feature = FaceAuthMgr::GetInstance()->ExtractFeature(m_currentFrame);
     if (feature.empty()) {
-        QMessageBox::warning(this, "提示", "未检测到人脸，请重试！");
-        m_timer->start(30);
+        QMessageBox::warning(this, "提示", "未检测到清晰的人脸，请重拍！");
+        onRetakeClicked(); // 自动回到重拍状态
         return;
     }
 
-    // 2. 转换数据并组装 JSON
+    // 2. 转换数据并上传
     QJsonArray featureArray = MatToJsonArray(feature);
     QJsonObject jsonObj;
-    jsonObj["uid"] = m_uid; // 传入进来的用户 UID
+    jsonObj["uid"] = m_uid;
     jsonObj["feature"] = featureArray;
 
-    // 3. 发送给 Python AI 微服务 (注意端口是 8000)
     HttpMgr::GetInstance()->PostHttpReq(QUrl("http://127.0.0.1:8010/api/face/register"),
                                         jsonObj,
                                         ReqId::ID_FACE_REGISTER,
-                                        Modules::LOGINMOD); // 借用 LOGINMOD 模块发送
+                                        Modules::LOGINMOD);
 
     QMessageBox::information(this, "成功", "人脸特征正在上传云端绑定！");
     this->accept();

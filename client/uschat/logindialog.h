@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "global.h"
+#include <opencv2/opencv.hpp>
 
 namespace Ui {
 class LoginDialog;
@@ -28,6 +29,14 @@ private:
     void AddTipErr(TipErr te,QString tips);
     void DelTipErr(TipErr te);
     std::shared_ptr<ServerInfo> _si;
+
+    cv::VideoCapture m_faceCap;
+    QTimer* m_faceTimer = nullptr;
+    bool m_bFaceLoginActive = false; // 是否处于扫脸登录状态（控制是否屏蔽网络回包）
+    bool m_bRequestingFace = false;  // 是否正在等待云端比对结果
+
+    void stop_face_scan();
+
 private slots:
     void slot_forget_pwd();
     void on_login_btn_clicked();
@@ -36,6 +45,8 @@ private slots:
     void slot_login_failed(int);
     void slot_res_con_finish(bool bsuccess);
     void slot_face_login();
+
+    void slot_process_face_frame();
 signals:
     void switchRegister();
     void switchReset();

@@ -21,8 +21,12 @@ public:
 private slots:
     void updateFrame();        // 刷新摄像头画面的槽函数
     void onCaptureClicked();   // 点击“拍照录入”的槽函数
-
+    void onRetakeClicked();
+    void onConfirmClicked();
 private:
+    QPushButton *m_retakeBtn; //重取
+    QPushButton *m_confirmBtn; // 确定
+
     QLabel *m_videoLabel;      // 显示视频画面的控件
     QPushButton *m_captureBtn; // 拍照按钮
     QPushButton *m_cancelBtn;  // 取消按钮

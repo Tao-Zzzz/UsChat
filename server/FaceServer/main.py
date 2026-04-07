@@ -1,11 +1,20 @@
-# main.py
 from fastapi import FastAPI
 import uvicorn
 from schemas import RegisterRequest, SearchRequest
 from face_service import FaceService
+from contextlib import asynccontextmanager
 
-app = FastAPI(title="Face AI Microservice")
+# 1. 先定义 lifespan
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 服务启动时加载 FAISS 索引
+    FaceService.init_faiss()
+    yield
 
+# 2. 创建唯一的 app 实例，并传入 lifespan
+app = FastAPI(title="Face AI Microservice", lifespan=lifespan)
+
+# 3. 挂载路由到这个唯一的 app 上
 @app.post("/api/face/register")
 async def api_register(req: RegisterRequest):
     success = FaceService.register_face(req.uid, req.feature)
@@ -19,5 +28,4 @@ async def api_search(req: SearchRequest):
     return result
 
 if __name__ == "__main__":
-    # 启动命令: python main.py
     uvicorn.run("main:app", host="0.0.0.0", port=8010, reload=True)

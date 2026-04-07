@@ -98,6 +98,7 @@ ChatDialog::ChatDialog(QWidget* parent) :
 	AddLBGroup(ui->side_chat_lb);
 	AddLBGroup(ui->side_contact_lb);
 	AddLBGroup(ui->side_settings_lb);
+    AddLBGroup(ui->side_dairy_lb);
 
 	connect(ui->side_chat_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_chat);
 	connect(ui->side_contact_lb, &StateWidget::clicked, this, &ChatDialog::slot_side_contact);
@@ -1681,8 +1682,46 @@ void ChatDialog::slot_chat_img_upload_finish(int thread_id, int msg_id){
     ui->chat_page->UpdateImgChatFinshStatusById(msg_id);
 }
 
+
+void ChatDialog::UpdateSideBarSelection()
+{
+    // 1. 首先清除所有标签的选中状态，确保视觉上不会有多个被选中
+    ui->side_chat_lb->SetSelected(false);
+    ui->side_contact_lb->SetSelected(false);
+    ui->side_settings_lb->SetSelected(false);
+    ui->side_dairy_lb->SetSelected(false);
+
+    // 2. 根据当前状态，选中对应的标签
+    switch (_state)
+    {
+    case ChatUIMode::ChatMode:
+        ui->side_chat_lb->SetSelected(true);
+        break;
+    case ChatUIMode::ContactMode:
+        ui->side_contact_lb->SetSelected(true);
+        break;
+    case ChatUIMode::SettingsMode:
+        ui->side_settings_lb->SetSelected(true);
+        break;
+    case ChatUIMode::DairyMode:
+        ui->side_dairy_lb->SetSelected(true);
+        break;
+    case ChatUIMode::SearchMode:
+        // 如果搜索模式没有对应侧边栏按钮，可以不处理
+        break;
+    default:
+        break;
+    }
+}
+
 void ChatDialog::slot_side_dairy()
 {
+    ChatUIMode pre_state = _state;
+
+    ClearLabelState(ui->side_dairy_lb);
+
+    _state = ChatUIMode::DairyMode;
+
     // 如果你希望点击 diary 时也有按下视觉效果，可以临时选中
     ui->side_dairy_lb->SetSelected(true);
 
@@ -1691,4 +1730,8 @@ void ChatDialog::slot_side_dairy()
 
     // 关闭后恢复 normal，避免它常驻选中
     ui->side_dairy_lb->SetSelected(false);
+
+
+    _state = pre_state;
+    UpdateSideBarSelection();
 }

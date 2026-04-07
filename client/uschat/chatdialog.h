@@ -41,6 +41,7 @@ private:
 
     void UpdateLastMsg();
 
+    void UpdateSideBarSelection();
 
     void LoadHeadIcon(QString avatarPath, QLabel* icon_label, QString file_name,QString req_type);
     Ui::ChatDialog *ui;

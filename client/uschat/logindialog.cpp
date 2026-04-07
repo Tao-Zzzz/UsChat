@@ -10,8 +10,12 @@
 #include <QPainterPath>
 #include "aimgr.h"
 #include <QMessageBox>
-#include <opencv2/opencv.hpp>
 #include "faceauthmgr.h"
+#include <QTimer>
+
+// 矩阵转Json
+extern QJsonArray MatToJsonArray(const cv::Mat& mat);
+
 
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
@@ -121,24 +125,33 @@ void LoginDialog::initHttpHandlers()
 
     // 注册处理: Python 1:N 搜索结果回包
     _handlers.insert(ReqId::ID_FACE_SEARCH, [this](QJsonObject jsonObj){
+        // 【核心防御】：如果用户已经关闭了人脸识别窗口，直接屏蔽丢弃此响应！
+        if (!m_bFaceLoginActive) {
+            qDebug() << "Face scan was cancelled by user, ignoring server response.";
+            return;
+        }
+
         int error = jsonObj["error"].toInt();
 
-        if(error != 0) { // Python 那边没匹配到
-            showTip(tr("人脸库中未找到匹配项或相似度低"), false);
-            enableBtn(true);
+        if(error != 0) {
+            // 匹配失败，解锁请求状态，让定时器自动去抓取下一帧重试
+            qDebug() << "匹配失败或模糊，准备自动重试下一帧...";
+            m_bRequestingFace = false;
             return;
         }
 
         // 匹配成功！拿到 Python 服务器算出来的 UID
         int uid = jsonObj["uid"].toInt();
         qDebug() << "Face match success! UID:" << uid;
+
+        // 成功后，立刻关闭摄像头窗口
+        stop_face_scan();
         showTip(tr("身份确认成功，正在连接聊天服务..."), true);
 
-        // 组装新的请求，发给你原有的 C++ 后端
+        // 组装新的请求，发给你原有的 C++ 后端走登录长连接逻辑
         QJsonObject loginObj;
         loginObj["uid"] = uid;
 
-        // 向 C++ 网关发送登录请求，复用 ID_LOGIN_USER，触发原有的长链接跳转逻辑
         HttpMgr::GetInstance()->PostHttpReq(QUrl(gate_url_prefix + "/face_login"),
                                             loginObj,
                                             ReqId::ID_LOGIN_USER,
@@ -155,6 +168,89 @@ void LoginDialog::initHttpHandlers()
             qDebug() << "云端人脸特征录入失败!";
         }
     });
+}
+
+// 辅助函数：安全关闭摄像头和清理定时器
+void LoginDialog::stop_face_scan()
+{
+    m_bFaceLoginActive = false; // 关闭状态
+    if (m_faceTimer) {
+        m_faceTimer->stop();
+    }
+    if (m_faceCap.isOpened()) {
+        m_faceCap.release();
+    }
+    cv::destroyAllWindows();
+    cv::waitKey(1); // 让 OpenCV 处理完销毁事件
+    enableBtn(true);
+}
+
+
+
+// 定时器槽函数：处理每一帧画面
+void LoginDialog::slot_process_face_frame()
+{
+    // 1. 检查用户是否手动关闭了 OpenCV 的窗口 (点击了 X)
+    // getWindowProperty 如果返回 -1 表示窗口不存在
+    if (cv::getWindowProperty("Face Scan Login", cv::WND_PROP_AUTOSIZE) == -1) {
+        stop_face_scan();
+        showTip(tr("人脸登录已取消"), false);
+        return;
+    }
+
+    cv::Mat frame;
+    m_faceCap >> frame;
+    if (frame.empty()) return;
+
+    // 画面提示文字：如果正在发请求就显示 Verifying
+    QString statusTxt = m_bRequestingFace ? "Verifying..." : "Scanning...";
+    cv::putText(frame, statusTxt.toStdString(), cv::Point(50, 50),
+                cv::FONT_HERSHEY_SIMPLEX, 1,
+                m_bRequestingFace ? cv::Scalar(0, 255, 255) : cv::Scalar(0, 255, 0), 2);
+    cv::imshow("Face Scan Login", frame);
+
+    // 检查是否按了 ESC 键
+    if (cv::waitKey(1) == 27) {
+        stop_face_scan();
+        showTip(tr("人脸登录已取消"), false);
+        return;
+    }
+
+    // 2. 如果正在等待云端结果，只刷新画面，不去提取特征和发送网络请求
+    if (m_bRequestingFace) return;
+
+    // ================= 新增：活体检测 =================
+    // 假设你在 FaceAuthMgr 中实现了 CheckLiveness
+    float liveScore = FaceAuthMgr::GetInstance()->CheckLiveness(frame);
+
+    qDebug() << "live Score = " << liveScore;
+
+    // 设置一个阈值，比如 < 0.8 认为是假脸（照片/屏幕）
+    if (liveScore < 0.8f) {
+        cv::putText(frame, "Spoofing Detected!", cv::Point(50, 100),
+                    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+        cv::imshow("Face Scan Login", frame);
+        return; // 直接 return，不提取特征，也不发请求
+    }
+    // =================================================
+
+    // 3. 提取特征
+    cv::Mat targetFeature = FaceAuthMgr::GetInstance()->ExtractFeature(frame);
+
+    // 如果这一帧没抓到脸，直接返回，等下一个 100ms
+    if (targetFeature.empty()) return;
+
+    // 抓到脸了！锁住请求状态，发送给服务器
+    m_bRequestingFace = true;
+
+    QJsonArray featureArray = MatToJsonArray(targetFeature);
+    QJsonObject jsonObj;
+    jsonObj["feature"] = featureArray;
+
+    HttpMgr::GetInstance()->PostHttpReq(QUrl("http://127.0.0.1:8010/api/face/search"),
+                                        jsonObj,
+                                        ReqId::ID_FACE_SEARCH,
+                                        Modules::LOGINMOD);
 }
 
 void LoginDialog::showTip(QString str, bool b_ok)
@@ -176,57 +272,30 @@ void LoginDialog::slot_forget_pwd()
     emit switchReset();
 }
 
-extern QJsonArray MatToJsonArray(const cv::Mat& mat);
+
 
 void LoginDialog::slot_face_login()
 {
-    cv::VideoCapture cap(0);
-    if (!cap.isOpened()) {
+    if (m_bFaceLoginActive) return; // 防止重复点击
+
+    if (!m_faceCap.open(0)) {
         QMessageBox::warning(this, "错误", "无法打开摄像头！");
         return;
     }
 
-    cv::namedWindow("Face Scan Login (Press ESC to cancel)", cv::WINDOW_AUTOSIZE);
-    cv::Mat frame, targetFeature;
+    cv::namedWindow("Face Scan Login", cv::WINDOW_AUTOSIZE);
 
-    while (true) {
-        cap >> frame;
-        if (frame.empty()) break;
+    // 初始化状态
+    m_bFaceLoginActive = true;
+    m_bRequestingFace = false;
+    enableBtn(false);
+    showTip(tr("请正对摄像头..."), true);
 
-        cv::putText(frame, "Scanning...", cv::Point(50, 50),
-                    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 255, 0), 2);
-        cv::imshow("Face Scan Login (Press ESC to cancel)", frame);
-        cv::waitKey(1);
-
-        // 提取特征，提取到就立即跳出循环
-        targetFeature = FaceAuthMgr::GetInstance()->ExtractFeature(frame);
-        if (!targetFeature.empty()) {
-            break;
-        }
-
-        if (cv::waitKey(30) == 27) break; // 按 ESC 退出
+    if (!m_faceTimer) {
+        m_faceTimer = new QTimer(this);
+        connect(m_faceTimer, &QTimer::timeout, this, &LoginDialog::slot_process_face_frame);
     }
-
-    // 严谨清理窗口
-    cv::destroyAllWindows();
-    cap.release();
-    cv::waitKey(1);
-
-    // 如果拿到特征，发送 1:N 请求给 Python
-    if (!targetFeature.empty()) {
-        QJsonArray featureArray = MatToJsonArray(targetFeature);
-        QJsonObject jsonObj;
-        jsonObj["feature"] = featureArray;
-
-        showTip(tr("云端匹配中..."), true);
-        enableBtn(false);
-
-        // 【关键】：发送给 Python 服务器进行检索
-        HttpMgr::GetInstance()->PostHttpReq(QUrl("http://127.0.0.1:8010/api/face/search"),
-                                            jsonObj,
-                                            ReqId::ID_FACE_SEARCH,
-                                            Modules::LOGINMOD);
-    }
+    m_faceTimer->start(100); // 每 100ms 抓一帧
 }
 
 bool LoginDialog::checkUserValid(){

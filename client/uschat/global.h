@@ -273,6 +273,8 @@ enum ChatUIMode{
     ChatMode, //聊天模式
     ContactMode, //联系模式
     SettingsMode, //设置模式
+    DairyMode, //日记模式
+
 };
 
 //自定义QListWidgetItem的几种类型

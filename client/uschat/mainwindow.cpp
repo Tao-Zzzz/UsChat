@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(_login_dlg);
 
     FaceAuthMgr::GetInstance()->Init("static/face_detection_yunet_2023mar.onnx",
-                                     "static/face_recognition_sface_2021dec.onnx");
+                                     "static/face_recognition_sface_2021dec.onnx",
+                                     "static/2.7_80x80_MiniFASNetV2.onnx");
 
     //连接登录界面注册信号
     connect(_login_dlg, &LoginDialog::switchRegister, this, &MainWindow::SlotSwitchReg);
