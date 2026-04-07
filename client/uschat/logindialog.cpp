@@ -55,6 +55,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
 LoginDialog::~LoginDialog()
 {
     qDebug()<<"destruct LoginDlg";
+    stop_face_scan(); // 确保摄像头和定时器在 UI 销毁前关闭
     delete ui;
 }
 
@@ -173,28 +174,50 @@ void LoginDialog::initHttpHandlers()
 // 辅助函数：安全关闭摄像头和清理定时器
 void LoginDialog::stop_face_scan()
 {
-    m_bFaceLoginActive = false; // 关闭状态
+    // 如果已经关过了，直接返回，避免二次销毁导致的 abort()
+    if (!m_bFaceLoginActive) return;
+
+    qDebug() << "Executing stop_face_scan...";
+
+    // 第一步：立刻标记为非活跃，阻断定时器后续逻辑
+    m_bFaceLoginActive = false;
+    m_bRequestingFace = false;
+
+    // 第二步：停止定时器
     if (m_faceTimer) {
         m_faceTimer->stop();
     }
+
+    // 第三步：释放硬件
     if (m_faceCap.isOpened()) {
         m_faceCap.release();
     }
+
+    // 第四步：安全销毁窗口
+    // 在某些环境下，destroyAllWindows 之前加一个 waitKey 能清空事件队列
+    cv::waitKey(1);
     cv::destroyAllWindows();
-    cv::waitKey(1); // 让 OpenCV 处理完销毁事件
+    for(int i=0; i<5; i++) cv::waitKey(1); // 彻底泵出 Windows 消息循环
+
     enableBtn(true);
 }
-
 
 
 // 定时器槽函数：处理每一帧画面
 void LoginDialog::slot_process_face_frame()
 {
-    // 1. 检查用户是否手动关闭了 OpenCV 的窗口 (点击了 X)
-    // getWindowProperty 如果返回 -1 表示窗口不存在
-    if (cv::getWindowProperty("Face Scan Login", cv::WND_PROP_AUTOSIZE) == -1) {
+    // 1. 状态锁：如果已经不处于登录活跃状态，绝对不碰 OpenCV
+    if (!m_bFaceLoginActive) return;
+
+    // 2. 窗口生存检查：用 try-catch 保护，因为 getWindowProperty 在窗口消失瞬间可能抛异常
+    try {
+        if (cv::getWindowProperty("Face Scan Login", cv::WND_PROP_VISIBLE) < 1) {
+            stop_face_scan();
+            showTip(tr("人脸登录已取消"), false);
+            return;
+        }
+    } catch (...) {
         stop_face_scan();
-        showTip(tr("人脸登录已取消"), false);
         return;
     }
 
@@ -202,21 +225,21 @@ void LoginDialog::slot_process_face_frame()
     m_faceCap >> frame;
     if (frame.empty()) return;
 
-    // 画面提示文字：如果正在发请求就显示 Verifying
+    // 3. 在 Verify 阶段，我们要更加小心
     QString statusTxt = m_bRequestingFace ? "Verifying..." : "Scanning...";
-    cv::putText(frame, statusTxt.toStdString(), cv::Point(50, 50),
-                cv::FONT_HERSHEY_SIMPLEX, 1,
-                m_bRequestingFace ? cv::Scalar(0, 255, 255) : cv::Scalar(0, 255, 0), 2);
-    cv::imshow("Face Scan Login", frame);
+    cv::Scalar color = m_bRequestingFace ? cv::Scalar(0, 255, 255) : cv::Scalar(0, 255, 0);
 
-    // 检查是否按了 ESC 键
-    if (cv::waitKey(1) == 27) {
-        stop_face_scan();
-        showTip(tr("人脸登录已取消"), false);
-        return;
+    cv::putText(frame, statusTxt.toStdString(), cv::Point(50, 50),
+                cv::FONT_HERSHEY_SIMPLEX, 1, color, 2);
+
+    // 关键点：在进行 imshow 之前最后一次检查状态
+    if (m_bFaceLoginActive) {
+        cv::imshow("Face Scan Login", frame);
     }
 
-    // 2. 如果正在等待云端结果，只刷新画面，不去提取特征和发送网络请求
+    // 4. 注意：在 Qt 的定时器里，waitKey(1) 只需要调用一次，且仅用于刷新画面
+    cv::waitKey(1);
+
     if (m_bRequestingFace) return;
 
     // ================= 新增：活体检测 =================
