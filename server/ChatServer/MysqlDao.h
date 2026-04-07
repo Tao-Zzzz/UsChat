@@ -266,8 +266,7 @@ public:
 
 	bool CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id);
 
-public:
-	bool CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id);
+
 	bool GetGroupChatInfo(int thread_id, GroupChatInfo& group_info);
 
 	bool GetUserNameById(sql::Connection* conn, int user_id, std::string& name);

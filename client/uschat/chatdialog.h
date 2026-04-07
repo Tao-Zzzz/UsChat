@@ -95,7 +95,7 @@ public slots:
     void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info);
     void slot_update_upload_progress(std::shared_ptr<MsgInfo> msg_info, QString file_path);
     void slot_start_create_group();
-    void slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id);
+    void slot_create_group_chat(const GroupChatInitData& init_data);
 
     void slot_ai_text_chat_msg(ReqId id, QString res, ErrorCodes err);
 

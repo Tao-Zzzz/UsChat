@@ -34,7 +34,6 @@ public:
 	bool AddChatMsg(std::shared_ptr<ChatMessage> chat_data);
 	bool CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id);
 	
-	bool CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id);
 	bool GetGroupChatInfo(int thread_id, GroupChatInfo& group_info);
 private:
 	MysqlMgr();

@@ -264,16 +264,48 @@ public:
 Q_DECLARE_METATYPE(std::shared_ptr<ImgChatData>)
 
 
-struct GroupInfo{
-    int _role;
+struct GroupInfo {
+    int _role = 0;
+    QString _name;              // 用户原始昵称
     QString _mute_until;
-    QString _group_nickname;    // 群昵称/群名片（例如用户叫"张三"，在群里备注为"开发-张三"）
+    QString _group_nickname;    // 群昵称/群名片
 
     GroupInfo() = default;
-    GroupInfo(int role, QString mute_unitl):_role(role), _mute_until(mute_unitl){}
+
+    GroupInfo(int role, const QString& name,
+              const QString& mute_until = "",
+              const QString& group_nickname = "")
+        : _role(role),
+        _name(name),
+        _mute_until(mute_until),
+        _group_nickname(group_nickname) {}
+};
+Q_DECLARE_METATYPE(std::shared_ptr<GroupInfo>)
+
+struct GroupMemberBrief {
+    int _uid = 0;
+    QString _name;
+    int _role = 0;
+
+    GroupMemberBrief() = default;
+    GroupMemberBrief(int uid, const QString& name, int role)
+        : _uid(uid), _name(name), _role(role) {}
 };
 
-Q_DECLARE_METATYPE(std::shared_ptr<GroupInfo>)
+struct GroupChatInitData {
+    int _thread_id = 0;
+    QString _group_name;
+    int _member_count = 0;
+    std::vector<int> _member_ids;
+    QMap<int, std::shared_ptr<GroupInfo>> _member_infos;
+};
+
+Q_DECLARE_METATYPE(GroupChatInitData)
+Q_DECLARE_METATYPE(GroupMemberBrief)
+
+Q_DECLARE_METATYPE(std::shared_ptr<GroupMemberBrief>)
+Q_DECLARE_METATYPE(std::shared_ptr<GroupChatInitData>)
+
 
 //聊天线程信息
 struct ChatThreadInfo {
@@ -296,82 +328,87 @@ Q_DECLARE_METATYPE(std::vector<std::shared_ptr<ChatThreadInfo>>)
 class ChatThreadData {
 public:
     ChatThreadData() = default;
-    ChatThreadData(int other_id, int thread_id, int last_msg_id):
-        _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id){
+
+    ChatThreadData(int other_id, int thread_id, int last_msg_id)
+        : _other_id(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id) {
         _thread_type = ChatFormType::PRIVATE;
     }
-    // 创建群聊时用的,这里的构造没有自己的uid
 
-    ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id):
-        _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0),_thread_type(ChatFormType::PRIVATE){
-        // 创建群聊, 自己是群主, 其他还都是默认, 那么信息也是默认
-        self_role = GroupRole::Owner;
-        for(int member_id : other_id){
-            _group_members_info[member_id] = std::make_shared<GroupInfo>(0,"");
-        }
-
-        _thread_type = ChatFormType::GROUP;
-        // 可以加上自己的uid
-        //todo...
+    ChatThreadData(std::vector<int> member_ids,
+                   int thread_id,
+                   int last_msg_id,
+                   const QString& group_name,
+                   const QMap<int, std::shared_ptr<GroupInfo>>& group_members_info)
+        : _group_members(member_ids),
+        _thread_id(thread_id),
+        _last_msg_id(last_msg_id),
+        _other_id(0),
+        _group_members_info(group_members_info),
+        _group_name(group_name),
+        _thread_type(ChatFormType::GROUP)
+    {
+        // self role 不应该是0才对 todo
+        self_role = 0;
     }
-    
-    //启动时加载群聊用的, 这里的构造有自己的uid
-    ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id,QMap<int, std::shared_ptr<GroupInfo>> group_members_info);
 
-    ChatThreadData(int thread_id, int last_msg_id):
-        _last_msg_id(last_msg_id), _thread_id(thread_id){
+    ChatThreadData(int thread_id, int last_msg_id)
+        : _last_msg_id(last_msg_id), _thread_id(thread_id) {
         _other_id = -1;
         _thread_type = ChatFormType::AI;
-
-        // if (!_ai_context) {
-        //     _ai_context = std::unique_ptr<AiContext>(new AiContext());
-        // }
-
     }
 
     void AddMsg(std::shared_ptr<ChatDataBase> msg);
     void MoveMsg(std::shared_ptr<ChatDataBase> msg);
     void UpdateProgress(std::shared_ptr<MsgInfo> msg);
     void UpdateAiMsg(QString unique_id, int msg_id);
-    void SetLastMsgId(int msg_id);
-    void SetOtherId(int other_id);
-    int  GetOtherId();
-    QString GetGroupName();
+
+
     QMap<int, std::shared_ptr<ChatDataBase>> GetMsgMap();
-    int  GetThreadId();
+
     QMap<int, std::shared_ptr<ChatDataBase>>&  GetMsgMapRef();
     void AppendMsg(int msg_id, std::shared_ptr<ChatDataBase> base_msg);
     QString GetLastMsg();
-    int GetLastMsgId();
+
     QMap<QString, std::shared_ptr<ChatDataBase>>& GetMsgUnRspRef();
     void AppendUnRspMsg(QString unique_id, std::shared_ptr<ChatDataBase> base_msg);
     std::shared_ptr<ChatDataBase> GetChatDataBase(int msg_id);
-    std::vector<int> GetGroupMemberUids();
+
 
     void ClearChatMsg();
     void UpdateImgChatStatusByMsgId(int msg_id);
 
+    QString GetGroupName() { return _group_name; }
+    std::vector<int> GetGroupMemberUids() { return _group_members; }
+    int GetThreadId() { return _thread_id; }
+    int GetOtherId() { return _other_id; }
+    void SetOtherId(int other_id) { _other_id = other_id; }
+    int GetLastMsgId() { return _last_msg_id; }
+    void SetLastMsgId(int msg_id) { _last_msg_id = msg_id; }
+
+    QMap<int, std::shared_ptr<GroupInfo>>& GetGroupMemberInfoRef() {
+        return _group_members_info;
+    }
+
+    int GetSelfRole() const { return self_role; }
+    int GetSelfUid() const { return _self_uid; }
+
 private:
-    //如果是私聊，则为对方的id；如果是群聊，则为0
-    int _other_id;
-    int _last_msg_id;
-    int _thread_id;
+    int _other_id = 0;
+    int _last_msg_id = 0;
+    int _thread_id = 0;
     QString _last_msg;
-    //群聊信息,成员列表, 包不包含自己是个大坑, 注意了
+
     std::vector<int> _group_members;
-    // todo
     QMap<int, std::shared_ptr<GroupInfo>> _group_members_info;
-    int self_role;
-    //群聊名称
+
+    int _self_uid = 0;
+    int self_role = 0;
     QString _group_name = "";
-    //缓存消息map，抽象为基类，因为会有图片等其他类型消息
-    QMap<int, std::shared_ptr<ChatDataBase>>  _msg_map;
-    //缓存未回复的消息
-        //已发送的消息，还未收到回应的。
+
+    QMap<int, std::shared_ptr<ChatDataBase>> _msg_map;
     QMap<QString, std::shared_ptr<ChatDataBase>> _msg_unrsp_map;
 
-
-    ChatFormType _thread_type;
+    ChatFormType _thread_type = ChatFormType::PRIVATE;
 };
 
 

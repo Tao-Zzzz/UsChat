@@ -212,6 +212,7 @@ ChatDialog::ChatDialog(QWidget* parent) :
 
     //创建群聊
     connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_create_group_chat, this, &ChatDialog::slot_create_group_chat);
+    connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_notify_group_created, this, &ChatDialog::slot_create_group_chat);
 
     connect(HttpMgr::GetInstance().get(), &HttpMgr::sig_ai_chat_req_finish, this,
             &ChatDialog::slot_ai_text_chat_msg);
@@ -681,20 +682,20 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 		//先处理单聊，群聊跳过，以后添加
 		if (cti->_type == "group") {
             
+            // todo 群聊加载
+            // auto chat_thread_data = std::make_shared<ChatThreadData>(cti->_member_ids, cti->_thread_id, 0, cti->_meber_infos);
+            // UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
             
-            auto chat_thread_data = std::make_shared<ChatThreadData>(cti->_member_ids, cti->_thread_id, 0, cti->_meber_infos);
-            UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
-            
-            auto* chat_user_wid = new ChatUserWid();
-            //群头像什么的设置
-            chat_user_wid->SetChatData(chat_thread_data);
-            QListWidgetItem* item = new QListWidgetItem;
-            //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
-            item->setSizeHint(chat_user_wid->sizeHint());
-            ui->chat_user_list->addItem(item);
-            ui->chat_user_list->setItemWidget(item, chat_user_wid);
-            _chat_thread_items.insert(cti->_thread_id, item);
-            //左边栏的弄完了
+            // auto* chat_user_wid = new ChatUserWid();
+            // //群头像什么的设置
+            // chat_user_wid->SetChatData(chat_thread_data);
+            // QListWidgetItem* item = new QListWidgetItem;
+            // //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+            // item->setSizeHint(chat_user_wid->sizeHint());
+            // ui->chat_user_list->addItem(item);
+            // ui->chat_user_list->setItemWidget(item, chat_user_wid);
+            // _chat_thread_items.insert(cti->_thread_id, item);
+            // //左边栏的弄完了
 			continue;
 		}
 
@@ -1543,14 +1544,22 @@ void ChatDialog::slot_start_create_group(){
 }
 
 // 创建时都是好友
-void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id)
+void ChatDialog::slot_create_group_chat(const GroupChatInitData& init_data)
 {
-    //构造会话数据
     auto* chat_user_wid = new ChatUserWid();
-    auto chat_thread_data = std::make_shared<ChatThreadData>(other_id, thread_id, 0);
+
+    auto chat_thread_data = std::make_shared<ChatThreadData>(
+        init_data._member_ids,
+        init_data._thread_id,
+        0,
+        init_data._group_name,
+        init_data._member_infos
+        );
+
     if (chat_thread_data == nullptr) {
         return;
     }
+
     UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
 
     chat_user_wid->SetChatData(chat_thread_data);
@@ -1561,15 +1570,12 @@ void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int 
 
     ui->chat_user_list->insertItem(0, item);
     ui->chat_user_list->setItemWidget(item, chat_user_wid);
-    _chat_thread_items.insert(thread_id, item);
+    _chat_thread_items.insert(init_data._thread_id, item);
 
     ui->side_chat_lb->SetSelected(true);
-    //切换会话三件套
-    SetSelectChatItem(thread_id);
-    //更新聊天界面信息
-    SetSelectChatPage(thread_id);
+    SetSelectChatItem(init_data._thread_id);
+    SetSelectChatPage(init_data._thread_id);
     slot_side_chat();
-    return;
 }
 
 

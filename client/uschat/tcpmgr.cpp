@@ -164,6 +164,9 @@ void TcpMgr::registerMetaType() {
     qRegisterMetaType<std::shared_ptr<ImgChatData>>("std::shared_ptr<ImgChatData>");
     qRegisterMetaType<std::vector<int>>("std::vector<int>");
     qRegisterMetaType<std::vector<std::shared_ptr<ChatDataBase>>>("std::vector<std::shared_ptr<ChatDataBase>>");
+
+    qRegisterMetaType<GroupMemberBrief>("GroupMemberBrief");
+    qRegisterMetaType<GroupChatInitData>("GroupChatInitData");
 }
 
 void TcpMgr::CloseConnection(){
@@ -753,6 +756,7 @@ void TcpMgr::initHandlers()
 
 
 
+
     _handlers.insert(ID_LOAD_CHAT_MSG_RSP, [this](ReqId id, int len, QByteArray data) {
         Q_UNUSED(len);
         qDebug() << "handle id is " << id << " data is " << data;
@@ -968,10 +972,8 @@ void TcpMgr::initHandlers()
     _handlers.insert(ID_CREATE_GROUP_RSP, [this](ReqId id, int len, QByteArray data) {
         Q_UNUSED(len);
         qDebug() << "handle id is " << id << " data is " << data;
-        // 将QByteArray转换为QJsonDocument
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
 
-        // 检查转换是否成功
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
         if (jsonDoc.isNull()) {
             qDebug() << "Failed to create QJsonDocument.";
             return;
@@ -981,7 +983,7 @@ void TcpMgr::initHandlers()
 
         if (!jsonObj.contains("error")) {
             int err = ErrorCodes::ERR_JSON;
-            qDebug() << "parse create group chat json parse failed " << err;
+            qDebug() << "parse create group chat json failed, err =" << err;
             return;
         }
 
@@ -993,21 +995,49 @@ void TcpMgr::initHandlers()
 
         qDebug() << "Receive create group chat rsp Success";
 
-        int uid = jsonObj["uid"].toInt();
-        int thread_id = jsonObj["thread_id"].toInt();
-
-        // 解析 other_member
-        QJsonArray memberArray = jsonObj["other_member"].toArray();
-        std::vector<int> member_uids;
-        for (const QJsonValue& v : memberArray) {
-            member_uids.push_back(v.toInt());
+        GroupChatInitData init_data;
+        if (!ParseGroupChatInitData(jsonObj, init_data)) {
+            qDebug() << "parse create group chat rsp body failed";
+            return;
         }
 
-
-        //发送信号通知界面
-        emit sig_create_group_chat(uid, member_uids, thread_id);
+        emit sig_create_group_chat(init_data);
     });
 
+    _handlers.insert(ID_NOTIFY_GROUP_CREATED_REQ, [this](ReqId id, int len, QByteArray data) {
+        Q_UNUSED(len);
+        qDebug() << "handle id is " << id << " data is " << data;
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        if (jsonDoc.isNull()) {
+            qDebug() << "Failed to create QJsonDocument.";
+            return;
+        }
+
+        QJsonObject jsonObj = jsonDoc.object();
+
+        if (!jsonObj.contains("error")) {
+            int err = ErrorCodes::ERR_JSON;
+            qDebug() << "parse notify group created json failed, err =" << err;
+            return;
+        }
+
+        int err = jsonObj["error"].toInt();
+        if (err != ErrorCodes::SUCCESS) {
+            qDebug() << "notify group created failed, error is " << err;
+            return;
+        }
+
+        qDebug() << "Receive notify group created req Success";
+
+        GroupChatInitData init_data;
+        if (!ParseGroupChatInitData(jsonObj, init_data)) {
+            qDebug() << "parse notify group created body failed";
+            return;
+        }
+
+        emit sig_notify_group_created(init_data);
+    });
 
     _handlers.insert(ID_NOTIFY_IMG_CHAT_MSG_REQ, [this](ReqId id, int len, QByteArray data) {
         Q_UNUSED(len);
@@ -1357,4 +1387,44 @@ void TcpMgr::CreatePlaceholderImgMsgL(QString img_path_str, QString msg_content,
     auto send_data = doc.toJson();
     // 从服务器获取文件大小，然后请求下载
     FileTcpMgr::GetInstance()->SendData(ID_IMG_CHAT_DOWN_INFO_SYNC_REQ, send_data);
+}
+
+bool TcpMgr::ParseGroupChatInitData(const QJsonObject& jsonObj, GroupChatInitData& init_data)
+{
+    if (!jsonObj.contains("thread_id") ||
+        !jsonObj.contains("group_name") ||
+        !jsonObj.contains("member_count") ||
+        !jsonObj.contains("members")) {
+        qDebug() << "parse group chat json failed, missing fields";
+        return false;
+    }
+
+    init_data._thread_id = jsonObj["thread_id"].toInt();
+    init_data._group_name = jsonObj["group_name"].toString();
+    init_data._member_count = jsonObj["member_count"].toInt();
+
+    QJsonArray members = jsonObj["members"].toArray();
+    for (const QJsonValue& val : members) {
+        if (!val.isObject()) {
+            continue;
+        }
+
+        QJsonObject memberObj = val.toObject();
+
+        if (!memberObj.contains("uid") ||
+            !memberObj.contains("name") ||
+            !memberObj.contains("role")) {
+            continue;
+        }
+
+        int member_uid = memberObj["uid"].toInt();
+        QString member_name = memberObj["name"].toString();
+        int member_role = memberObj["role"].toInt();
+
+        init_data._member_ids.push_back(member_uid);
+        init_data._member_infos[member_uid] =
+            std::make_shared<GroupInfo>(member_role, member_name);
+    }
+
+    return true;
 }

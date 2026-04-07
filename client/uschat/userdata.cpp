@@ -49,23 +49,23 @@ QString ChatDataBase::GetUniqueId()
 }
 
 
-ChatThreadData::ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id, QMap<int, std::shared_ptr<GroupInfo> > group_members_info):
-    _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
+// ChatThreadData::ChatThreadData(std::vector<int> other_id, int thread_id, int last_msg_id, QMap<int, std::shared_ptr<GroupInfo> > group_members_info):
+//     _group_members(other_id), _thread_id(thread_id), _last_msg_id(last_msg_id), _other_id(0){
 
-    // group组员没有自己, 以后可能要改
-    for(int member_id : other_id){
-        if(member_id == UserMgr::GetInstance()->GetUid()){
-            self_role = group_members_info[member_id]->_role;
+//     // group组员没有自己, 以后可能要改
+//     for(int member_id : other_id){
+//         if(member_id == UserMgr::GetInstance()->GetUid()){
+//             self_role = group_members_info[member_id]->_role;
 
-        }else{
-            _group_members_info[member_id] = group_members_info[member_id];
-        }
+//         }else{
+//             _group_members_info[member_id] = group_members_info[member_id];
+//         }
 
-    }
-    
-    
-    _thread_type = ChatFormType::GROUP;
-};
+//     }
+
+
+//     _thread_type = ChatFormType::GROUP;
+// };
 
 void ChatThreadData::AddMsg(std::shared_ptr<ChatDataBase> msg)
 {
@@ -119,33 +119,33 @@ void ChatThreadData::UpdateProgress(std::shared_ptr<MsgInfo> msg) {
     }
 }
 
-void ChatThreadData::SetLastMsgId(int msg_id)
-{
-    _last_msg_id = msg_id;
-}
+// void ChatThreadData::SetLastMsgId(int msg_id)
+// {
+//     _last_msg_id = msg_id;
+// }
 
-void ChatThreadData::SetOtherId(int other_id)
-{
-    _other_id = other_id;
-}
+// void ChatThreadData::SetOtherId(int other_id)
+// {
+//     _other_id = other_id;
+// }
 
-int  ChatThreadData::GetOtherId() {
-    return _other_id;
-}
+// int  ChatThreadData::GetOtherId() {
+//     return _other_id;
+// }
 
-QString ChatThreadData::GetGroupName()
-{
-    return _group_name;
-}
+// QString ChatThreadData::GetGroupName()
+// {
+//     return _group_name;
+// }
 
 QMap<int, std::shared_ptr<ChatDataBase>> ChatThreadData::GetMsgMap() {
     return _msg_map;
 }
 
-int ChatThreadData::GetThreadId()
-{
-    return _thread_id;
-}
+// int ChatThreadData::GetThreadId()
+// {
+//     return _thread_id;
+// }
 
 QMap<int, std::shared_ptr<ChatDataBase>>& ChatThreadData::GetMsgMapRef()
 {
@@ -164,10 +164,10 @@ QString ChatThreadData::GetLastMsg()
     return _last_msg;
 }
 
-int ChatThreadData::GetLastMsgId()
-{
-    return _last_msg_id;
-}
+// int ChatThreadData::GetLastMsgId()
+// {
+//     return _last_msg_id;
+// }
 
 void ChatThreadData::AppendUnRspMsg(QString unique_id, std::shared_ptr<ChatDataBase> base_msg)
 {
@@ -199,10 +199,10 @@ std::shared_ptr<ChatDataBase> ChatThreadData::GetChatDataBase(int msg_id) {
     return iter.value();
 }
 
-std::vector<int> ChatThreadData::GetGroupMemberUids()
-{
-    return _group_members;
-}
+// std::vector<int> ChatThreadData::GetGroupMemberUids()
+// {
+//     return _group_members;
+// }
 
 void ChatThreadData::ClearChatMsg(){
     if(_thread_id != AI_THREAD){
