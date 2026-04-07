@@ -86,4 +86,4 @@ def load_chat_msg(
 
 if __name__ == "__main__":
     # 【修改这里】：移除 reload=True，并将 "main:app" 改为直接传入 app 对象
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8070)

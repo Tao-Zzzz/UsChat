@@ -257,6 +257,16 @@ def get_llm_client(provider: str):
             api_key=settings.SILLICONFLOW_API_KEY,
             base_url="https://api.siliconflow.cn/v1",
         )
+    elif provider == "ollama":
+        return OpenAI(
+            api_key=settings.OLLAMA_API_KEY,
+            base_url="https://api.ollama.com/v1",
+        )
+    elif provider == "dashscope":
+        return OpenAI(
+            api_key=settings.DASHSCOPE_API_KEY,
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        )
     else:
         raise Exception(f"unsupported provider: {provider}")
 

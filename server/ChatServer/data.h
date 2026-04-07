@@ -74,3 +74,18 @@ enum class ChatMsgType {
 	VIDEO = 2,
 	FILE = 3
 };
+
+struct GroupMemberInfo
+{
+	int uid = 0;
+	std::string name;
+	int role = 0;   // 0=普通成员,1=管理员,2=创建者
+};
+
+struct GroupChatInfo
+{
+	int thread_id = 0;
+	std::string group_name;
+	int member_count = 0;
+	std::vector<GroupMemberInfo> members;
+};

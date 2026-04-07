@@ -32,6 +32,9 @@ using message::NotifyVideoEventRsp;
 
 using message::VideoNotifyType;
 
+using message::GroupCreatedNotifyReq;
+using message::GroupCreatedNotifyRsp;
+
 class ChatServiceImpl final: public ChatService::Service
 {
 public:
@@ -59,6 +62,11 @@ public:
 		NotifyVideoEventRsp* reply) override;
 
 	void RegisterServer(std::shared_ptr<CServer> pServer);
+
+    Status NotifyGroupCreated(ServerContext* context,
+        const GroupCreatedNotifyReq* req,
+        GroupCreatedNotifyRsp* rsp);
+
 private:
 	std::shared_ptr<CServer> _p_server;
 };

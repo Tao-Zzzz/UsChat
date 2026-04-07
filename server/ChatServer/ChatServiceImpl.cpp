@@ -406,3 +406,42 @@ Status ChatServiceImpl::NotifyVideoEvent(ServerContext* context,
 	session->Send(rtvalue.toStyledString(), notify_msg_id);
 	return Status::OK;
 }
+
+Status ChatServiceImpl::NotifyGroupCreated(ServerContext* context,
+	const GroupCreatedNotifyReq* req,
+	GroupCreatedNotifyRsp* rsp)
+{
+	Json::Value notify_value;
+	notify_value["error"] = 0;
+	notify_value["thread_id"] = req->thread_id();
+	notify_value["group_name"] = req->group_name();
+	notify_value["member_count"] = req->member_count();
+
+	Json::Value members(Json::arrayValue);
+	for (int i = 0; i < req->members_size(); ++i)
+	{
+		Json::Value item;
+		item["uid"] = req->members(i).uid();
+		item["name"] = req->members(i).name();
+		item["role"] = req->members(i).role();
+		members.append(item);
+	}
+	notify_value["members"] = members;
+
+	for (int i = 0; i < req->touids_size(); ++i)
+	{
+		int touid = req->touids(i);
+
+		Json::Value single_notify = notify_value;
+		single_notify["touid"] = touid;
+
+		auto session = UserMgr::GetInstance()->GetSession(touid);
+		if (session)
+		{
+			session->Send(single_notify.toStyledString(), ID_NOTIFY_GROUP_CREATED_REQ);
+		}
+	}
+
+	rsp->set_error(0);
+	return Status::OK;
+}

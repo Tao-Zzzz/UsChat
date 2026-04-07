@@ -1517,12 +1517,12 @@ void ChatDialog::on_add_btn_clicked()
             style()->standardIcon(QStyle::SP_FileDialogNewFolder),
             "创建群聊", this);
 
-        QAction* addFriend = new QAction(
-            style()->standardIcon(QStyle::SP_FileDialogContentsView),
-            "加好友/群", this);
+        // QAction* addFriend = new QAction(
+        //     style()->standardIcon(QStyle::SP_FileDialogContentsView),
+        //     "加好友/群", this);
 
         _add_menu->addAction(createGroup);
-        _add_menu->addAction(addFriend);
+        // _add_menu->addAction(addFriend);
 
         // 逻辑处理...
         connect(createGroup, &QAction::triggered, this, &ChatDialog::slot_start_create_group);
@@ -1542,6 +1542,7 @@ void ChatDialog::slot_start_create_group(){
     }
 }
 
+// 创建时都是好友
 void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int thread_id)
 {
     //构造会话数据
@@ -1555,7 +1556,9 @@ void ChatDialog::slot_create_group_chat(int uid, std::vector<int> other_id, int 
     chat_user_wid->SetChatData(chat_thread_data);
     QListWidgetItem* item = new QListWidgetItem;
     item->setSizeHint(chat_user_wid->sizeHint());
+
     qDebug() << "chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
+
     ui->chat_user_list->insertItem(0, item);
     ui->chat_user_list->setItemWidget(item, chat_user_wid);
     _chat_thread_items.insert(thread_id, item);

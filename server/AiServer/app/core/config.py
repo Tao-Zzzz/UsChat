@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str
     OPENAI_API_KEY: str | None = None
     SILLICONFLOW_API_KEY: str
+    OLLAMA_API_KEY: str
+    DASHSCOPE_API_KEY: str
     
     class Config:
         env_file = ".env"

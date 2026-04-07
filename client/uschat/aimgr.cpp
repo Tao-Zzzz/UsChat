@@ -160,7 +160,7 @@ QString AIMgr::GetAIModelName(int model_id)
 QString AIMgr::GetCurAiModelName()
 {
     if(_current_active_ai_model_id == -1){
-        return "Qwen3-8B";
+        return "AI聊天 (请先选择模型)";
     }
 
     return _ai_models_name[_current_active_ai_model_id];

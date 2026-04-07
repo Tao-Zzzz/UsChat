@@ -1354,3 +1354,221 @@ bool MysqlDao::CreateGroupChat(int user_id, const std::vector<int>& member_uids,
 		return false;
 	}
 }
+
+
+bool MysqlDao::GetUserNameById(sql::Connection* conn, int user_id, std::string& name)
+{
+	try
+	{
+		std::string sql = "SELECT name FROM user WHERE user_id = ?";
+		std::unique_ptr<sql::PreparedStatement> pstmt(conn->prepareStatement(sql));
+		pstmt->setInt64(1, user_id);
+
+		std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+		if (!res || !res->next())
+		{
+			return false;
+		}
+
+		name = res->getString("name");
+		return true;
+	}
+	catch (sql::SQLException& e)
+	{
+		std::cerr << "GetUserNameById SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")" << std::endl;
+		return false;
+	}
+}
+
+bool MysqlDao::CreateGroupChat(int user_id, const std::vector<int>& member_uids, int& thread_id)
+{
+	auto con = pool_->getConnection();
+	if (!con)
+	{
+		return false;
+	}
+
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+
+	auto& conn = con->_con;
+
+	try
+	{
+		conn->setAutoCommit(false);
+
+		// 0. 查询创建者名字
+		std::string creator_name;
+		bool name_ok = GetUserNameById(conn.get(), user_id, creator_name);
+		if (!name_ok || creator_name.empty())
+		{
+			creator_name = "用户" + std::to_string(user_id);
+		}
+
+		std::string group_name = creator_name + "创建的群";
+
+		// 1. 创建 chat_thread（群聊）
+		std::string insert_thread_sql =
+			"INSERT INTO chat_thread (type, created_at) "
+			"VALUES ('group', NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_thread(
+			conn->prepareStatement(insert_thread_sql));
+		pstmt_thread->executeUpdate();
+
+		// 2. 获取 thread_id
+		std::string last_id_sql = "SELECT LAST_INSERT_ID();";
+		std::unique_ptr<sql::PreparedStatement> pstmt_last_id(
+			conn->prepareStatement(last_id_sql));
+		std::unique_ptr<sql::ResultSet> res_last_id(
+			pstmt_last_id->executeQuery());
+
+		if (!res_last_id || !res_last_id->next())
+		{
+			conn->rollback();
+			return false;
+		}
+
+		thread_id = static_cast<int>(res_last_id->getInt64(1));
+
+		// 3. 创建 group_chat，并把群名直接写进去
+		std::string insert_group_chat_sql =
+			"INSERT INTO group_chat (thread_id, name, created_at) "
+			"VALUES (?, ?, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_group_chat(
+			conn->prepareStatement(insert_group_chat_sql));
+		pstmt_group_chat->setInt64(1, thread_id);
+		pstmt_group_chat->setString(2, group_name);
+		pstmt_group_chat->executeUpdate();
+
+		// 4. 插入群成员
+		std::string insert_member_sql =
+			"INSERT INTO group_chat_member "
+			"(thread_id, user_id, role, joined_at) "
+			"VALUES (?, ?, ?, NOW());";
+
+		std::unique_ptr<sql::PreparedStatement> pstmt_member(
+			conn->prepareStatement(insert_member_sql));
+
+		// 4.1 插入创建者（role = 2）
+		pstmt_member->setInt64(1, thread_id);
+		pstmt_member->setInt64(2, user_id);
+		pstmt_member->setInt(3, 2);
+		pstmt_member->executeUpdate();
+
+		// 4.2 插入普通成员（role = 0）
+		for (int uid : member_uids)
+		{
+			if (uid == user_id)
+			{
+				continue;
+			}
+
+			pstmt_member->setInt64(1, thread_id);
+			pstmt_member->setInt64(2, uid);
+			pstmt_member->setInt(3, 0);
+			pstmt_member->executeUpdate();
+		}
+
+		conn->commit();
+		return true;
+	}
+	catch (sql::SQLException& e)
+	{
+		try
+		{
+			conn->rollback();
+		}
+		catch (...)
+		{
+		}
+
+		std::cerr << "CreateGroupChat SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")" << std::endl;
+		return false;
+	}
+}
+
+bool MysqlDao::GetGroupChatInfo(int thread_id, GroupChatInfo& group_info)
+{
+	auto con = pool_->getConnection();
+	if (!con)
+	{
+		return false;
+	}
+
+	Defer defer([this, &con]() {
+		pool_->returnConnection(std::move(con));
+		});
+
+	auto& conn = con->_con;
+
+	try
+	{
+		group_info = GroupChatInfo();
+		group_info.thread_id = thread_id;
+
+		// 1. 查询 group_chat.name
+		{
+			std::string sql =
+				"SELECT name FROM group_chat WHERE thread_id = ?";
+
+			std::unique_ptr<sql::PreparedStatement> pstmt(
+				conn->prepareStatement(sql));
+			pstmt->setInt64(1, thread_id);
+
+			std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+			if (!res || !res->next())
+			{
+				return false;
+			}
+
+			group_info.group_name = res->getString("name");
+		}
+
+		// 2. 查询成员列表 + 用户名
+		{
+			std::string sql =
+				"SELECT gcm.user_id, gcm.role, u.name "
+				"FROM group_chat_member gcm "
+				"LEFT JOIN user u ON gcm.user_id = u.user_id "
+				"WHERE gcm.thread_id = ? "
+				"ORDER BY gcm.role DESC, gcm.joined_at ASC";
+
+			std::unique_ptr<sql::PreparedStatement> pstmt(
+				conn->prepareStatement(sql));
+			pstmt->setInt64(1, thread_id);
+
+			std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+			while (res && res->next())
+			{
+				GroupMemberInfo member;
+				member.uid = static_cast<int>(res->getInt64("user_id"));
+				member.role = res->getInt("role");
+
+				if (res->isNull("name"))
+				{
+					member.name = "用户" + std::to_string(member.uid);
+				}
+				else
+				{
+					member.name = res->getString("name");
+				}
+
+				group_info.members.push_back(member);
+			}
+		}
+
+		group_info.member_count = static_cast<int>(group_info.members.size());
+		return !group_info.members.empty();
+	}
+	catch (sql::SQLException& e)
+	{
+		std::cerr << "GetGroupChatInfo SQLException: " << e.what()
+			<< " (Code: " << e.getErrorCode() << ")" << std::endl;
+		return false;
+	}
+}

@@ -92,3 +92,8 @@ bool MysqlMgr::CreateGroupChat(int user_id, const std::vector<int>& member_uids,
 	return _dao.CreateGroupChat(user_id, member_uids, thread_id);;
 }
 
+
+bool MysqlMgr::GetGroupChatInfo(int thread_id, GroupChatInfo& group_info)
+{
+	return _dao.GetGroupChatInfo(thread_id, group_info);
+}

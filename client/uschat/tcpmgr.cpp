@@ -981,13 +981,13 @@ void TcpMgr::initHandlers()
 
         if (!jsonObj.contains("error")) {
             int err = ErrorCodes::ERR_JSON;
-            qDebug() << "parse create private chat json parse failed " << err;
+            qDebug() << "parse create group chat json parse failed " << err;
             return;
         }
 
         int err = jsonObj["error"].toInt();
         if (err != ErrorCodes::SUCCESS) {
-            qDebug() << "get create private chat failed, error is " << err;
+            qDebug() << "get create group chat failed, error is " << err;
             return;
         }
 

@@ -267,6 +267,8 @@ Q_DECLARE_METATYPE(std::shared_ptr<ImgChatData>)
 struct GroupInfo{
     int _role;
     QString _mute_until;
+    QString _group_nickname;    // 群昵称/群名片（例如用户叫"张三"，在群里备注为"开发-张三"）
+
     GroupInfo() = default;
     GroupInfo(int role, QString mute_unitl):_role(role), _mute_until(mute_unitl){}
 };

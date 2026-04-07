@@ -75,5 +75,7 @@
         <file>res/dairy_hover.png</file>
         <file>res/dairy_press.png</file>
         <file>res/dairy_.png</file>
+        <file>res/group_head_1.jpg</file>
+        <file>res/head_ai.jpg</file>
     </qresource>
 </RCC>

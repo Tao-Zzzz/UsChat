@@ -282,3 +282,37 @@ NotifyVideoEventRsp ChatGrpcClient::NotifyVideoEvent(const std::string& server_i
 
 	return rsp;
 }
+
+GroupCreatedNotifyRsp ChatGrpcClient::NotifyGroupCreated(const std::string& server_ip,
+	const GroupCreatedNotifyReq& req)
+{
+	GroupCreatedNotifyRsp rsp;
+	rsp.set_error(ErrorCodes::Success);
+
+	Defer defer([&rsp, &req]() {
+
+		});
+
+	auto find_iter = _pools.find(server_ip);
+	if (find_iter == _pools.end()) {
+		rsp.set_error(ErrorCodes::RPCFailed);
+		return rsp;
+	}
+
+	auto& pool = find_iter->second;
+	ClientContext context;
+	auto stub = pool->getConnection();
+
+	Status status = stub->NotifyGroupCreated(&context, req, &rsp);
+
+	Defer defercon([&stub, &pool]() {
+		pool->returnConnection(std::move(stub));
+		});
+
+	if (!status.ok()) {
+		rsp.set_error(ErrorCodes::RPCFailed);
+		return rsp;
+	}
+
+	return rsp;
+}

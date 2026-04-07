@@ -304,7 +304,11 @@ void ChatPage::AppendChatMsg(std::shared_ptr<ChatDataBase> msg, bool rsp)
     }
     else {
         role = ChatRole::Other;
+
         ChatItemBase* pChatItem = new ChatItemBase(role);
+
+        // todo, 这个地方可能不是friend
+
         auto friend_info = UserMgr::GetInstance()->GetFriendById(msg->GetSendUid());
         if (friend_info == nullptr) {
             return;

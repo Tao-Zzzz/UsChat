@@ -48,7 +48,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[29]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -83,6 +83,15 @@ extern GetVarifyReqDefaultTypeInternal _GetVarifyReq_default_instance_;
 class GetVarifyRsp;
 class GetVarifyRspDefaultTypeInternal;
 extern GetVarifyRspDefaultTypeInternal _GetVarifyRsp_default_instance_;
+class GroupCreatedNotifyReq;
+class GroupCreatedNotifyReqDefaultTypeInternal;
+extern GroupCreatedNotifyReqDefaultTypeInternal _GroupCreatedNotifyReq_default_instance_;
+class GroupCreatedNotifyRsp;
+class GroupCreatedNotifyRspDefaultTypeInternal;
+extern GroupCreatedNotifyRspDefaultTypeInternal _GroupCreatedNotifyRsp_default_instance_;
+class GroupMemberInfo;
+class GroupMemberInfoDefaultTypeInternal;
+extern GroupMemberInfoDefaultTypeInternal _GroupMemberInfo_default_instance_;
 class GroupTextChatMsgReq;
 class GroupTextChatMsgReqDefaultTypeInternal;
 extern GroupTextChatMsgReqDefaultTypeInternal _GroupTextChatMsgReq_default_instance_;
@@ -145,6 +154,9 @@ template<> ::message::GetChatServerReq* Arena::CreateMaybeMessage<::message::Get
 template<> ::message::GetChatServerRsp* Arena::CreateMaybeMessage<::message::GetChatServerRsp>(Arena*);
 template<> ::message::GetVarifyReq* Arena::CreateMaybeMessage<::message::GetVarifyReq>(Arena*);
 template<> ::message::GetVarifyRsp* Arena::CreateMaybeMessage<::message::GetVarifyRsp>(Arena*);
+template<> ::message::GroupCreatedNotifyReq* Arena::CreateMaybeMessage<::message::GroupCreatedNotifyReq>(Arena*);
+template<> ::message::GroupCreatedNotifyRsp* Arena::CreateMaybeMessage<::message::GroupCreatedNotifyRsp>(Arena*);
+template<> ::message::GroupMemberInfo* Arena::CreateMaybeMessage<::message::GroupMemberInfo>(Arena*);
 template<> ::message::GroupTextChatMsgReq* Arena::CreateMaybeMessage<::message::GroupTextChatMsgReq>(Arena*);
 template<> ::message::GroupTextChatMsgRsp* Arena::CreateMaybeMessage<::message::GroupTextChatMsgRsp>(Arena*);
 template<> ::message::KickUserReq* Arena::CreateMaybeMessage<::message::KickUserReq>(Arena*);
@@ -4874,6 +4886,520 @@ class NotifyVideoEventRsp PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
+// -------------------------------------------------------------------
+
+class GroupMemberInfo PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:message.GroupMemberInfo) */ {
+ public:
+  inline GroupMemberInfo() : GroupMemberInfo(nullptr) {}
+  virtual ~GroupMemberInfo();
+
+  GroupMemberInfo(const GroupMemberInfo& from);
+  GroupMemberInfo(GroupMemberInfo&& from) noexcept
+    : GroupMemberInfo() {
+    *this = ::std::move(from);
+  }
+
+  inline GroupMemberInfo& operator=(const GroupMemberInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GroupMemberInfo& operator=(GroupMemberInfo&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const GroupMemberInfo& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const GroupMemberInfo* internal_default_instance() {
+    return reinterpret_cast<const GroupMemberInfo*>(
+               &_GroupMemberInfo_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    26;
+
+  friend void swap(GroupMemberInfo& a, GroupMemberInfo& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GroupMemberInfo* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GroupMemberInfo* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GroupMemberInfo* New() const final {
+    return CreateMaybeMessage<GroupMemberInfo>(nullptr);
+  }
+
+  GroupMemberInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<GroupMemberInfo>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const GroupMemberInfo& from);
+  void MergeFrom(const GroupMemberInfo& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GroupMemberInfo* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "message.GroupMemberInfo";
+  }
+  protected:
+  explicit GroupMemberInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameFieldNumber = 2,
+    kUidFieldNumber = 1,
+    kRoleFieldNumber = 3,
+  };
+  // string name = 2;
+  void clear_name();
+  const std::string& name() const;
+  void set_name(const std::string& value);
+  void set_name(std::string&& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  std::string* mutable_name();
+  std::string* release_name();
+  void set_allocated_name(std::string* name);
+  private:
+  const std::string& _internal_name() const;
+  void _internal_set_name(const std::string& value);
+  std::string* _internal_mutable_name();
+  public:
+
+  // int32 uid = 1;
+  void clear_uid();
+  ::PROTOBUF_NAMESPACE_ID::int32 uid() const;
+  void set_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_uid() const;
+  void _internal_set_uid(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 role = 3;
+  void clear_role();
+  ::PROTOBUF_NAMESPACE_ID::int32 role() const;
+  void set_role(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_role() const;
+  void _internal_set_role(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:message.GroupMemberInfo)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
+  ::PROTOBUF_NAMESPACE_ID::int32 uid_;
+  ::PROTOBUF_NAMESPACE_ID::int32 role_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class GroupCreatedNotifyReq PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:message.GroupCreatedNotifyReq) */ {
+ public:
+  inline GroupCreatedNotifyReq() : GroupCreatedNotifyReq(nullptr) {}
+  virtual ~GroupCreatedNotifyReq();
+
+  GroupCreatedNotifyReq(const GroupCreatedNotifyReq& from);
+  GroupCreatedNotifyReq(GroupCreatedNotifyReq&& from) noexcept
+    : GroupCreatedNotifyReq() {
+    *this = ::std::move(from);
+  }
+
+  inline GroupCreatedNotifyReq& operator=(const GroupCreatedNotifyReq& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GroupCreatedNotifyReq& operator=(GroupCreatedNotifyReq&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const GroupCreatedNotifyReq& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const GroupCreatedNotifyReq* internal_default_instance() {
+    return reinterpret_cast<const GroupCreatedNotifyReq*>(
+               &_GroupCreatedNotifyReq_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    27;
+
+  friend void swap(GroupCreatedNotifyReq& a, GroupCreatedNotifyReq& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GroupCreatedNotifyReq* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GroupCreatedNotifyReq* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GroupCreatedNotifyReq* New() const final {
+    return CreateMaybeMessage<GroupCreatedNotifyReq>(nullptr);
+  }
+
+  GroupCreatedNotifyReq* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<GroupCreatedNotifyReq>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const GroupCreatedNotifyReq& from);
+  void MergeFrom(const GroupCreatedNotifyReq& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GroupCreatedNotifyReq* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "message.GroupCreatedNotifyReq";
+  }
+  protected:
+  explicit GroupCreatedNotifyReq(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTouidsFieldNumber = 4,
+    kMembersFieldNumber = 5,
+    kGroupNameFieldNumber = 2,
+    kThreadIdFieldNumber = 1,
+    kMemberCountFieldNumber = 3,
+  };
+  // repeated int32 touids = 4;
+  int touids_size() const;
+  private:
+  int _internal_touids_size() const;
+  public:
+  void clear_touids();
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_touids(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      _internal_touids() const;
+  void _internal_add_touids(::PROTOBUF_NAMESPACE_ID::int32 value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      _internal_mutable_touids();
+  public:
+  ::PROTOBUF_NAMESPACE_ID::int32 touids(int index) const;
+  void set_touids(int index, ::PROTOBUF_NAMESPACE_ID::int32 value);
+  void add_touids(::PROTOBUF_NAMESPACE_ID::int32 value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+      touids() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+      mutable_touids();
+
+  // repeated .message.GroupMemberInfo members = 5;
+  int members_size() const;
+  private:
+  int _internal_members_size() const;
+  public:
+  void clear_members();
+  ::message::GroupMemberInfo* mutable_members(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::message::GroupMemberInfo >*
+      mutable_members();
+  private:
+  const ::message::GroupMemberInfo& _internal_members(int index) const;
+  ::message::GroupMemberInfo* _internal_add_members();
+  public:
+  const ::message::GroupMemberInfo& members(int index) const;
+  ::message::GroupMemberInfo* add_members();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::message::GroupMemberInfo >&
+      members() const;
+
+  // string group_name = 2;
+  void clear_group_name();
+  const std::string& group_name() const;
+  void set_group_name(const std::string& value);
+  void set_group_name(std::string&& value);
+  void set_group_name(const char* value);
+  void set_group_name(const char* value, size_t size);
+  std::string* mutable_group_name();
+  std::string* release_group_name();
+  void set_allocated_group_name(std::string* group_name);
+  private:
+  const std::string& _internal_group_name() const;
+  void _internal_set_group_name(const std::string& value);
+  std::string* _internal_mutable_group_name();
+  public:
+
+  // int32 thread_id = 1;
+  void clear_thread_id();
+  ::PROTOBUF_NAMESPACE_ID::int32 thread_id() const;
+  void set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_thread_id() const;
+  void _internal_set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // int32 member_count = 3;
+  void clear_member_count();
+  ::PROTOBUF_NAMESPACE_ID::int32 member_count() const;
+  void set_member_count(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_member_count() const;
+  void _internal_set_member_count(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:message.GroupCreatedNotifyReq)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 > touids_;
+  mutable std::atomic<int> _touids_cached_byte_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::message::GroupMemberInfo > members_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr group_name_;
+  ::PROTOBUF_NAMESPACE_ID::int32 thread_id_;
+  ::PROTOBUF_NAMESPACE_ID::int32 member_count_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
+// -------------------------------------------------------------------
+
+class GroupCreatedNotifyRsp PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:message.GroupCreatedNotifyRsp) */ {
+ public:
+  inline GroupCreatedNotifyRsp() : GroupCreatedNotifyRsp(nullptr) {}
+  virtual ~GroupCreatedNotifyRsp();
+
+  GroupCreatedNotifyRsp(const GroupCreatedNotifyRsp& from);
+  GroupCreatedNotifyRsp(GroupCreatedNotifyRsp&& from) noexcept
+    : GroupCreatedNotifyRsp() {
+    *this = ::std::move(from);
+  }
+
+  inline GroupCreatedNotifyRsp& operator=(const GroupCreatedNotifyRsp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GroupCreatedNotifyRsp& operator=(GroupCreatedNotifyRsp&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const GroupCreatedNotifyRsp& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const GroupCreatedNotifyRsp* internal_default_instance() {
+    return reinterpret_cast<const GroupCreatedNotifyRsp*>(
+               &_GroupCreatedNotifyRsp_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    28;
+
+  friend void swap(GroupCreatedNotifyRsp& a, GroupCreatedNotifyRsp& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GroupCreatedNotifyRsp* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GroupCreatedNotifyRsp* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline GroupCreatedNotifyRsp* New() const final {
+    return CreateMaybeMessage<GroupCreatedNotifyRsp>(nullptr);
+  }
+
+  GroupCreatedNotifyRsp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<GroupCreatedNotifyRsp>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const GroupCreatedNotifyRsp& from);
+  void MergeFrom(const GroupCreatedNotifyRsp& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GroupCreatedNotifyRsp* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "message.GroupCreatedNotifyRsp";
+  }
+  protected:
+  explicit GroupCreatedNotifyRsp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
+    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kErrorFieldNumber = 1,
+  };
+  // int32 error = 1;
+  void clear_error();
+  ::PROTOBUF_NAMESPACE_ID::int32 error() const;
+  void set_error(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_error() const;
+  void _internal_set_error(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:message.GroupCreatedNotifyRsp)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::int32 error_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_message_2eproto;
+};
 // ===================================================================
 
 
@@ -8370,9 +8896,337 @@ inline void NotifyVideoEventRsp::set_notify_type(::message::VideoNotifyType valu
   // @@protoc_insertion_point(field_set:message.NotifyVideoEventRsp.notify_type)
 }
 
+// -------------------------------------------------------------------
+
+// GroupMemberInfo
+
+// int32 uid = 1;
+inline void GroupMemberInfo::clear_uid() {
+  uid_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupMemberInfo::_internal_uid() const {
+  return uid_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupMemberInfo::uid() const {
+  // @@protoc_insertion_point(field_get:message.GroupMemberInfo.uid)
+  return _internal_uid();
+}
+inline void GroupMemberInfo::_internal_set_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  uid_ = value;
+}
+inline void GroupMemberInfo::set_uid(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_uid(value);
+  // @@protoc_insertion_point(field_set:message.GroupMemberInfo.uid)
+}
+
+// string name = 2;
+inline void GroupMemberInfo::clear_name() {
+  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& GroupMemberInfo::name() const {
+  // @@protoc_insertion_point(field_get:message.GroupMemberInfo.name)
+  return _internal_name();
+}
+inline void GroupMemberInfo::set_name(const std::string& value) {
+  _internal_set_name(value);
+  // @@protoc_insertion_point(field_set:message.GroupMemberInfo.name)
+}
+inline std::string* GroupMemberInfo::mutable_name() {
+  // @@protoc_insertion_point(field_mutable:message.GroupMemberInfo.name)
+  return _internal_mutable_name();
+}
+inline const std::string& GroupMemberInfo::_internal_name() const {
+  return name_.Get();
+}
+inline void GroupMemberInfo::_internal_set_name(const std::string& value) {
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void GroupMemberInfo::set_name(std::string&& value) {
+  
+  name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.GroupMemberInfo.name)
+}
+inline void GroupMemberInfo::set_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.GroupMemberInfo.name)
+}
+inline void GroupMemberInfo::set_name(const char* value,
+    size_t size) {
+  
+  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.GroupMemberInfo.name)
+}
+inline std::string* GroupMemberInfo::_internal_mutable_name() {
+  
+  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* GroupMemberInfo::release_name() {
+  // @@protoc_insertion_point(field_release:message.GroupMemberInfo.name)
+  return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void GroupMemberInfo::set_allocated_name(std::string* name) {
+  if (name != nullptr) {
+    
+  } else {
+    
+  }
+  name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.GroupMemberInfo.name)
+}
+
+// int32 role = 3;
+inline void GroupMemberInfo::clear_role() {
+  role_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupMemberInfo::_internal_role() const {
+  return role_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupMemberInfo::role() const {
+  // @@protoc_insertion_point(field_get:message.GroupMemberInfo.role)
+  return _internal_role();
+}
+inline void GroupMemberInfo::_internal_set_role(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  role_ = value;
+}
+inline void GroupMemberInfo::set_role(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_role(value);
+  // @@protoc_insertion_point(field_set:message.GroupMemberInfo.role)
+}
+
+// -------------------------------------------------------------------
+
+// GroupCreatedNotifyReq
+
+// int32 thread_id = 1;
+inline void GroupCreatedNotifyReq::clear_thread_id() {
+  thread_id_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::_internal_thread_id() const {
+  return thread_id_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::thread_id() const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyReq.thread_id)
+  return _internal_thread_id();
+}
+inline void GroupCreatedNotifyReq::_internal_set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  thread_id_ = value;
+}
+inline void GroupCreatedNotifyReq::set_thread_id(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_thread_id(value);
+  // @@protoc_insertion_point(field_set:message.GroupCreatedNotifyReq.thread_id)
+}
+
+// string group_name = 2;
+inline void GroupCreatedNotifyReq::clear_group_name() {
+  group_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& GroupCreatedNotifyReq::group_name() const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyReq.group_name)
+  return _internal_group_name();
+}
+inline void GroupCreatedNotifyReq::set_group_name(const std::string& value) {
+  _internal_set_group_name(value);
+  // @@protoc_insertion_point(field_set:message.GroupCreatedNotifyReq.group_name)
+}
+inline std::string* GroupCreatedNotifyReq::mutable_group_name() {
+  // @@protoc_insertion_point(field_mutable:message.GroupCreatedNotifyReq.group_name)
+  return _internal_mutable_group_name();
+}
+inline const std::string& GroupCreatedNotifyReq::_internal_group_name() const {
+  return group_name_.Get();
+}
+inline void GroupCreatedNotifyReq::_internal_set_group_name(const std::string& value) {
+  
+  group_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void GroupCreatedNotifyReq::set_group_name(std::string&& value) {
+  
+  group_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:message.GroupCreatedNotifyReq.group_name)
+}
+inline void GroupCreatedNotifyReq::set_group_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  group_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:message.GroupCreatedNotifyReq.group_name)
+}
+inline void GroupCreatedNotifyReq::set_group_name(const char* value,
+    size_t size) {
+  
+  group_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:message.GroupCreatedNotifyReq.group_name)
+}
+inline std::string* GroupCreatedNotifyReq::_internal_mutable_group_name() {
+  
+  return group_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* GroupCreatedNotifyReq::release_group_name() {
+  // @@protoc_insertion_point(field_release:message.GroupCreatedNotifyReq.group_name)
+  return group_name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void GroupCreatedNotifyReq::set_allocated_group_name(std::string* group_name) {
+  if (group_name != nullptr) {
+    
+  } else {
+    
+  }
+  group_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), group_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:message.GroupCreatedNotifyReq.group_name)
+}
+
+// int32 member_count = 3;
+inline void GroupCreatedNotifyReq::clear_member_count() {
+  member_count_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::_internal_member_count() const {
+  return member_count_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::member_count() const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyReq.member_count)
+  return _internal_member_count();
+}
+inline void GroupCreatedNotifyReq::_internal_set_member_count(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  member_count_ = value;
+}
+inline void GroupCreatedNotifyReq::set_member_count(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_member_count(value);
+  // @@protoc_insertion_point(field_set:message.GroupCreatedNotifyReq.member_count)
+}
+
+// repeated int32 touids = 4;
+inline int GroupCreatedNotifyReq::_internal_touids_size() const {
+  return touids_.size();
+}
+inline int GroupCreatedNotifyReq::touids_size() const {
+  return _internal_touids_size();
+}
+inline void GroupCreatedNotifyReq::clear_touids() {
+  touids_.Clear();
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::_internal_touids(int index) const {
+  return touids_.Get(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyReq::touids(int index) const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyReq.touids)
+  return _internal_touids(index);
+}
+inline void GroupCreatedNotifyReq::set_touids(int index, ::PROTOBUF_NAMESPACE_ID::int32 value) {
+  touids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:message.GroupCreatedNotifyReq.touids)
+}
+inline void GroupCreatedNotifyReq::_internal_add_touids(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  touids_.Add(value);
+}
+inline void GroupCreatedNotifyReq::add_touids(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_add_touids(value);
+  // @@protoc_insertion_point(field_add:message.GroupCreatedNotifyReq.touids)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+GroupCreatedNotifyReq::_internal_touids() const {
+  return touids_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >&
+GroupCreatedNotifyReq::touids() const {
+  // @@protoc_insertion_point(field_list:message.GroupCreatedNotifyReq.touids)
+  return _internal_touids();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+GroupCreatedNotifyReq::_internal_mutable_touids() {
+  return &touids_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::PROTOBUF_NAMESPACE_ID::int32 >*
+GroupCreatedNotifyReq::mutable_touids() {
+  // @@protoc_insertion_point(field_mutable_list:message.GroupCreatedNotifyReq.touids)
+  return _internal_mutable_touids();
+}
+
+// repeated .message.GroupMemberInfo members = 5;
+inline int GroupCreatedNotifyReq::_internal_members_size() const {
+  return members_.size();
+}
+inline int GroupCreatedNotifyReq::members_size() const {
+  return _internal_members_size();
+}
+inline void GroupCreatedNotifyReq::clear_members() {
+  members_.Clear();
+}
+inline ::message::GroupMemberInfo* GroupCreatedNotifyReq::mutable_members(int index) {
+  // @@protoc_insertion_point(field_mutable:message.GroupCreatedNotifyReq.members)
+  return members_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::message::GroupMemberInfo >*
+GroupCreatedNotifyReq::mutable_members() {
+  // @@protoc_insertion_point(field_mutable_list:message.GroupCreatedNotifyReq.members)
+  return &members_;
+}
+inline const ::message::GroupMemberInfo& GroupCreatedNotifyReq::_internal_members(int index) const {
+  return members_.Get(index);
+}
+inline const ::message::GroupMemberInfo& GroupCreatedNotifyReq::members(int index) const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyReq.members)
+  return _internal_members(index);
+}
+inline ::message::GroupMemberInfo* GroupCreatedNotifyReq::_internal_add_members() {
+  return members_.Add();
+}
+inline ::message::GroupMemberInfo* GroupCreatedNotifyReq::add_members() {
+  // @@protoc_insertion_point(field_add:message.GroupCreatedNotifyReq.members)
+  return _internal_add_members();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::message::GroupMemberInfo >&
+GroupCreatedNotifyReq::members() const {
+  // @@protoc_insertion_point(field_list:message.GroupCreatedNotifyReq.members)
+  return members_;
+}
+
+// -------------------------------------------------------------------
+
+// GroupCreatedNotifyRsp
+
+// int32 error = 1;
+inline void GroupCreatedNotifyRsp::clear_error() {
+  error_ = 0;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyRsp::_internal_error() const {
+  return error_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 GroupCreatedNotifyRsp::error() const {
+  // @@protoc_insertion_point(field_get:message.GroupCreatedNotifyRsp.error)
+  return _internal_error();
+}
+inline void GroupCreatedNotifyRsp::_internal_set_error(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  
+  error_ = value;
+}
+inline void GroupCreatedNotifyRsp::set_error(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_error(value);
+  // @@protoc_insertion_point(field_set:message.GroupCreatedNotifyRsp.error)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

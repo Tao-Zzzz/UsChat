@@ -9,9 +9,12 @@ CreateGroupDialog::CreateGroupDialog(QWidget *parent) : QDialog(parent) {
 
 void CreateGroupDialog::initUI() {
     // 整体 QSS 样式
-    this->setStyleSheet("QDialog { background-color: #262626; }"
-                        "QListWidget { background-color: transparent; border: none; outline: none; }"
-                        "QLineEdit { background-color: #333333; border: 1px solid #444; border-radius: 4px; color: white; padding: 5px; }");
+    this->setStyleSheet(
+        "QDialog { background-color: #FFFFFF; }"
+        "QListWidget { background-color: transparent; border: none; outline: none; color: #333333; }"
+        "QLabel { color: #333333; }"
+        "QLineEdit { background-color: #F7F7F7; border: 1px solid #E0E0E0; border-radius: 4px; color: #333333; padding: 5px; }"
+        );
 
     auto* mainLayout = new QHBoxLayout(this);
 
@@ -35,9 +38,10 @@ void CreateGroupDialog::initUI() {
     auto* btnLayout = new QHBoxLayout();
     auto* okBtn = new QPushButton("确定", this);
     okBtn->setObjectName("okBtn");
-    okBtn->setStyleSheet("QPushButton#okBtn { background-color: #007bff; color: white; border-radius: 4px; padding: 8px 20px; }");
+    okBtn->setStyleSheet("QPushButton#okBtn { background-color: #007bff; color: white; border: none; border-radius: 4px; padding: 8px 20px; }");
+
     auto* cancelBtn = new QPushButton("取消", this);
-    cancelBtn->setStyleSheet("background-color: #444; color: white; border-radius: 4px; padding: 8px 20px;");
+    cancelBtn->setStyleSheet("background-color: #F0F0F0; color: #333333; border: 1px solid #DCDCDC; border-radius: 4px; padding: 8px 20px;");
 
     btnLayout->addStretch();
     btnLayout->addWidget(okBtn);
@@ -160,5 +164,7 @@ void CreateGroupDialog::slot_on_btn_clicked()
                                    ReqId::ID_CREATE_GROUP_REQ,
                                    jsonData
                                    );
+
+    this->accept(); // <--- 补充这一行！
 }
 

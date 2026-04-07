@@ -43,6 +43,10 @@ using message::NotifyChatImgRsp;
 using message::NotifyVideoEventReq;
 using message::NotifyVideoEventRsp;
 
+
+using message::GroupCreatedNotifyReq;
+using message::GroupCreatedNotifyRsp;
+
 class ChatConPool {
 public:
 	ChatConPool(size_t poolSize, std::string host, std::string port)
@@ -121,6 +125,7 @@ public:
 	KickUserRsp NotifyKickUser(std::string server_ip, const KickUserReq& req);
 	NotifyChatImgRsp NotifyChatImgMsg(int message_id, std::string chatserver);
 	NotifyVideoEventRsp NotifyVideoEvent(const std::string& server_ip, const NotifyVideoEventReq& req);
+	GroupCreatedNotifyRsp NotifyGroupCreated(const std::string& server_ip, const GroupCreatedNotifyReq& req);
 
 private:
 	ChatGrpcClient();
