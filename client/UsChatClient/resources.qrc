@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>web/rtc_call.html</file>
+        <file>web/qwebchannel.js</file>
+        <file>web/demo.mp4</file>
+    </qresource>
+</RCC>

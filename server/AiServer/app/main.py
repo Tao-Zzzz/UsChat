@@ -1,6 +1,12 @@
+# ========= 加这两行 =========
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+
+
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-
+import uvicorn
 from app.core.db import get_db
 from app.schemas.schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
 from app.services.service import handle_chat, load_ai_messages, load_ai_init_data,handle_chat_v2
@@ -76,3 +82,8 @@ def load_chat_msg(
             for m in msgs
         ]
     )
+
+
+if __name__ == "__main__":
+    # 【修改这里】：移除 reload=True，并将 "main:app" 改为直接传入 app 对象
+    uvicorn.run(app, host="0.0.0.0", port=8000)

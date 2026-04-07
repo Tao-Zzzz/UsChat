@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RTC Call</title>
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        #root {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #111;
+        }
+
+        #remoteVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #222;
+        }
+
+        #localVideo {
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            width: 160px;
+            height: 220px;
+            object-fit: cover;
+            background: #555;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.25);
+            z-index: 10;
+        }
+
+        #status {
+            position: absolute;
+            left: 16px;
+            bottom: 16px;
+            z-index: 10;
+            background: rgba(0,0,0,0.45);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+<div id="root">
+    <video id="remoteVideo" autoplay playsinline></video>
+    <video id="localVideo" autoplay playsinline muted></video>
+    <div id="status">等待初始化...</div>
+</div>
+
+<script>
+let bridge = null;
+let pc = null;
+let localStream = null;
+let remoteStream = null;
+let started = false;
+let isCaller = false;
+let pendingOffer = null;
+let pendingCandidates = [];
+
+const statusEl = document.getElementById("status");
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+
+function log(msg) {
+    console.log(msg);
+    statusEl.innerText = msg;
+    if (bridge && bridge.log) {
+        bridge.log(msg);
+    }
+}
+
+function createPeerConnection() {
+    if (pc) return;
+
+    pc = new RTCPeerConnection({
+        iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+        ]
+    });
+
+    pc.onicecandidate = function(event) {
+        if (event.candidate && bridge) {
+            bridge.onIceCandidate(
+                event.candidate.candidate,
+                event.candidate.sdpMid || "",
+                event.candidate.sdpMLineIndex != null ? event.candidate.sdpMLineIndex : 0
+            );
+        }
+    };
+
+    pc.ontrack = function(event) {
+        if (!remoteStream) {
+            remoteStream = new MediaStream();
+            remoteVideo.srcObject = remoteStream;
+        }
+        event.streams[0].getTracks().forEach(track => {
+            remoteStream.addTrack(track);
+        });
+        log("收到远端媒体流");
+    };
+
+    pc.onconnectionstatechange = function() {
+        if (!pc) return;
+        log("连接状态: " + pc.connectionState);
+        if (pc.connectionState === "connected") {
+            if (bridge) bridge.onPeerConnected();
+        } else if (
+            pc.connectionState === "failed" ||
+            pc.connectionState === "disconnected" ||
+            pc.connectionState === "closed"
+        ) {
+            if (bridge) bridge.onPeerDisconnected(pc.connectionState);
+        }
+    };
+}
+
+async function startLocal(callerRole) {
+    try {
+        isCaller = callerRole;
+        if (started) return;
+
+        log("申请摄像头和麦克风权限...");
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+
+        localVideo.srcObject = localStream;
+
+        createPeerConnection();
+
+        localStream.getTracks().forEach(track => {
+            pc.addTrack(track, localStream);
+        });
+
+        started = true;
+        log("本地音视频已启动");
+
+        if (pendingOffer) {
+            await handleRemoteOffer(pendingOffer);
+            pendingOffer = null;
+        }
+
+        if (isCaller) {
+            await createOffer();
+        }
+    } catch (err) {
+        log("启动本地媒体失败: " + err);
+    }
+}
+
+async function createOffer() {
+    if (!pc) createPeerConnection();
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    log("本地 Offer 已创建");
+    if (bridge) {
+        bridge.onOfferCreated(offer.sdp);
+    }
+}
+
+async function handleRemoteOffer(sdp) {
+    try {
+        if (!started) {
+            pendingOffer = sdp;
+            return;
+        }
+
+        if (!pc) createPeerConnection();
+
+        await pc.setRemoteDescription({
+            type: "offer",
+            sdp: sdp
+        });
+
+        log("已设置远端 Offer");
+
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        log("本地 Answer 已创建");
+        if (bridge) {
+            bridge.onAnswerCreated(answer.sdp);
+        }
+
+        await flushPendingCandidates();
+    } catch (err) {
+        log("处理远端 Offer 失败: " + err);
+    }
+}
+
+async function handleRemoteAnswer(sdp) {
+    try {
+        if (!pc) return;
+
+        await pc.setRemoteDescription({
+            type: "answer",
+            sdp: sdp
+        });
+
+        log("已设置远端 Answer");
+        await flushPendingCandidates();
+    } catch (err) {
+        log("处理远端 Answer 失败: " + err);
+    }
+}
+
+async function handleRemoteIce(candidate, sdpMid, sdpMLineIndex) {
+    try {
+        if (!pc || !pc.remoteDescription) {
+            pendingCandidates.push({
+                candidate: candidate,
+                sdpMid: sdpMid,
+                sdpMLineIndex: sdpMLineIndex
+            });
+            return;
+        }
+
+        await pc.addIceCandidate({
+            candidate: candidate,
+            sdpMid: sdpMid,
+            sdpMLineIndex: sdpMLineIndex
+        });
+    } catch (err) {
+        log("添加 ICE 失败: " + err);
+    }
+}
+
+async function flushPendingCandidates() {
+    if (!pc || !pc.remoteDescription) return;
+
+    while (pendingCandidates.length > 0) {
+        const c = pendingCandidates.shift();
+        try {
+            await pc.addIceCandidate(c);
+        } catch (err) {
+            log("补加 ICE 失败: " + err);
+        }
+    }
+}
+
+function stopPeer() {
+    log("停止通话");
+
+    if (pc) {
+        try { pc.close(); } catch (e) {}
+        pc = null;
+    }
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+
+    if (remoteStream) {
+        remoteStream.getTracks().forEach(track => track.stop());
+        remoteStream = null;
+    }
+
+    localVideo.srcObject = null;
+    remoteVideo.srcObject = null;
+
+    started = false;
+    pendingOffer = null;
+    pendingCandidates = [];
+}
+
+new QWebChannel(qt.webChannelTransport, function(channel) {
+    bridge = channel.objects.videoBridge;
+
+    bridge.startWebRtc.connect(function(callerRole) {
+        startLocal(callerRole);
+    });
+
+    bridge.stopWebRtc.connect(function() {
+        stopPeer();
+    });
+
+    bridge.remoteOffer.connect(function(sdp) {
+        handleRemoteOffer(sdp);
+    });
+
+    bridge.remoteAnswer.connect(function(sdp) {
+        handleRemoteAnswer(sdp);
+    });
+
+    bridge.remoteIce.connect(function(candidate, sdpMid, sdpMLineIndex) {
+        handleRemoteIce(candidate, sdpMid, sdpMLineIndex);
+    });
+
+    if (bridge.onJsReady) {
+        bridge.onJsReady();
+    }
+
+    log("WebRTC 页面已就绪");
+});
+</script>
+</body>
+</html>

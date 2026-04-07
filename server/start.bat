@@ -1,43 +1,51 @@
 @echo off
 title Chat Project Starter
+chcp 65001 >nul
 echo 正在启动所有服务器...
 
-:: --- 先启动 Redis（很重要，很多服务依赖它） ---
-echo 启动 Redis...
-cd /d "D:\Code\Project\Cpp_\llfcchat-Season_2\server\redis-windows"
-start "Redis" .\redis-server.exe .\redis.windows.conf
-
-:: 稍微等待 Redis 启动（可选，防止其他服务太早连不上）
+:: ==========================
+:: 启动 Redis
+:: ==========================
+echo.
+echo [1/8] 启动 Redis...
+cd /d "./redis-windows"
+start "Redis Server" .\redis-server.exe .\redis.windows.conf
 timeout /t 3 /nobreak >nul
+cd ..
 
+:: ==========================
+:: 启动 C++ 服务
+:: ==========================
+echo.
+echo [2/8] 启动 GateServer...
+start "GateServer" /d "./GateServer/x64/Debug" GateServer.exe
 
-cd /d "D:\Code\Project\Cpp_\llfcchat-Season_2\server" 
+echo [3/8] 启动 StatusServer...
+start "StatusServer" /d "./StatusServer/x64/Debug" StatusServer.exe
 
-:: --- 启动 GateServer ---
-echo 启动 GateServer...
-start "GateServer" /d "GateServer\x64\Debug" "GateServer.exe"
+echo [4/8] 启动 ResourceServer...
+start "ResourceServer" /d "./ResourceServer/x64/Debug" ResourceServer.exe
 
-:: --- 启动 StatusServer ---
-echo 启动 StatusServer...
-start "StatusServer" /d "StatusServer\x64\Debug" "StatusServer.exe"
+echo [5/8] 启动 ChatServer...
+start "ChatServer" /d "./ChatServer/x64/Debug" ChatServer.exe
 
-:: --- 启动 ResourceServer ---
-echo 启动 ResourceServer...
-start "ResourceServer" /d "ResourceServer\x64\Debug" "ResourceServer.exe"
+echo [6/8] 启动 ChatServer2...
+start "ChatServer2" /d "./ChatServer2/x64/Debug" ChatServer.exe
 
-:: --- 启动 ChatServer ---
-echo 启动 ChatServer...
-start "ChatServer" /d "ChatServer\x64\Debug" "ChatServer.exe"
+:: ==========================
+:: 启动 Python AI 服务
+:: ==========================
+echo.
+echo [7/8] 启动 AIServer...
+start "AIServer" /d "./AiServer" "E:/Library/Python313/python.exe" app/main.py
 
-:: --- 启动 ChatServer2 ---
-echo 启动 ChatServer2...
-start "ChatServer2" /d "ChatServer2\x64\Debug" "ChatServer.exe"
+:: ==========================
+:: 新增 FaceServer
+:: ==========================
+echo [8/8] 启动 FaceServer...
+start "FaceServer" /d "./FaceServer" "E:/Library/Python313/python.exe" main.py
 
-:: --- 启动 AIServer (Python/FastAPI) ---
-echo 启动 AIServer...
-:: 切换到你的 Python 项目代码所在的实际目录 (请修改下方路径)
-cd /d "D:\Code\Project\Cpp_\llfcchat-Season_2\server\AiServer" 
-start "AIServer" "E:/Library/Python313/python.exe" -m uvicorn main:app --reload --port 8070
-
-echo 所有服务器已尝试启动。
+echo.
+echo ✅ 所有服务器启动完成！
+echo.
 pause

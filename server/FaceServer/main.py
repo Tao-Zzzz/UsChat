@@ -28,4 +28,5 @@ async def api_search(req: SearchRequest):
     return result
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8010, reload=True)
+    # 【修改这里】：移除 reload=True，并将 "main:app" 改为直接传入 app 对象
+    uvicorn.run(app, host="0.0.0.0", port=8010)
