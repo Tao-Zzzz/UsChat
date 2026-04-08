@@ -33,6 +33,7 @@ struct ApplyInfo {
 struct GroupInfo {
 	int _role;
 	std::string _mute_until;
+	std::string _group_nickname;    // 群昵称/群名片
 };
 
 //聊天线程信息
@@ -43,6 +44,7 @@ struct ChatThreadInfo {
 	int _user2_id;    // 私聊时对应 private_chat.user2_id；群聊时设为 0
 	std::vector<int> _member_ids; // 群聊成员列表，私聊时为空
 	std::map<int, std::shared_ptr<GroupInfo>> _meber_infos;
+	std::string _group_name = "";
 };
 
 

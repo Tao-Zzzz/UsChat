@@ -282,15 +282,7 @@ struct GroupInfo {
 };
 Q_DECLARE_METATYPE(std::shared_ptr<GroupInfo>)
 
-struct GroupMemberBrief {
-    int _uid = 0;
-    QString _name;
-    int _role = 0;
 
-    GroupMemberBrief() = default;
-    GroupMemberBrief(int uid, const QString& name, int role)
-        : _uid(uid), _name(name), _role(role) {}
-};
 
 struct GroupChatInitData {
     int _thread_id = 0;
@@ -301,9 +293,6 @@ struct GroupChatInitData {
 };
 
 Q_DECLARE_METATYPE(GroupChatInitData)
-Q_DECLARE_METATYPE(GroupMemberBrief)
-
-Q_DECLARE_METATYPE(std::shared_ptr<GroupMemberBrief>)
 Q_DECLARE_METATYPE(std::shared_ptr<GroupChatInitData>)
 
 
@@ -316,6 +305,7 @@ struct ChatThreadInfo {
 
     std::vector<int> _member_ids; // 群聊成员列表，私聊时为空
     QMap<int, std::shared_ptr<GroupInfo>> _meber_infos;
+    QString _group_name = "";
     ChatThreadInfo() = default;
 };
 
@@ -334,22 +324,13 @@ public:
         _thread_type = ChatFormType::PRIVATE;
     }
 
+
     ChatThreadData(std::vector<int> member_ids,
                    int thread_id,
                    int last_msg_id,
                    const QString& group_name,
-                   const QMap<int, std::shared_ptr<GroupInfo>>& group_members_info)
-        : _group_members(member_ids),
-        _thread_id(thread_id),
-        _last_msg_id(last_msg_id),
-        _other_id(0),
-        _group_members_info(group_members_info),
-        _group_name(group_name),
-        _thread_type(ChatFormType::GROUP)
-    {
-        // self role 不应该是0才对 todo
-        self_role = 0;
-    }
+                   const QMap<int, std::shared_ptr<GroupInfo>>& group_members_info);
+
 
     ChatThreadData(int thread_id, int last_msg_id)
         : _last_msg_id(last_msg_id), _thread_id(thread_id) {

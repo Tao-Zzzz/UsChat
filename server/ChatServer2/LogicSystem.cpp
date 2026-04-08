@@ -1018,19 +1018,6 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 		return;
 	}
 
-
-	//rtvalue["load_more"] = load_more;
-	//rtvalue["next_last_id"] = (int)next_last_id;
-	////整理threads数据写入json返回
-	//for (auto& thread : threads) {
-	//	Json::Value thread_value;
-	//	thread_value["thread_id"] = int(thread->_thread_id);
-	//	thread_value["type"] = thread->_type;
-	//	thread_value["user1_id"] = thread->_user1_id;
-	//	thread_value["user2_id"] = thread->_user2_id;
-	//	rtvalue["threads"].append(thread_value);
-	//}
-
 	rtvalue["error"] = ErrorCodes::Success;
 	rtvalue["load_more"] = load_more;
 	rtvalue["next_last_id"] = (int)next_last_id;
@@ -1041,13 +1028,17 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 		Json::Value thread_value;
 		thread_value["thread_id"] = (int)thread->_thread_id;
 		thread_value["type"] = thread->_type;
-		thread_value["user1_id"] = (int)thread->_user1_id;
-		thread_value["user2_id"] = (int)thread->_user2_id;
 
-		// members：统一写数组
-		Json::Value members_value(Json::arrayValue);
+		// 区分会话类型进行打包
+		if (thread->_type == "private") {
+			thread_value["user1_id"] = (int)thread->_user1_id;
+			thread_value["user2_id"] = (int)thread->_user2_id;
+		}
+		else if (thread->_type == "group") {
+			// 添加群聊名称
+			thread_value["group_name"] = thread->_group_name;
 
-		if (thread->_type == "group") {
+			Json::Value members_value(Json::arrayValue);
 			for (auto& kv : thread->_meber_infos) {
 				int uid = kv.first;
 				auto& info = kv.second;
@@ -1056,14 +1047,16 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 				mem["uid"] = uid;
 				mem["role"] = info->_role;
 				mem["mute_until"] = info->_mute_until;
+				mem["group_nick"] = info->_group_nickname;
 
 				members_value.append(mem);
 			}
+			thread_value["members"] = members_value;
 		}
 
-		thread_value["members"] = members_value;
 		threads_value.append(thread_value);
 	}
+
 
 	rtvalue["threads"] = threads_value;
 
@@ -1204,54 +1197,143 @@ void LogicSystem::DealChatImgMsg(std::shared_ptr<CSession> session,
 
 }
 
+static Json::Value BuildGroupChatJson(const GroupChatInfo& group_info)
+{
+	Json::Value rtvalue;
+	rtvalue["error"] = 0;
+	rtvalue["thread_id"] = group_info.thread_id;
+	rtvalue["group_name"] = group_info.group_name;
+	rtvalue["member_count"] = group_info.member_count;
 
-void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data)
+	Json::Value members(Json::arrayValue);
+	for (const auto& m : group_info.members)
+	{
+		Json::Value item;
+		item["uid"] = m.uid;
+		item["name"] = m.name;
+		item["role"] = m.role;
+		members.append(item);
+	}
+
+	rtvalue["members"] = members;
+	return rtvalue;
+}
+
+void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session,
+	const short& msg_id,
+	const std::string& msg_data)
 {
 	Json::Reader reader;
 	Json::Value root;
 	reader.parse(msg_data, root);
 
-	// 发起者 uid
 	int uid = root["uid"].asInt();
 
-	// 解析 other_member
 	std::vector<int> other_members;
 	const Json::Value& members = root["other_member"];
-
-	if (members.isArray()) {
-		for (int i = 0; i < members.size(); ++i) {
+	if (members.isArray())
+	{
+		for (int i = 0; i < members.size(); ++i)
+		{
 			other_members.push_back(members[i].asInt());
 		}
 	}
 
-	// 构造返回值
 	Json::Value rtvalue;
-	rtvalue["error"] = ErrorCodes::Success;
-	rtvalue["uid"] = uid;
-
-	// 回传数组（可选）
-	Json::Value memberArray(Json::arrayValue);
-	for (int mid : other_members) {
-		memberArray.append(mid);
-	}
-	rtvalue["other_member"] = memberArray;
-
-
-	Defer defer([this, &rtvalue, session]() {
-		std::string return_str = rtvalue.toStyledString();
-		session->Send(return_str, ID_CREATE_GROUP_RSP);
-		});
-
 	int thread_id = 0;
+
 	bool res = MysqlMgr::GetInstance()->CreateGroupChat(uid, other_members, thread_id);
-	if (!res) {
+	if (!res)
+	{
 		rtvalue["error"] = ErrorCodes::CREATE_CHAT_FAILED;
+		session->Send(rtvalue.toStyledString(), ID_CREATE_GROUP_RSP);
 		return;
 	}
 
-	rtvalue["thread_id"] = thread_id;
+	GroupChatInfo group_info;
+	res = MysqlMgr::GetInstance()->GetGroupChatInfo(thread_id, group_info);
+	if (!res)
+	{
+		rtvalue["error"] = ErrorCodes::CREATE_CHAT_FAILED;
+		session->Send(rtvalue.toStyledString(), ID_CREATE_GROUP_RSP);
+		return;
+	}
 
-	// todo... 这里可能要通知所有人群聊已经创建完毕
+	rtvalue = BuildGroupChatJson(group_info);
+
+	Defer defer([session, &rtvalue]() {
+		session->Send(rtvalue.toStyledString(), ID_CREATE_GROUP_RSP);
+		});
+
+	// 收集所有成员 uid
+	std::vector<int> all_members;
+	for (const auto& m : group_info.members)
+	{
+		all_members.push_back(m.uid);
+	}
+
+	std::unordered_map<std::string, std::vector<int>> notify_map;
+
+	auto& cfg = ConfigMgr::Inst();
+	auto self_name = cfg["SelfServer"]["Name"];
+
+	for (auto member_uid : all_members)
+	{
+		if (member_uid == uid) continue; // 跳过创建者自己
+
+		std::string to_ip_value;
+		auto key = USERIPPREFIX + std::to_string(member_uid);
+
+		if (!RedisMgr::GetInstance()->Get(key, to_ip_value))
+		{
+			continue;
+		}
+
+		Json::Value notify_value = rtvalue;
+		notify_value["touid"] = member_uid;
+
+		if (to_ip_value == self_name)
+		{
+			auto target_session = UserMgr::GetInstance()->GetSession(member_uid);
+			if (target_session)
+			{
+				target_session->Send(
+					notify_value.toStyledString(),
+					ID_NOTIFY_GROUP_CREATED_REQ);
+			}
+		}
+		else
+		{
+			notify_map[to_ip_value].push_back(member_uid);
+		}
+	}
+
+	// 跨服通知
+	for (auto& kv : notify_map)
+	{
+		const std::string& server_ip = kv.first;
+		const std::vector<int>& touids = kv.second;
+
+		GroupCreatedNotifyReq req;
+		req.set_thread_id(group_info.thread_id);
+		req.set_group_name(group_info.group_name);
+		req.set_member_count(group_info.member_count);
+
+		for (int touid : touids)
+		{
+			req.add_touids(touid);
+		}
+
+		for (const auto& m : group_info.members)
+		{
+			auto* member = req.add_members();
+			member->set_uid(m.uid);
+			member->set_name(m.name);
+			member->set_role(m.role);
+		}
+
+		ChatGrpcClient::GetInstance()->NotifyGroupCreated(server_ip, req);
+	}
 }
 
 

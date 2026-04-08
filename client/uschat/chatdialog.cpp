@@ -680,24 +680,31 @@ void ChatDialog::slot_load_chat_thread(bool load_more, int last_thread_id,
 
 	for (auto& cti : chat_threads) {
 		//先处理单聊，群聊跳过，以后添加
-		if (cti->_type == "group") {
-            
-            // todo 群聊加载
-            // auto chat_thread_data = std::make_shared<ChatThreadData>(cti->_member_ids, cti->_thread_id, 0, cti->_meber_infos);
-            // UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, 0);
-            
-            // auto* chat_user_wid = new ChatUserWid();
-            // //群头像什么的设置
-            // chat_user_wid->SetChatData(chat_thread_data);
-            // QListWidgetItem* item = new QListWidgetItem;
-            // //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
-            // item->setSizeHint(chat_user_wid->sizeHint());
-            // ui->chat_user_list->addItem(item);
-            // ui->chat_user_list->setItemWidget(item, chat_user_wid);
-            // _chat_thread_items.insert(cti->_thread_id, item);
-            // //左边栏的弄完了
-			continue;
-		}
+        if (cti->_type == "group") {
+
+            // 传入 group_name 和 self_uid
+            auto chat_thread_data = std::make_shared<ChatThreadData>(
+                cti->_member_ids,
+                cti->_thread_id,
+                0,
+                cti->_group_name, // 如果 cti->_group_name 是 std::string 的话
+                cti->_meber_infos
+                );
+
+            // 群聊的 map key 通常直接用 thread_id 即可
+            UserMgr::GetInstance()->AddChatThreadData(chat_thread_data, cti->_thread_id);
+
+            auto* chat_user_wid = new ChatUserWid();
+            chat_user_wid->SetChatData(chat_thread_data);
+
+            QListWidgetItem* item = new QListWidgetItem;
+            item->setSizeHint(chat_user_wid->sizeHint());
+            ui->chat_user_list->addItem(item);
+            ui->chat_user_list->setItemWidget(item, chat_user_wid);
+
+            _chat_thread_items.insert(cti->_thread_id, item);
+            continue;
+        }
 
 		auto uid = UserMgr::GetInstance()->GetUid();
         auto other_uid = 0;

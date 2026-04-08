@@ -1018,19 +1018,6 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 		return;
 	}
 
-
-	//rtvalue["load_more"] = load_more;
-	//rtvalue["next_last_id"] = (int)next_last_id;
-	////整理threads数据写入json返回
-	//for (auto& thread : threads) {
-	//	Json::Value thread_value;
-	//	thread_value["thread_id"] = int(thread->_thread_id);
-	//	thread_value["type"] = thread->_type;
-	//	thread_value["user1_id"] = thread->_user1_id;
-	//	thread_value["user2_id"] = thread->_user2_id;
-	//	rtvalue["threads"].append(thread_value);
-	//}
-
 	rtvalue["error"] = ErrorCodes::Success;
 	rtvalue["load_more"] = load_more;
 	rtvalue["next_last_id"] = (int)next_last_id;
@@ -1041,13 +1028,17 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 		Json::Value thread_value;
 		thread_value["thread_id"] = (int)thread->_thread_id;
 		thread_value["type"] = thread->_type;
-		thread_value["user1_id"] = (int)thread->_user1_id;
-		thread_value["user2_id"] = (int)thread->_user2_id;
 
-		// members：统一写数组
-		Json::Value members_value(Json::arrayValue);
+		// 区分会话类型进行打包
+		if (thread->_type == "private") {
+			thread_value["user1_id"] = (int)thread->_user1_id;
+			thread_value["user2_id"] = (int)thread->_user2_id;
+		}
+		else if (thread->_type == "group") {
+			// 添加群聊名称
+			thread_value["group_name"] = thread->_group_name;
 
-		if (thread->_type == "group") {
+			Json::Value members_value(Json::arrayValue);
 			for (auto& kv : thread->_meber_infos) {
 				int uid = kv.first;
 				auto& info = kv.second;
@@ -1056,14 +1047,16 @@ void LogicSystem::GetUserThreadsHandler(std::shared_ptr<CSession> session,
 				mem["uid"] = uid;
 				mem["role"] = info->_role;
 				mem["mute_until"] = info->_mute_until;
+				mem["group_nick"] = info->_group_nickname;
 
 				members_value.append(mem);
 			}
+			thread_value["members"] = members_value;
 		}
 
-		thread_value["members"] = members_value;
 		threads_value.append(thread_value);
 	}
+
 
 	rtvalue["threads"] = threads_value;
 
@@ -1286,6 +1279,8 @@ void LogicSystem::CreateGroupChat(std::shared_ptr<CSession> session,
 
 	for (auto member_uid : all_members)
 	{
+		if (member_uid == uid) continue; // 跳过创建者自己
+
 		std::string to_ip_value;
 		auto key = USERIPPREFIX + std::to_string(member_uid);
 

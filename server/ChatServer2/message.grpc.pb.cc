@@ -195,6 +195,7 @@ static const char* ChatService_method_names[] = {
   "/message.ChatService/NotifyGroupTextChatMsg",
   "/message.ChatService/NotifyChatImgMsg",
   "/message.ChatService/NotifyVideoEvent",
+  "/message.ChatService/NotifyGroupCreated",
 };
 
 std::unique_ptr< ChatService::Stub> ChatService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -213,6 +214,7 @@ ChatService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channe
   , rpcmethod_NotifyGroupTextChatMsg_(ChatService_method_names[6], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_NotifyChatImgMsg_(ChatService_method_names[7], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   , rpcmethod_NotifyVideoEvent_(ChatService_method_names[8], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_NotifyGroupCreated_(ChatService_method_names[9], ::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status ChatService::Stub::NotifyAddFriend(::grpc::ClientContext* context, const ::message::AddFriendReq& request, ::message::AddFriendRsp* response) {
@@ -422,6 +424,29 @@ void ChatService::Stub::experimental_async::NotifyVideoEvent(::grpc::ClientConte
   return result;
 }
 
+::grpc::Status ChatService::Stub::NotifyGroupCreated(::grpc::ClientContext* context, const ::message::GroupCreatedNotifyReq& request, ::message::GroupCreatedNotifyRsp* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::message::GroupCreatedNotifyReq, ::message::GroupCreatedNotifyRsp, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_NotifyGroupCreated_, context, request, response);
+}
+
+void ChatService::Stub::experimental_async::NotifyGroupCreated(::grpc::ClientContext* context, const ::message::GroupCreatedNotifyReq* request, ::message::GroupCreatedNotifyRsp* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::message::GroupCreatedNotifyReq, ::message::GroupCreatedNotifyRsp, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_NotifyGroupCreated_, context, request, response, std::move(f));
+}
+
+void ChatService::Stub::experimental_async::NotifyGroupCreated(::grpc::ClientContext* context, const ::message::GroupCreatedNotifyReq* request, ::message::GroupCreatedNotifyRsp* response, ::grpc::experimental::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_NotifyGroupCreated_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::message::GroupCreatedNotifyRsp>* ChatService::Stub::PrepareAsyncNotifyGroupCreatedRaw(::grpc::ClientContext* context, const ::message::GroupCreatedNotifyReq& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::message::GroupCreatedNotifyRsp, ::message::GroupCreatedNotifyReq, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_NotifyGroupCreated_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::message::GroupCreatedNotifyRsp>* ChatService::Stub::AsyncNotifyGroupCreatedRaw(::grpc::ClientContext* context, const ::message::GroupCreatedNotifyReq& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncNotifyGroupCreatedRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
 ChatService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       ChatService_method_names[0],
@@ -513,6 +538,16 @@ ChatService::Service::Service() {
              ::message::NotifyVideoEventRsp* resp) {
                return service->NotifyVideoEvent(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      ChatService_method_names[9],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< ChatService::Service, ::message::GroupCreatedNotifyReq, ::message::GroupCreatedNotifyRsp, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](ChatService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::message::GroupCreatedNotifyReq* req,
+             ::message::GroupCreatedNotifyRsp* resp) {
+               return service->NotifyGroupCreated(ctx, req, resp);
+             }, this)));
 }
 
 ChatService::Service::~Service() {
@@ -575,6 +610,13 @@ ChatService::Service::~Service() {
 }
 
 ::grpc::Status ChatService::Service::NotifyVideoEvent(::grpc::ServerContext* context, const ::message::NotifyVideoEventReq* request, ::message::NotifyVideoEventRsp* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status ChatService::Service::NotifyGroupCreated(::grpc::ServerContext* context, const ::message::GroupCreatedNotifyReq* request, ::message::GroupCreatedNotifyRsp* response) {
   (void) context;
   (void) request;
   (void) response;

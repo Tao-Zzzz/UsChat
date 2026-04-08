@@ -33,6 +33,7 @@ struct ApplyInfo {
 struct GroupInfo {
 	int _role;
 	std::string _mute_until;
+	std::string _group_nickname;    // 群昵称/群名片
 };
 
 //聊天线程信息
@@ -43,6 +44,7 @@ struct ChatThreadInfo {
 	int _user2_id;    // 私聊时对应 private_chat.user2_id；群聊时设为 0
 	std::vector<int> _member_ids; // 群聊成员列表，私聊时为空
 	std::map<int, std::shared_ptr<GroupInfo>> _meber_infos;
+	std::string _group_name = "";
 };
 
 
@@ -73,4 +75,19 @@ enum class ChatMsgType {
 	PIC = 1,
 	VIDEO = 2,
 	FILE = 3
+};
+
+struct GroupMemberInfo
+{
+	int uid = 0;
+	std::string name;
+	int role = 0;   // 0=普通成员,1=管理员,2=创建者
+};
+
+struct GroupChatInfo
+{
+	int thread_id = 0;
+	std::string group_name;
+	int member_count = 0;
+	std::vector<GroupMemberInfo> members;
 };

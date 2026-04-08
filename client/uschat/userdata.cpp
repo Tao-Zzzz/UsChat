@@ -67,6 +67,24 @@ QString ChatDataBase::GetUniqueId()
 //     _thread_type = ChatFormType::GROUP;
 // };
 
+ChatThreadData::ChatThreadData(std::vector<int> member_ids, int thread_id, int last_msg_id, const QString &group_name, const QMap<int, std::shared_ptr<GroupInfo> > &group_members_info)
+    : _group_members(member_ids),
+    _thread_id(thread_id),
+    _last_msg_id(last_msg_id),
+    _other_id(0),
+    _group_members_info(group_members_info),
+    _group_name(group_name),
+    _thread_type(ChatFormType::GROUP)
+{
+    _self_uid = UserMgr::GetInstance()->GetUid();
+    // 解决 TODO: 从成员信息中找到自己的角色权限
+    if (_group_members_info.contains(_self_uid)) {
+        self_role = _group_members_info[_self_uid]->_role;
+    } else {
+        self_role = 0; // 兜底：普通成员
+    }
+}
+
 void ChatThreadData::AddMsg(std::shared_ptr<ChatDataBase> msg)
 {
     _msg_map.insert(msg->GetMsgId(), msg); 

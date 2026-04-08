@@ -211,6 +211,27 @@ message NotifyVideoEventRsp {
     VideoNotifyType notify_type = 5;
 }
 
+message GroupMemberInfo
+{
+  int32 uid = 1;
+  string name = 2;
+  int32 role = 3;
+}
+
+message GroupCreatedNotifyReq
+{
+  int32 thread_id = 1;
+  string group_name = 2;
+  int32 member_count = 3;
+  repeated int32 touids = 4;
+  repeated GroupMemberInfo members = 5;
+}
+
+message GroupCreatedNotifyRsp
+{
+  int32 error = 1;
+}
+
 service ChatService {
 	rpc NotifyAddFriend(AddFriendReq) returns (AddFriendRsp) {}
 	rpc RplyAddFriend(RplyFriendReq) returns (RplyFriendRsp) {}
@@ -224,4 +245,5 @@ service ChatService {
 	rpc NotifyChatImgMsg(NotifyChatImgReq) returns (NotifyChatImgRsp){}
 
 	rpc NotifyVideoEvent(NotifyVideoEventReq) returns (NotifyVideoEventRsp);
+	rpc NotifyGroupCreated(GroupCreatedNotifyReq) returns (GroupCreatedNotifyRsp);
 }

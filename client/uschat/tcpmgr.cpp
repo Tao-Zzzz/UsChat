@@ -164,8 +164,6 @@ void TcpMgr::registerMetaType() {
     qRegisterMetaType<std::shared_ptr<ImgChatData>>("std::shared_ptr<ImgChatData>");
     qRegisterMetaType<std::vector<int>>("std::vector<int>");
     qRegisterMetaType<std::vector<std::shared_ptr<ChatDataBase>>>("std::vector<std::shared_ptr<ChatDataBase>>");
-
-    qRegisterMetaType<GroupMemberBrief>("GroupMemberBrief");
     qRegisterMetaType<GroupChatInitData>("GroupChatInitData");
 }
 
@@ -658,19 +656,6 @@ void TcpMgr::initHandlers()
 
         qDebug() << "Receive chat thread rsp Success";
 
-        // auto thread_array = jsonObj["threads"].toArray();
-        // std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads;
-        // for (const QJsonValue& value : thread_array) {
-        //     auto cti = std::make_shared<ChatThreadInfo>();
-        //     cti->_thread_id = value["thread_id"].toInt();
-        //     cti->_type = value["type"].toString();
-        //     cti->_user1_id = value["user1_id"].toInt();
-        //     cti->_user2_id = value["user2_id"].toInt();
-        //     chat_threads.push_back(cti);
-        // }
-
-        // bool load_more = jsonObj["load_more"].toBool();
-        // int next_last_id = jsonObj["next_last_id"].toInt();
 
         auto thread_array = jsonObj["threads"].toArray();
         std::vector<std::shared_ptr<ChatThreadInfo>> chat_threads;
@@ -681,26 +666,34 @@ void TcpMgr::initHandlers()
             QJsonObject obj = value.toObject();
 
             cti->_thread_id = obj["thread_id"].toInt();
-            cti->_type = obj["type"].toString();
-            cti->_user1_id = obj["user1_id"].toInt();
-            cti->_user2_id = obj["user2_id"].toInt();
+            cti->_type = obj["type"].toString(); // 注意根据你的定义可能不需要 toStdString()
 
-            // 统一解析 members（private 也是空数组）
-            auto members = obj["members"].toArray();
-            for (const QJsonValue& mv : members) {
-                QJsonObject mobj = mv.toObject();
+            if (cti->_type == "private") {
+                cti->_user1_id = obj["user1_id"].toInt();
+                cti->_user2_id = obj["user2_id"].toInt();
+            }
+            else if (cti->_type == "group") {
+                // 解析群聊专属字段
+                cti->_group_name = obj["group_name"].toString(); // 同上，注意类型匹配
 
-                int uid = mobj["uid"].toInt();
-                int role = mobj["role"].toInt();
-                QString mute_until = mobj["mute_until"].toString();
+                auto members = obj["members"].toArray();
+                for (const QJsonValue& mv : members) {
+                    QJsonObject mobj = mv.toObject();
 
-                cti->_member_ids.push_back(uid);
+                    int uid = mobj["uid"].toInt();
+                    int role = mobj["role"].toInt();
+                    QString mute_until = mobj["mute_until"].toString();
+                    QString group_nick = mobj["group_nick"].toString();
 
-                auto gi = std::make_shared<GroupInfo>();
-                gi->_role = role;
-                gi->_mute_until = mute_until;
+                    cti->_member_ids.push_back(uid);
 
-                cti->_meber_infos[uid] = gi;
+                    auto gi = std::make_shared<GroupInfo>();
+                    gi->_role = role;
+                    gi->_mute_until = mute_until;
+                    gi->_group_nickname = group_nick;
+
+                    cti->_meber_infos[uid] = gi;
+                }
             }
 
             chat_threads.push_back(cti);
