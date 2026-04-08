@@ -18,7 +18,7 @@ MODEL_PATH = os.path.join(
 )
 
 print("MODEL_PATH =", MODEL_PATH)
-encoder = SentenceTransformer(MODEL_PATH)
+encoder = SentenceTransformer(MODEL_PATH, backend="onnx")
 
 def sync_pending_messages(db: Session):
     """
@@ -105,3 +105,34 @@ def semantic_search_messages(db, uid, fid, query, limit=5):
         .all()
     )
     return [r.content for r in results]
+
+    
+def search_semantic_in_mysql(db, uid, fid, query, limit=5):
+    """
+    在 MySQL 中手动计算余弦相似度进行搜索
+    """
+    # 1. 把搜索词向量化
+    query_vec = encoder.encode(query)
+    
+    # 2. 从数据库拉取该好友的所有向量 (JSON)
+    # 注意：如果消息极多，这里需要做分批处理，但 5000 条以内直接拉取没压力
+    all_vectors = db.query(ChatMessageVector).filter(
+        ChatMessageVector.uid == uid, 
+        ChatMessageVector.friend_id == fid
+    ).all()
+    
+    if not all_vectors:
+        return []
+
+    # 3. 计算相似度
+    scored_results = []
+    for item in all_vectors:
+        # 将 JSON 转换回 numpy 数组进行计算
+        vec = np.array(item.embedding)
+        # 计算余弦相似度
+        score = np.dot(query_vec, vec) / (np.linalg.norm(query_vec) * np.linalg.norm(vec))
+        scored_results.append((score, item.content))
+    
+    # 4. 按分数排序并取前 N
+    scored_results.sort(key=lambda x: x[0], reverse=True)
+    return [content for score, content in scored_results[:limit]]
