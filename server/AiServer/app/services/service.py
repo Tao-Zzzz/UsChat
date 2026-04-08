@@ -18,6 +18,9 @@ from app.services.chat_service.chat_service import (
 from app.services.chat_service.memory_service import (
     extract_and_store_memory
 )
+from app.services.chat_service.vector_utils import (
+    search_semantic_in_mysql,
+)
 
 def handle_chat(db, req):
     created = False
@@ -239,13 +242,28 @@ def handle_chat_v2(db, req):
         summary=thread.summary,
     )
 
-    # ================= 4. 注入好友历史记录 (情景记忆) =================
+
+    # ================= 4. 注入好友历史记录 (情景记忆 + 语义记忆) =================
     if intent_data.get("intent") == "friend_query" and mentioned_entity:
         friend_info = detect_friend_by_entity(db, req.uid, mentioned_entity)
         if friend_info:
-            friend_ctx = build_friend_chat_context(db, req.uid, friend_info, limit=12)
-            if friend_ctx:
-                insert_reference_context(messages, friend_ctx, title=f"与{mentioned_entity}的最近聊天")
+            # A. 原有的：获取最近 10 条（保证即时感）
+            recent_ctx = build_friend_chat_context(db, req.uid, friend_info, limit=10)
+            
+            # B. 新增的：从 MySQL 向量表中搜索最相关的 5 条（翻旧账）
+            # 调用我们刚才写的 search_semantic_in_mysql
+            related_msgs = search_semantic_in_mysql(
+                db, req.uid, friend_info['friend_id'], req.content, limit=5
+            )
+            
+            semantic_ctx = ""
+            if related_msgs:
+                semantic_ctx = "\n【搜寻到的相关历史片段】\n" + "\n".join([f"- {m}" for m in related_msgs])
+
+            # C. 组合注入
+            final_ctx = recent_ctx + "\n" + semantic_ctx
+            if final_ctx.strip():
+                insert_reference_context(messages, final_ctx, title=f"关于{mentioned_entity}的记忆参考")
 
     # ================= 5. 请求主模型 =================
     response = client.chat.completions.create(

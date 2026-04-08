@@ -11,7 +11,28 @@ from app.core.db import get_db
 from app.schemas.schemas import ChatRequest, ChatResponse, AIChatMessage, AIThreadItem, AIChatMessageResp, LoadThreadResp, AIModelItem
 from app.services.service import handle_chat, load_ai_messages, load_ai_init_data,handle_chat_v2
 
-app = FastAPI()
+# 【新增 1】：导入 FastAPI 的生命周期管理
+from contextlib import asynccontextmanager
+
+# 【新增 2】：导入你在 scheduler.py 里写好的启动函数
+from app.services.chat_service.scheduler import start_vector_scheduler
+
+# 【新增 3】：定义 lifespan，在服务器启动时顺便启动你的后台定时器
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("[System] Web Server is starting...")
+    
+    # 启动后台的向量同步定时任务
+    start_vector_scheduler()
+    print("[System] Vector background scheduler is running.")
+    
+    yield  # yield 之前是启动时的操作，之后是关闭时的操作
+    
+    print("[System] Web Server is shutting down...")
+
+
+# 【修改 4】：把 lifespan 挂载到 FastAPI 实例上
+app = FastAPI(lifespan=lifespan)
 
 @app.post("/ai/chat", response_model=ChatResponse)
 def chat(req: ChatRequest, db: Session = Depends(get_db)):

@@ -1,8 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, BigInteger, ForeignKey, Boolean, TIMESTAMP, func
+from sqlalchemy import JSON, Column, Integer, String, Text, DateTime, BigInteger, ForeignKey, Boolean, TIMESTAMP, func
 from datetime import datetime
 from app.core.db import Base
 from sqlalchemy.dialects.mysql import INTEGER
-
+from pgvector.sqlalchemy import Vector # 需要先 pip install pgvector
 
 class AIThread(Base):
     __tablename__ = "ai_thread"
@@ -29,6 +29,7 @@ class AIMessage(Base):
 
     # 【新增字段】：标记该消息是否已经被折叠进会话摘要中
     is_summarized = Column(Boolean, default=False, index=True)
+
 
 class AIModel(Base):
     __tablename__ = "ai_model"
@@ -82,12 +83,13 @@ class ChatMessage(Base):
     updated_at = Column(TIMESTAMP, server_default=func.current_timestamp(), onupdate=func.current_timestamp())
     
     # 消息状态 (TINYINT, 默认 0)
-    # 0=未读 1=已读 2=...
-    status = Column(Integer, default=0, comment="0=未读 1=已读 2=撤回")
+    # 0=未上传 1=上传失败 2=已上传
+    status = Column(Integer, default=0, comment="0=未上传 1=上传失败 2=已上传")
     
     # 消息类型 (TINYINT, 默认 0)
     # 0=文本 1=图片 2=...
     msg_type = Column(Integer, default=0, comment="0=文本 1=图片 2=视频 3=文件")
+    is_vector = Column(Integer, default=0, index=True, comment="0=未向量化 1=已向量化")
 
 class Friend(Base):
     __tablename__ = "friend"
@@ -145,3 +147,14 @@ class SemanticMemory(Base):
     fact = Column(String(255), comment="具体事实，例如 '是一名Python后端开发'")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class ChatMessageVector(Base):
+    __tablename__ = "chat_message_vector"
+    
+    # 为了支持双向查询，这里的主键可以设为自增，或者使用联合主键
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    message_id = Column(BigInteger, index=True, comment="对应 ChatMessage 的 ID")
+    uid = Column(BigInteger, index=True, comment="该记忆所属的用户ID")
+    friend_id = Column(BigInteger, index=True, comment="聊天的对象ID")
+    content = Column(Text, comment="冗余存储消息内容")
+    embedding = Column(JSON, comment="向量数据 [0.1, 0.2, ...]")

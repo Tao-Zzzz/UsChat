@@ -1,7 +1,9 @@
 from sqlalchemy import or_, and_
 
 from app.models.models import Friend, User, ChatMessage
-
+from app.services.chat_service.vector_service import (
+    semantic_search_messages
+)
 
 FRIEND_CONTEXT_KEYWORDS = [
     "我和", "跟", "与", "聊天", "对话",
@@ -139,6 +141,24 @@ def build_friend_chat_context(db, uid, friend_info, limit=12) -> str:
     ]
 
     return "\n".join(header + lines)
+def build_friend_chat_context_v2(db, uid, friend_info, query_text, limit=12):
+    fid = friend_info["friend_id"]
+    friend_name = friend_info["display_name"]
+
+    # 1. 获取最近的 6 条（保证时效性，万一正在聊）
+    recent_msgs = get_recent_chat_messages(db, uid, fid, limit=6)
+    recent_lines = [f"{('我' if m.sender_id == uid else friend_name)}: {m.content}" for m in recent_msgs]
+
+    # 2. 语义搜索最相关的 6 条（跨越时间，翻旧账）
+    related_contents = semantic_search_messages(db, uid, fid, query_text, limit=6)
+    
+    # 3. 组合
+    context = "【最近聊天记录】\n" + "\n".join(recent_lines)
+    if related_contents:
+        context += "\n\n【相关的历史片段】\n" + "\n".join([f"- {c}" for c in related_contents])
+    
+    return context
+
 
 def detect_friend_by_entity(db, uid, entity_name: str):
     """

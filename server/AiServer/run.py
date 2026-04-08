@@ -1,6 +1,4 @@
-import uvicorn
-from app.main import app
+from sentence_transformers import SentenceTransformer
 
-if __name__ == "__main__":
-    # 注意：千万不要在这里加 reload=True
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+model.save(r"D:\Code\Project\Cpp_\uschat_\server\AiServer\app\embedding_model\paraphrase-multilingual-MiniLM-L12-v2")
