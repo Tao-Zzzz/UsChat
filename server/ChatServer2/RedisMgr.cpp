@@ -78,6 +78,26 @@ bool RedisMgr::Set(const std::string &key, const std::string &value){
 	return true;
 }
 
+bool RedisMgr::SetEx(const std::string& key, const std::string& value, int timeout) {
+	auto connect = _con_pool->getConnection();
+	if (connect == nullptr) return false;
+
+	// SETEX key seconds value
+	auto reply = (redisReply*)redisCommand(connect, "SETEX %s %d %s", key.c_str(), timeout, value.c_str());
+
+	if (reply == NULL) {
+		_con_pool->returnConnection(connect);
+		return false;
+	}
+
+	bool success = (reply->type == REDIS_REPLY_STATUS &&
+		(strcmp(reply->str, "OK") == 0 || strcmp(reply->str, "ok") == 0));
+
+	freeReplyObject(reply);
+	_con_pool->returnConnection(connect);
+	return success;
+}
+
 bool RedisMgr::LPush(const std::string &key, const std::string &value)
 {
 	auto connect = _con_pool->getConnection();
@@ -459,3 +479,4 @@ void RedisMgr::DelCount(std::string server_name) {
 
 	RedisMgr::GetInstance()->HDel(LOGIN_COUNT, server_name);
 }
+

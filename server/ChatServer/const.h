@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-
+#include <string>
 
 enum ErrorCodes {
 	Success = 0,
@@ -142,6 +142,11 @@ enum MSG_IDS {
 #define LOCK_PREFIX "lock_"
 #define USER_SESSION_PREFIX "usession_"
 #define LOCK_COUNT "lockcount"
+
+const std::string CALL_SESSION_PREFIX = "call_session_";
+const std::string USER_BUSY_PREFIX = "user_busy_";
+const int CALL_SESSION_TTL = 180; // 3分钟没接听或异常，自动释放
+
 
 //分布式锁的持有时间
 #define LOCK_TIME_OUT 10

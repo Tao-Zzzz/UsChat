@@ -51,6 +51,7 @@ private:
 	void DealChatImgMsg(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 	void CreateGroupChat(std::shared_ptr<CSession> session, const short& msg_id, const string& msg_data);
 
+	void ClearCallSessionInRedis(const std::string& call_id, int caller_id, int callee_id);
 	void VideoInvite(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
 	void VideoAccept(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);
 	void VideoReject(std::shared_ptr<CSession> session, const short& msg_id, const std::string& msg_data);

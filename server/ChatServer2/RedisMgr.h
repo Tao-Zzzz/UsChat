@@ -287,6 +287,8 @@ public:
 		_con_pool->ClearConnections();
 	}
 
+	bool SetEx(const std::string& key, const std::string& value, int timeout);
+
 	std::string acquireLock(const std::string& lockName,
 		int lockTimeout, int acquireTimeout);
 
