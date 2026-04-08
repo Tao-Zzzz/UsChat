@@ -27,6 +27,9 @@ class AIMessage(Base):
     tokens = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # 【新增字段】：标记该消息是否已经被折叠进会话摘要中
+    is_summarized = Column(Boolean, default=False, index=True)
+
 class AIModel(Base):
     __tablename__ = "ai_model"
 
@@ -53,20 +56,6 @@ class AIModel(Base):
     supports_system = Column(Boolean, default=True)  # 新增
     context_length = Column(Integer, default=8192)   # 新增
 
-class VectorMemory(Base):
-    __tablename__ = "vector_memory"
-
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
-
-    uid = Column(Integer, index=True)
-
-    friend_id = Column(Integer)
-
-    message_id = Column(BigInteger)
-
-    content = Column(Text)
-
-    created_at = Column(DateTime, default=datetime.utcnow)
 
 class ChatMessage(Base):
     __tablename__ = "chat_message"
@@ -145,3 +134,14 @@ class User(Base):
     
     # 头像路径/URL (VARCHAR 255)
     icon = Column(String(255), nullable=False, server_default="")
+
+class SemanticMemory(Base):
+    __tablename__ = "semantic_memory"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    uid = Column(Integer, index=True, nullable=False) # 关联用户的 uid
+    entity = Column(String(128), index=True, comment="实体，例如 '自己' 或 '老王'")
+    attribute = Column(String(128), comment="属性，例如 '职业', '喜好', '人际关系'")
+    fact = Column(String(255), comment="具体事实，例如 '是一名Python后端开发'")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

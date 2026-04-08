@@ -139,3 +139,22 @@ def build_friend_chat_context(db, uid, friend_info, limit=12) -> str:
     ]
 
     return "\n".join(header + lines)
+
+def detect_friend_by_entity(db, uid, entity_name: str):
+    """
+    根据意图路由提取出的实体名，去匹配好友数据库
+    """
+    if not entity_name:
+        return None
+        
+    friends = get_user_friends_with_name(db, uid)
+
+    # 简单匹配：看提取出的名字是否在好友的 备注/昵称/名字 中
+    for f in friends:
+        keys = [f["display_name"], f["back"], f["nick"], f["name"]]
+        keys = [k for k in keys if k]
+        for k in keys:
+            if k in entity_name or entity_name in k:
+                return f
+
+    return None
